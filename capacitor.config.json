@@ -1,0 +1,6 @@
+{
+	"appId": "io.ionic.starter",
+	"appName": "niamka",
+	"webDir": "dist",
+	"bundledWebRuntime": false
+}

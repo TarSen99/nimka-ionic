@@ -1,0 +1,7 @@
+{
+  "name": "niamka",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue"
+}
