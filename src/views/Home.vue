@@ -1,68 +1,181 @@
 <template>
-  <ion-page>
-    <ion-header :translucent="true">
-      <ion-toolbar>
-        <ion-title>Blank</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    
-    <ion-content :fullscreen="true">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Blank</ion-title>
-        </ion-toolbar>
-      </ion-header>
-    
-      <div id="container">
-        <strong>Ready to create an app?</strong>
-        <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
-      </div>
-    </ion-content>
-  </ion-page>
+	<ion-page v-bind="$attrs" class="ion-page">
+		<ion-header class="header" mode="md" >
+			<ion-toolbar class="toolbar" mode="md" ref="header">
+				<div
+					class="is-flex ion-align-items-center ion-justify-content-between px-4"
+				>
+					<ion-buttons>
+						<ion-button class="user-btn default-icon-btn" ref="accountButton">
+							<ion-icon slot="icon-only" :icon="personOutline"></ion-icon>
+						</ion-button>
+					</ion-buttons>
+
+					<SearchInput
+						class="search-input-container"
+						ref="searchInput"
+					></SearchInput>
+
+					<span class="placeholder"></span>
+				</div>
+			</ion-toolbar>
+		</ion-header>
+
+		<ion-content
+			:fullscreen="true"
+			:scroll-events="true"
+			@ionScroll="handleScroll($event)"
+		>
+			<ion-refresher
+				slot="fixed"
+				@ionRefresh="doRefresh($event)"
+				:pullMin="120"
+				:pullMax="200"
+				pull-factor="0.5"
+			>
+				<ion-refresher-content
+					class="refresher"
+					refreshing-spinner="crescent"
+				></ion-refresher-content>
+			</ion-refresher>
+
+			<div ref="pageContent">
+				<Filters :active-filter="activeFilter" @update-filter="updateFilter" />
+
+				<div ref="itemsList" class="ion-padding main-content relative">
+					<div class="food-items pt-2">
+						<FoodItem
+							v-for="item in items"
+							:key="item"
+							class="mb-3"
+							@click="$router.push('/product/1')"
+						/>
+					</div>
+				</div>
+			</div>
+		</ion-content>
+	</ion-page>
 </template>
 
-<script lang="ts">
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/vue';
-import { defineComponent } from 'vue';
+<script>
+import FoodItem from '@/components/home/FoodItem.vue';
+import SearchInput from '@/components/common/SearchInput.vue';
+import Filters from '@/components/home/Filters.vue';
+import useHeaderAnimation from '@/composables/home/useHeaderAnimation.js';
 
-export default defineComponent({
-  name: 'Home',
-  components: {
-    IonContent,
-    IonHeader,
-    IonPage,
-    IonTitle,
-    IonToolbar
-  }
-});
+import {
+	IonContent,
+	IonHeader,
+	IonPage,
+	IonToolbar,
+	IonIcon,
+	IonButton,
+	IonButtons,
+	IonRefresher,
+	IonRefresherContent,
+} from '@ionic/vue';
+import { ref } from '@vue/reactivity';
+import { personOutline } from 'ionicons/icons';
+
+export default {
+	name: 'Home',
+	components: {
+		IonContent,
+		IonHeader,
+		IonPage,
+		IonToolbar,
+		FoodItem,
+		IonButton,
+		IonButtons,
+		IonIcon,
+		SearchInput,
+		IonRefresher,
+		IonRefresherContent,
+		Filters,
+	},
+	setup() {
+		const {
+			pageContent,
+			header,
+			handleScroll,
+			accountButton,
+			searchInput,
+			itemsList,
+		} = useHeaderAnimation();
+		const items = ref([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]);
+		const activeFilter = ref(0);
+
+		const doRefresh = (e) => {
+			setTimeout(() => {
+				console.log('Async operation has ended');
+				e.target.complete();
+			}, 1000);
+		};
+
+		const updateFilter = (v) => {
+			activeFilter.value = v;
+		};
+
+		return {
+			items,
+			personOutline,
+			doRefresh,
+			activeFilter,
+			updateFilter,
+			pageContent,
+			header,
+			accountButton,
+			handleScroll,
+			searchInput,
+			itemsList,
+		};
+	},
+};
 </script>
 
-<style scoped>
-#container {
-  text-align: center;
-  
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+<style scoped lang="scss">
+$gradientTopColor: #f17e48;
+$gradientBottomColor: #ec5230;
+
+.header {
+	z-index: 100;
+	&::after {
+		display: none !important;
+	}
 }
 
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
+.title {
+	font-size: 16px;
+	height: auto;
 }
 
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-  
-  color: #8c8c8c;
-  
-  margin: 0;
+.placeholder {
+	min-width: 30px;
+	display: inline-block;
 }
 
-#container a {
-  text-decoration: none;
+.user-btn {
+	--background: rgba(255, 255, 255, 0.2);
+	--color: var(--white);
+}
+
+ion-content {
+	--background: $gradientTopColor;
+}
+
+.ion-page {
+	background-color: $gradientTopColor;
+}
+
+.search-input-container {
+	width: 70%;
+}
+
+::v-deep(.refresher) {
+	.refresher-refreshing {
+		margin-top: 100px !important;
+		--color: var(--white) !important;
+		//  background-color: #f17e48 !important;
+	}
 }
 </style>
