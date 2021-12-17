@@ -12,7 +12,7 @@ const createChangeBackgroundAnimation = (el) => {
 	return createAnimation()
 		.addElement(el)
 		.duration(300)
-		.fromTo('--background', '', `var(--dark-grey) `)
+		.fromTo('background', '', `var(--dark-grey) `);
 };
 
 const createChangeBackgroundInputAnimation = (el) => {
@@ -34,7 +34,14 @@ const createContainerAnimation = (el) => {
 	return createAnimation()
 		.addElement(el)
 		.duration(1000)
-		.fromTo('transform', 'translateY(0px)', `translateY(-100px)`)
+		.fromTo('transform', 'translateY(0px)', `translateY(-100px)`);
+};
+
+const createTopContentAnimation = (el) => {
+	return createAnimation()
+		.addElement(el)
+		.duration(300)
+		.fromTo('transform', 'translateY(0px)', `translateY(100px)`);
 };
 
 const getStep = (y) => {
@@ -47,13 +54,15 @@ export default function() {
 	const accountButton = ref(null);
 	const searchInput = ref(null);
 	const itemsList = ref(null);
+	const topContent = ref(null);
 	let started = false;
 	let currentY = 0;
 	let headertAnimation;
-    let buttonAnimation;
-    let inputAnimation;
-    let inputPlaceholderAnimation;
-    let pageContentAnimation;
+	let buttonAnimation;
+	let inputAnimation;
+	let inputPlaceholderAnimation;
+	let pageContentAnimation;
+	let topContentAnimation;
 
 	const handleScroll = (e) => {
 		currentY = e.detail.currentY;
@@ -61,10 +70,11 @@ export default function() {
 		if (!started) {
 			started = true;
 			headertAnimation.progressStart();
-            buttonAnimation.progressStart();
-            inputAnimation.progressStart();
-            inputPlaceholderAnimation.progressStart();
-            pageContentAnimation.progressStart();
+			buttonAnimation.progressStart();
+			inputAnimation.progressStart();
+			inputPlaceholderAnimation.progressStart();
+			pageContentAnimation.progressStart();
+			topContentAnimation.progressStart();
 		}
 
 		headertAnimation.progressStep(getStep(currentY));
@@ -72,22 +82,31 @@ export default function() {
 		inputAnimation.progressStep(getStep(currentY));
 		inputPlaceholderAnimation.progressStep(getStep(currentY));
 		pageContentAnimation.progressStep(getStep(currentY));
+		topContentAnimation.progressStep(getStep(currentY));
 	};
 
 	onMounted(() => {
 		headertAnimation = createHeadertAnimation(header.value.$el);
-        buttonAnimation = createChangeBackgroundAnimation(accountButton.value.$el)
-        inputAnimation = createChangeBackgroundInputAnimation(searchInput.value.$refs.inputRef)
-        inputPlaceholderAnimation = createChangeColorInputAnimation(searchInput.value.$refs.placeholder)
-        pageContentAnimation = createContainerAnimation(itemsList.value)
+		buttonAnimation = createChangeBackgroundAnimation(accountButton.value.$el);
+		topContentAnimation = createTopContentAnimation(
+			topContent.value.$refs.filtersList
+		);
+		inputAnimation = createChangeBackgroundInputAnimation(
+			searchInput.value.$refs.inputRef
+		);
+		inputPlaceholderAnimation = createChangeColorInputAnimation(
+			searchInput.value.$refs.placeholder
+		);
+		pageContentAnimation = createContainerAnimation(itemsList.value);
 	});
 
 	return {
 		pageContent,
 		header,
-        accountButton,
-        searchInput,
+		accountButton,
+		searchInput,
 		handleScroll,
-		itemsList
+		itemsList,
+		topContent,
 	};
 }

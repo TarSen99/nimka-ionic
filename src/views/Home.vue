@@ -1,12 +1,18 @@
 <template>
 	<ion-page v-bind="$attrs" class="ion-page">
-		<ion-header class="header" mode="md" >
+		<Menu />
+
+		<ion-header class="header" mode="md">
 			<ion-toolbar class="toolbar" mode="md" ref="header">
 				<div
 					class="is-flex ion-align-items-center ion-justify-content-between px-4"
 				>
 					<ion-buttons>
-						<ion-button class="user-btn default-icon-btn" ref="accountButton">
+						<ion-button
+							@click="handleMenuClick"
+							class="user-btn default-icon-btn"
+							ref="accountButton"
+						>
 							<ion-icon slot="icon-only" :icon="personOutline"></ion-icon>
 						</ion-button>
 					</ion-buttons>
@@ -39,16 +45,28 @@
 				></ion-refresher-content>
 			</ion-refresher>
 
-			<div ref="pageContent">
-				<Filters :active-filter="activeFilter" @update-filter="updateFilter" />
+			<div ref="pageContent" id="main">
+				<Filters
+					:active-filter="activeFilter"
+					@update-filter="updateFilter"
+					ref="topContent"
+				/>
 
-				<div ref="itemsList" class="ion-padding main-content relative">
+				<div class="ion-padding main-content relative" ref="mainContent">
 					<div class="food-items pt-2">
+						<transition name="fade-slide">
+							<active-order
+								v-if="hasActiveOrder"
+								key="order"
+								class="mb-5"
+								@complete-order="hasActiveOrder = false"
+							/>
+						</transition>
 						<FoodItem
-							v-for="item in items"
+							v-for="(item, index) in items"
 							:key="item"
 							class="mb-3"
-							@click="$router.push('/product/1')"
+							@click="$router.push(`/product/${index + 1}`)"
 						/>
 					</div>
 				</div>
@@ -62,6 +80,7 @@ import FoodItem from '@/components/home/FoodItem.vue';
 import SearchInput from '@/components/common/SearchInput.vue';
 import Filters from '@/components/home/Filters.vue';
 import useHeaderAnimation from '@/composables/home/useHeaderAnimation.js';
+import ActiveOrder from '@/components/common/ActiveOrder.vue';
 
 import {
 	IonContent,
@@ -74,8 +93,10 @@ import {
 	IonRefresher,
 	IonRefresherContent,
 } from '@ionic/vue';
-import { ref } from '@vue/reactivity';
+import { computed, reactive, ref, toRefs } from '@vue/reactivity';
 import { personOutline } from 'ionicons/icons';
+import { useStore } from 'vuex';
+import Menu from '@/components/common/Menu.vue';
 
 export default {
 	name: 'Home',
@@ -92,6 +113,8 @@ export default {
 		IonRefresher,
 		IonRefresherContent,
 		Filters,
+		Menu,
+		ActiveOrder,
 	},
 	setup() {
 		const {
@@ -101,9 +124,31 @@ export default {
 			accountButton,
 			searchInput,
 			itemsList,
+			topContent,
 		} = useHeaderAnimation();
 		const items = ref([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]);
 		const activeFilter = ref(0);
+		const store = useStore();
+		const mainContent = ref(null);
+		const hasActiveOrder = ref(false);
+
+		const menuisOpen = computed(() => store.state.menu.isOpen);
+
+		const handleMenuClick = () => {
+			store.commit('menu/handleMenu', !menuisOpen.value);
+		};
+
+		// const a = reactive({
+		// 	test: 1,
+		// });
+
+		// const aAsRefs = toRefs(a);
+
+		// const { test } = aAsRefs;
+
+		// setTimeout(() => {
+		// 	a.test = 3;
+		// }, 1000);
 
 		const doRefresh = (e) => {
 			setTimeout(() => {
@@ -115,6 +160,10 @@ export default {
 		const updateFilter = (v) => {
 			activeFilter.value = v;
 		};
+
+		setTimeout(() => {
+			hasActiveOrder.value = true;
+		}, 3000);
 
 		return {
 			items,
@@ -128,6 +177,10 @@ export default {
 			handleScroll,
 			searchInput,
 			itemsList,
+			handleMenuClick,
+			topContent,
+			mainContent,
+			hasActiveOrder,
 		};
 	},
 };
@@ -138,7 +191,6 @@ $gradientTopColor: #f17e48;
 $gradientBottomColor: #ec5230;
 
 .header {
-	z-index: 100;
 	&::after {
 		display: none !important;
 	}
@@ -155,8 +207,11 @@ $gradientBottomColor: #ec5230;
 }
 
 .user-btn {
-	--background: rgba(255, 255, 255, 0.2);
-	--color: var(--white);
+	// --background: rgba(255, 255, 255, 0.2);
+	// --color: var(--white);
+	background: rgba(255, 255, 255, 0.2);
+	border-radius: 50%;
+	color: #fff;
 }
 
 ion-content {

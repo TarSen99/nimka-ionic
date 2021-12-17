@@ -1,0 +1,27 @@
+$values: (
+	'pl': 'left',
+	'pt': 'top',
+	'pr': 'right',
+	'pb': 'bottom',
+);
+
+$sizes: 1,2,3,4,5;
+
+@each $className, $dir in $values {
+    @each $size in $sizes {
+        .#{$className}-#{$size} {
+            padding-#{$dir}: $size * 0.2rem;
+        }
+    }
+}
+
+@each $size in $sizes {
+    .p-#{$size} {
+        padding: $size * 0.2rem;
+    }
+
+    .px-#{$size} {
+        padding-left: $size * 0.2rem;
+        padding-right: $size * 0.2rem;
+    }
+}

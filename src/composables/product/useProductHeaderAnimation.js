@@ -3,13 +3,13 @@ import { onMounted, ref } from 'vue';
 
 const createHeadertAnimation = (header) => {
 	return createAnimation()
-		.addElement(header)
+		.addElement(header.$el)
 		.duration(500)
-		.fromTo('background', '', `var(--ion-color-light)`)
-		// .fromTo('box-shadow', '', `0px 2px 4px 2px rgb(0 0 0 / 2%)`)
-        // .afterStyles({
-        //     'box-shadow': '0px 2px 4px 2px rgb(0 0 0 / 2%)'
-        //   })
+		.fromTo('background', '', `var(--ion-color-light)`);
+	// .fromTo('box-shadow', '', `0px 2px 4px 2px rgb(0 0 0 / 2%)`)
+	// .afterStyles({
+	//     'box-shadow': '0px 2px 4px 2px rgb(0 0 0 / 2%)'
+	//   })
 };
 
 const createBackButtonAnimation = (btn) => {

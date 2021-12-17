@@ -1,0 +1,20 @@
+$gradientTopColor: #f17e48;
+$gradientBottomColor: #ec5230;
+$white: var(--white);
+
+@mixin theme-gradient-background {
+	background: linear-gradient(
+		180deg,
+		$gradientTopColor 0.39%,
+		$gradientBottomColor 70.34%
+	);
+}
+
+@mixin default-modal-style {
+	.modal-wrapper {
+		max-height: 95vh;
+		margin-top: auto;
+		border-top-left-radius: 30px;
+		border-top-right-radius: 30px;
+	}
+}

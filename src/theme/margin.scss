@@ -1,0 +1,22 @@
+$values: (
+	'ml': 'left',
+	'mt': 'top',
+	'mr': 'right',
+	'mb': 'bottom',
+);
+
+$sizes: 1,2,3,4,5;
+
+@each $className, $dir in $values {
+    @each $size in $sizes {
+        .#{$className}-#{$size} {
+            margin-#{$dir}: $size * 0.2rem;
+        }
+    }
+}
+
+@each $size in $sizes {
+    .m-#{$size} {
+        margin: $size * 0.2rem;
+    }
+}

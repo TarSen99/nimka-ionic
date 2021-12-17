@@ -8,9 +8,14 @@
 			class="search-input w-100"
 			@input="handleInput"
 			ref="inputRef"
+			:value="search"
 		/>
 
-		<div v-show="showPlaceHolder" class="placeholder absolute w-100 is-flex ion-justify-content-center" ref="placeholder">
+		<div
+			class="placeholder absolute w-100 is-flex ion-justify-content-center"
+			ref="placeholder"
+			:class="{ hide: !showPlaceHolder }"
+		>
 			<ion-icon :icon="searchOutline" class="vertical-middle mr-2"></ion-icon>
 			<span class="vertical-middle">
 				Search for restaurant
@@ -41,6 +46,9 @@ export default {
 
 		const handleInput = (e) => {
 			const value = e.target.value;
+			search.value = value;
+
+			emit('search', search.value);
 
 			if (value) {
 				showPlaceHolder.value = false;
@@ -50,8 +58,6 @@ export default {
 			showPlaceHolder.value = true;
 		};
 
-        emit('search', search.value)
-
 		return {
 			searchOutline,
 			handleInput,
@@ -59,7 +65,7 @@ export default {
 			handleContainerClick,
 			inputRef,
 			showPlaceHolder,
-			placeholder
+			placeholder,
 		};
 	},
 };
@@ -86,5 +92,9 @@ export default {
 	transform: translate(-50%, -50%);
 	font-weight: 400;
 	font-size: 14px;
+
+	&.hide {
+		display: none !important;
+	}
 }
 </style>

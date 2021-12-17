@@ -1,9 +1,8 @@
 <template>
 	<ion-page class="ion-page">
 		<ion-header mode="md" class="header">
-			<ion-toolbar mode="md" class="toolbar">
+			<ion-toolbar ref="header" mode="md" class="toolbar">
 				<div
-					ref="header"
 					class="is-flex ion-justify-content-between w-100 ion-align-items-center px-4 header-content relative"
 				>
 					<ion-buttons>
@@ -53,7 +52,7 @@
 							>
 								<Button
 									shape="round"
-									@click="addProduct(-1)"
+									@click="addProduct(-1, -50)"
 									color="danger"
 									class="action-btn"
 								>
@@ -66,7 +65,7 @@
 
 								<Button
 									shape="round"
-									@click="addProduct(1)"
+									@click="addProduct(1, 50)"
 									color="success"
 									class="action-btn"
 								>
@@ -80,7 +79,7 @@
 								expand="full"
 								shape="round"
 								class="order-btn w-100"
-								@click="handleBuy()"
+								@click="handleBuy(50)"
 							>
 								Order 50hrn
 							</Button>
@@ -92,16 +91,19 @@
 					<div class="ion-padding-start ion-padding-end">
 						<div class="map relative">
 							<GoogleMap
-								api-key=""
+								:api-key="apiKey"
 								style="width: 100%; height: 100%"
 								:center="center"
 								:zoom="15"
 								disable-default-ui
+								:key="apiKey"
 							>
 								<Marker :options="{ position: center }" />
 							</GoogleMap>
 
 							<div
+								v-if="showMapOverlay"
+								@click="showMapOverlay = false"
 								class="overlay absolute w-100 h-100 is-flex ion-justify-content-center ion-align-items-center"
 							>
 								<p class="overlay-text fw-500">
@@ -122,7 +124,7 @@
 			</div>
 
 			<transition name="fade-slide">
-				<Checkout v-if="boughtCount" :count="boughtCount" />
+				<Checkout v-if="boughtCount" :count="boughtCount" :price="totalPrice" />
 			</transition>
 		</ion-content>
 	</ion-page>
@@ -178,14 +180,26 @@ export default {
 
 		const center = { lat: 40.689247, lng: -74.044502 };
 		const boughtCount = ref(0);
+		const totalPrice = ref(0);
+		const showMapOverlay = ref(true);
 
-		const handleBuy = () => {
+		const handleBuy = (price) => {
 			boughtCount.value++;
+			totalPrice.value += price;
 		};
 
-		const addProduct = (v) => {
+		const addProduct = (v, price = 0) => {
+			const expectedValue = boughtCount.value + v;
+
+			if (expectedValue < 0) {
+				return;
+			}
+
 			boughtCount.value += v;
+			totalPrice.value += price;
 		};
+
+		const apiKey = process.env.VUE_APP_GOOGLE_API_KEY;
 
 		return {
 			center,
@@ -198,6 +212,9 @@ export default {
 			boughtCount,
 			handleBuy,
 			addProduct,
+			totalPrice,
+			apiKey,
+			showMapOverlay,
 		};
 	},
 };
@@ -230,11 +247,6 @@ export default {
 	height: 56px;
 }
 
-.back-btn {
-	color: var(--white);
-	--background: rgba(255, 255, 255, 0.2);
-}
-
 .toolbar {
 	box-shadow: 0px 2px 4px 2px rgb(0 0 0 / 2%);
 }
@@ -250,6 +262,7 @@ export default {
 	background-color: rgba(0, 0, 0, 0.4);
 	top: 0;
 	left: 0;
+	border-radius: 30px;
 }
 
 .overlay-text {
@@ -265,24 +278,10 @@ export default {
 	// overflow: hidden;
 }
 
-.action-btn {
-	font-weight: 500;
-	font-size: 20px;
-	--padding-top: 0;
-	--padding-bottom: 0;
-	--padding-end: 0;
-	--padding-start: 0;
-	min-width: 25px;
-	height: 25px;
-
-	// &:first-child {
-	// 	margin-left: 5px;
-	// }
-}
-
-.action-btns {
-	top: 5px;
-	left: 0;
-	transform: translateY(-50%);
+::v-deep(.map) {
+	.gm-style {
+		border-radius: 30px !important;
+		overflow: hidden !important;
+	}
 }
 </style>

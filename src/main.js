@@ -1,6 +1,7 @@
-import { createApp } from 'vue'
-import App from './App.vue'
+import { createApp } from 'vue';
+import App from './App.vue';
 import router from './router';
+import '@/validate/index.js';
 
 import { IonicVue } from '@ionic/vue';
 
@@ -25,11 +26,24 @@ import './theme/variables.css';
 import './theme/font.css';
 import './theme/custom.scss';
 import './theme/transition.scss';
+import './theme/padding.scss';
+import './theme/margin.scss';
+import './theme/bg.scss';
+import './theme/colors.scss';
+import './theme/fz.scss';
+
+import { store } from './store';
+import axios from 'axios';
+import VueAxios from 'vue-axios';
 
 const app = createApp(App)
-  .use(IonicVue)
-  .use(router);
-  
+	.use(IonicVue)
+	.use(router)
+	.use(store)
+	.use(VueAxios, axios);
+
+app.provide('axios', app.config.globalProperties.axios); // provide 'axios'
+
 router.isReady().then(() => {
-  app.mount('#app');
+	app.mount('#app');
 });

@@ -1,5 +1,5 @@
 <template>
-	<IonButton mode="ios" v-bind="props" class="button" @click="$emit('click')">
+	<IonButton mode="ios" v-bind="props" class="button">
 		<slot></slot>
 	</IonButton>
 </template>
@@ -11,7 +11,6 @@ export default {
 	components: {
 		IonButton,
 	},
-	emits: ['click'],
 	setup(props) {
 		return {
 			props,

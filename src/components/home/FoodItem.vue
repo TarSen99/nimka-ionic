@@ -2,13 +2,19 @@
 	<div class="food-item is-flex">
 		<div class="left relative">
 			<div class="absolute time-take is-flex is-flex-direction-column">
-				<Badge color="primary">
+				<Badge v-if="done" color="success">
+					<span>
+						Done
+					</span>
+				</Badge>
+
+				<Badge v-if="!done" color="primary">
 					<span>
 						Take 18:00 - 20:00
 					</span>
 				</Badge>
 
-				<div>
+				<div v-if="!done">
 					<Badge color="light" class="mt-1">
 						<div class="fz-12 distance">
 							<ion-icon
@@ -26,6 +32,7 @@
 
 			<div class="absolute discount-content">
 				<Badge
+					v-if="!done"
 					color="danger"
 					class="border-top-right-no-radius border-bottom-right-no-radius border-bottom-left-no-radius px-5"
 				>
@@ -36,7 +43,7 @@
 			</div>
 
 			<div class="img">
-				<img src="@/assets/images/product.png" alt="">
+				<img src="@/assets/images/product.png" alt="" />
 			</div>
 		</div>
 		<div class="right p-5 w-100">
@@ -63,7 +70,7 @@
 					</span>
 				</Badge>
 
-				<Badge color="primary">
+				<Badge v-if="!done" color="primary">
 					5 left
 				</Badge>
 			</div>
@@ -85,6 +92,12 @@ export default {
 	components: {
 		Badge,
 		IonIcon,
+	},
+	props: {
+		done: {
+			type: Boolean,
+			default: false,
+		},
 	},
 	setup() {
 		return {
