@@ -51,12 +51,12 @@
 				class="w-100 title-container is-flex ion-justify-content-between ion-align-items-center"
 			>
 				<h1 class="title fz-16">
-					Tasty burger
+					{{ title || 'Tasty burger' }}
 				</h1>
 			</div>
 
 			<p class="fz-12 subtitle">
-				Company name
+				{{ subtitle || 'Company name' }}
 			</p>
 
 			<div class="mt-2">
@@ -97,6 +97,14 @@ export default {
 		done: {
 			type: Boolean,
 			default: false,
+		},
+		title: {
+			type: String,
+			default: null,
+		},
+		subtitle: {
+			type: String,
+			default: null,
 		},
 	},
 	setup() {

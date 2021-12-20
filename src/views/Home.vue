@@ -62,6 +62,14 @@
 								@complete-order="hasActiveOrder = false"
 							/>
 						</transition>
+						<transition name="fade-slide">
+							<active-incoming-orders
+								v-if="hasActiveIncomingOrder"
+								key="order-2"
+								class="mb-5"
+								@complete-order="hasActiveIncomingOrder = false"
+							/>
+						</transition>
 						<FoodItem
 							v-for="(item, index) in items"
 							:key="item"
@@ -81,6 +89,7 @@ import SearchInput from '@/components/common/SearchInput.vue';
 import Filters from '@/components/home/Filters.vue';
 import useHeaderAnimation from '@/composables/home/useHeaderAnimation.js';
 import ActiveOrder from '@/components/common/ActiveOrder.vue';
+import ActiveIncomingOrders from '@/components/admin/ActiveIncomingOrders.vue';
 
 import {
 	IonContent,
@@ -115,6 +124,7 @@ export default {
 		Filters,
 		Menu,
 		ActiveOrder,
+		ActiveIncomingOrders,
 	},
 	setup() {
 		const {
@@ -131,6 +141,7 @@ export default {
 		const store = useStore();
 		const mainContent = ref(null);
 		const hasActiveOrder = ref(false);
+		const hasActiveIncomingOrder = ref(false);
 
 		const menuisOpen = computed(() => store.state.menu.isOpen);
 
@@ -165,6 +176,10 @@ export default {
 			hasActiveOrder.value = true;
 		}, 3000);
 
+		setTimeout(() => {
+			hasActiveIncomingOrder.value = true;
+		}, 4000);
+
 		return {
 			items,
 			personOutline,
@@ -181,6 +196,7 @@ export default {
 			topContent,
 			mainContent,
 			hasActiveOrder,
+			hasActiveIncomingOrder,
 		};
 	},
 };

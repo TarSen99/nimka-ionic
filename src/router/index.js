@@ -11,6 +11,7 @@ import Orders from '@/views/Orders.vue';
 import PhoneRegisterPin from '@/views/PhoneRegisterPin.vue';
 import PhoneRegister from '@/views/PhoneRegister.vue';
 import Welcome from '@/views/Welcome.vue';
+import IncomingOrders from '@/views/IncomingOrders.vue';
 import { store } from '@/store';
 
 const routes = [
@@ -77,6 +78,13 @@ const routes = [
 	{
 		path: '/orders',
 		component: Orders,
+		meta: {
+			roles: ['customer'],
+		},
+	},
+	{
+		path: '/incoming-orders',
+		component: IncomingOrders,
 		meta: {
 			roles: ['customer'],
 		},

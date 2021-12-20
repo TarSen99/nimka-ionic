@@ -4,7 +4,6 @@
 			:is-open="isOpen"
 			:swipe-to-close="true"
 			css-class="active-order-modal"
-			:handle="true"
 			mode="ios"
 			@willDismiss="$emit('close')"
 			@willPresent="handlePresentModal"
@@ -163,11 +162,6 @@ export default {
 #canvas {
 	width: 200px !important;
 	height: 200px !important;
-}
-
-.modal-content {
-	overflow: auto;
-	padding-bottom: var(var(--ion-safe-area-top));
 }
 </style>
 

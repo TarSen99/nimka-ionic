@@ -95,10 +95,17 @@ const MENU_ITEMS = [
 		},
 	},
 	{
-		title: 'Orders',
+		title: 'My orders',
 		icon: bagOutline,
 		handler: (router) => {
 			router.push('/orders');
+		},
+	},
+	{
+		title: 'Incoming orders',
+		icon: bagOutline,
+		handler: (router) => {
+			router.push('/incoming-orders');
 		},
 	},
 ];

@@ -16,5 +16,10 @@ $white: var(--white);
 		margin-top: auto;
 		border-top-left-radius: 30px;
 		border-top-right-radius: 30px;
+
+		.modal-content {
+			overflow: auto;
+			padding-bottom: var(var(--ion-safe-area-top));
+		}
 	}
 }

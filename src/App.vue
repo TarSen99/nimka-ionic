@@ -1,5 +1,6 @@
 <template>
 	<ion-app>
+		<notifications-slide />
 		<transition name="fade">
 			<Splash v-if="showSplash" />
 		</transition>
@@ -15,6 +16,7 @@ import { initFirebase } from '@/services/firebase/init.js';
 import { onMounted } from '@vue/runtime-core';
 import Splash from '@/components/common/Splash.vue';
 import spash from '@/composables/common/spash.js';
+import NotificationsSlide from '@/components/common/NotificationsSlide.vue';
 
 export default {
 	name: 'App',
@@ -22,6 +24,7 @@ export default {
 		IonApp,
 		IonRouterOutlet,
 		Splash,
+		NotificationsSlide,
 	},
 	setup() {
 		const store = useStore();
