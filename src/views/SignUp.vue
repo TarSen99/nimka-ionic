@@ -14,12 +14,12 @@
 						@submit.prevent="handleSubmit"
 					>
 						<div>
-							<Input
+							<!-- <Input
 								label="Email"
 								placeholder="Email"
 								v-model="email"
 								required
-							/>
+							/> -->
 							<Input
 								label="Password"
 								placeholder="Password"
@@ -45,8 +45,9 @@
 								shape="round"
 								type="submit"
 								class="custom-btn-light"
+								@click="$router.replace('/')"
 							>
-								Login
+								Submit
 							</Button>
 						</div>
 					</form>

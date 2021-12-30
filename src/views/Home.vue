@@ -53,10 +53,13 @@
 				/>
 
 				<div class="ion-padding main-content relative" ref="mainContent">
+					<!-- <Button @click="shareToInsta">
+						Share to insta
+					</Button> -->
 					<div class="food-items pt-2">
 						<transition name="fade-slide">
 							<active-order
-								v-if="hasActiveOrder"
+								v-if="hasActiveOrder && !isPartner"
 								key="order"
 								class="mb-5"
 								@complete-order="hasActiveOrder = false"
@@ -64,7 +67,7 @@
 						</transition>
 						<transition name="fade-slide">
 							<active-incoming-orders
-								v-if="hasActiveIncomingOrder"
+								v-if="hasActiveIncomingOrder && isPartner"
 								key="order-2"
 								class="mb-5"
 								@complete-order="hasActiveIncomingOrder = false"
@@ -90,6 +93,7 @@ import Filters from '@/components/home/Filters.vue';
 import useHeaderAnimation from '@/composables/home/useHeaderAnimation.js';
 import ActiveOrder from '@/components/common/ActiveOrder.vue';
 import ActiveIncomingOrders from '@/components/admin/ActiveIncomingOrders.vue';
+import Button from '@/components/common/Button.vue';
 
 import {
 	IonContent,
@@ -106,6 +110,9 @@ import { computed, reactive, ref, toRefs } from '@vue/reactivity';
 import { personOutline } from 'ionicons/icons';
 import { useStore } from 'vuex';
 import Menu from '@/components/common/Menu.vue';
+// import { IGStory } from '@ionic-native/cordova-plugin-instagram-stories';
+
+// import {} from 'ionic-native';
 
 export default {
 	name: 'Home',
@@ -125,6 +132,7 @@ export default {
 		Menu,
 		ActiveOrder,
 		ActiveIncomingOrders,
+		Button,
 	},
 	setup() {
 		const {
@@ -148,6 +156,10 @@ export default {
 		const handleMenuClick = () => {
 			store.commit('menu/handleMenu', !menuisOpen.value);
 		};
+
+		const isPartner = computed(() => {
+			return store.state.user.roles.includes('partner');
+		});
 
 		// const a = reactive({
 		// 	test: 1,
@@ -180,6 +192,21 @@ export default {
 			hasActiveIncomingOrder.value = true;
 		}, 4000);
 
+		const shareToInsta = () => {
+			// window.IGStory.shareImageToStory(
+			// 	'https://media.istockphoto.com/photos/european-short-haired-cat-picture-id1072769156?k=20&m=1072769156&s=612x612&w=0&h=k6eFXtE7bpEmR2ns5p3qe_KYh098CVLMz4iKm5OuO6Y='
+			// );
+			// window.IGStory.shareImageToStory({
+			// 	// backgroundTopColor: '#000000',
+			// 	// backgroundBottomColor: '#ffffff',
+			// 	attributionURL: '',
+			// 	stickerImage:
+			// 		'https://developer.apple.com/assets/elements/icons/brandmark/apple-developer-brandmark.svg',
+			// 	backgroundImage:
+			// 		'https://media.istockphoto.com/photos/european-short-haired-cat-picture-id1072769156?k=20&m=1072769156&s=612x612&w=0&h=k6eFXtE7bpEmR2ns5p3qe_KYh098CVLMz4iKm5OuO6Y=',
+			// });
+		};
+
 		return {
 			items,
 			personOutline,
@@ -197,6 +224,8 @@ export default {
 			mainContent,
 			hasActiveOrder,
 			hasActiveIncomingOrder,
+			isPartner,
+			shareToInsta,
 		};
 	},
 };

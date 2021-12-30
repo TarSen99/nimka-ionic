@@ -12,12 +12,12 @@
 			"nativeAuth": false
 		},
 		"SplashScreen": {
-			"launchShowDuration": 0,
+			"launchShowDuration": 2000,
 			"launchAutoHide": true,
 			"backgroundColor": "#ffffffff",
 			"androidSplashResourceName": "splash",
 			"androidScaleType": "CENTER_CROP",
-			"showSpinner": true,
+			"showSpinner": false,
 			"androidSpinnerStyle": "large",
 			"iosSpinnerStyle": "small",
 			"spinnerColor": "#999999",

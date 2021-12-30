@@ -1,9 +1,9 @@
 <template>
 	<ion-app>
-		<notifications-slide />
-		<transition name="fade">
+		<notifications-list v-if="isAuthed" />
+		<!-- <transition name="fade">
 			<Splash v-if="showSplash" />
-		</transition>
+		</transition> -->
 		<ion-router-outlet></ion-router-outlet>
 	</ion-app>
 </template>
@@ -16,7 +16,7 @@ import { initFirebase } from '@/services/firebase/init.js';
 import { onMounted } from '@vue/runtime-core';
 import Splash from '@/components/common/Splash.vue';
 import spash from '@/composables/common/spash.js';
-import NotificationsSlide from '@/components/common/NotificationsSlide.vue';
+import NotificationsList from '@/components/common/NotificationsList.vue';
 
 export default {
 	name: 'App',
@@ -24,12 +24,16 @@ export default {
 		IonApp,
 		IonRouterOutlet,
 		Splash,
-		NotificationsSlide,
+		NotificationsList,
 	},
 	setup() {
 		const store = useStore();
 		const isAuthorized = computed(() => store.state.user.isAuthorizated);
-		const { showSplash } = spash();
+		// const { showSplash } = spash();
+
+		const isAuthed = computed(() => {
+			return store.state.user.isAuthorizated;
+		});
 
 		onMounted(() => {
 			initFirebase();
@@ -37,7 +41,8 @@ export default {
 
 		return {
 			isAuthorized,
-			showSplash,
+			// showSplash,
+			isAuthed,
 		};
 	},
 };

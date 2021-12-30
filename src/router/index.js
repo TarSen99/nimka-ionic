@@ -86,7 +86,7 @@ const routes = [
 		path: '/incoming-orders',
 		component: IncomingOrders,
 		meta: {
-			roles: ['customer'],
+			roles: ['partner'],
 		},
 	},
 	{
@@ -135,7 +135,6 @@ const getUserRoles = () => {
 };
 
 router.beforeEach((to) => {
-	return true;
 	const requiredRoles = to.meta.roles || [];
 	const userRoles = getUserRoles();
 

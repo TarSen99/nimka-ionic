@@ -2,6 +2,9 @@
 
 Add configs from https://github.com/baumblatt/capacitor-firebase-auth
 
+Check permissions for instagram
+https://github.com/gregavola/cordova-plugin-instagram-stories
+
 ## For ios
 
 Add Google service file
@@ -9,6 +12,10 @@ Add Google service file
 .plist
 NSCameraUsageDescription
 We need access to your camera to scan QR codes.
+
+## Info.plist
+
+add "instagram-stories" to URL TYPES => URL SCHEMAS
 
 ## Pods
 

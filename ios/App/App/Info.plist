@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need to find nearest restaurants</string>
 	<key>NSCameraUsageDescription</key>
 	<string>We need access to your camera to scan QR codes.</string>
 	<key>CFBundleDevelopmentRegion</key>
@@ -27,6 +29,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
+				<string>instagram-stories</string>
 				<string>com.googleusercontent.apps.1033159312679-sblh08qlh22upq7pi7f23pfrjjqpjkjv</string>
 			</array>
 		</dict>

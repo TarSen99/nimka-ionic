@@ -123,7 +123,7 @@
 				</Badge>
 				or it will be automatically cancelled.
 			</p>
-			<Button color="success" class="w-100">
+			<Button @click="scan" color="success" class="w-100">
 				Complete order
 			</Button>
 
@@ -141,12 +141,47 @@
 <script>
 import Button from '@/components/common/Button.vue';
 import Badge from '@/components/common/Badge.vue';
+import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner';
+import useAlert from '@/composables/common/alert.js';
+import { modalController } from '@ionic/vue';
 
 export default {
 	name: 'OrderDetails',
 	components: {
 		Button,
 		Badge,
+	},
+	setup(_, { emit }) {
+		const { showMessage } = useAlert();
+
+		const handleClose = () => {
+			modalController.dismiss();
+		};
+
+		const scan = () => {
+			BarcodeScanner.scan()
+				.then((res) => {
+					console.log(res.text);
+					showMessage({
+						color: 'success',
+						//text: `Text is: ${res.text}`,
+						text: `Order is successfully completed`,
+						title: 'Success',
+					});
+
+					// emit('complete-order');
+					handleClose();
+				})
+				.catch(() => {
+					showMessage({
+						text: `Something went wrong. Plase try again`,
+					});
+				});
+		};
+
+		return {
+			scan,
+		};
 	},
 };
 </script>

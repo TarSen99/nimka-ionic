@@ -76,20 +76,15 @@ const MENU_ITEMS = [
 	{
 		title: 'Account',
 		icon: personOutline,
+		roles: ['customer'],
 		handler: (router) => {
 			router.push('/account');
 		},
 	},
-	// {
-	// 	title: 'Card',
-	// 	icon: cardOutline,
-	// 	handler: (router) => {
-	// 		router.push('/account');
-	// 	},
-	// },
 	{
 		title: 'Address',
 		icon: locateOutline,
+		roles: ['customer'],
 		handler: (router) => {
 			router.push('/address');
 		},
@@ -97,12 +92,14 @@ const MENU_ITEMS = [
 	{
 		title: 'My orders',
 		icon: bagOutline,
+		roles: ['customer'],
 		handler: (router) => {
 			router.push('/orders');
 		},
 	},
 	{
 		title: 'Incoming orders',
+		roles: ['partner'],
 		icon: bagOutline,
 		handler: (router) => {
 			router.push('/incoming-orders');
@@ -125,7 +122,16 @@ export default {
 	setup() {
 		const store = useStore();
 		const isOpen = computed(() => store.state.menu.isOpen);
-		const menuItems = ref(MENU_ITEMS);
+		const menuItems = ref([]);
+		const roles = computed(() => {
+			return store.state.user.roles;
+		});
+
+		const filterItems = () => {
+			menuItems.value = MENU_ITEMS.filter((item) => {
+				return item.roles.find((role) => roles.value.includes(role));
+			});
+		};
 
 		watch(isOpen, () => {
 			if (isOpen.value) {
@@ -134,6 +140,17 @@ export default {
 				menuController.close();
 			}
 		});
+
+		watch(
+			() => roles.value,
+			() => {
+				filterItems();
+			},
+			{
+				immediate: true,
+				deep: true,
+			}
+		);
 
 		const handleClose = () => {
 			store.commit('menu/handleMenu', false);

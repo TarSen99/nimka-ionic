@@ -35,7 +35,10 @@
 				/>
 
 				<div class="mt-5">
-					<p v-if="!loading && !results.length" class="ion-text-center fz-14 pl-5 pr-5">
+					<p
+						v-if="!loading && !results.length"
+						class="ion-text-center fz-14 pl-5 pr-5"
+					>
 						Enter your address and select correct one from results
 					</p>
 
@@ -101,13 +104,16 @@ import {
 	toastController,
 	IonSpinner,
 	IonFab,
+	onIonViewWillLeave,
 } from '@ionic/vue';
 import { chevronBackOutline } from 'ionicons/icons';
 import Input from '@/components/common/Input.vue';
 import { ref } from '@vue/reactivity';
 import Button from '@/components/common/Button.vue';
-import { inject, onMounted } from 'vue';
+import { inject, onBeforeUnmount, onMounted } from 'vue';
 import debounce from '@/helpers/debounce.js';
+import { Geolocation } from '@awesome-cordova-plugins/geolocation';
+import { NativeGeocoder } from '@awesome-cordova-plugins/native-geocoder';
 
 export default {
 	name: 'Address',
@@ -135,18 +141,23 @@ export default {
 		const selectedLocation = ref(null);
 		const results = ref([]);
 		const loading = ref(false);
-		let googleService;
-		let geocoder;
+		const googleService = ref(null);
+		const geocoder = ref(null);
 
 		onMounted(() => {
+			// if (window.google && window.google.maps) {
+			// 	return;
+			// }
+
 			const script = document.createElement('script');
 			script.onload = function() {
-				googleService = new window.google.maps.places.AutocompleteService();
-				geocoder = new window.google.maps.Geocoder();
+				googleService.value = new window.google.maps.places.AutocompleteService();
+				geocoder.value = new window.google.maps.Geocoder();
 			};
 			script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.VUE_APP_GOOGLE_API_KEY}&libraries=places`;
 			document.getElementsByTagName('head')[0].appendChild(script);
 		});
+
 		// axios
 		// 	.get(
 		// 		`https://maps.googleapis.com/maps/api/place/autocomplete/json?input=test&key=${process.env.VUE_APP_GOOGLE_API_KEY}`
@@ -156,7 +167,7 @@ export default {
 		// 	});
 
 		const displaySuggestions = debounce((v) => {
-			googleService.getQueryPredictions(
+			googleService.value.getQueryPredictions(
 				{ input: v, ComponentRestrictions: 'ua' },
 				(locations) => {
 					results.value = locations;
@@ -172,7 +183,7 @@ export default {
 		};
 
 		const save = () => {
-			geocoder
+			geocoder.value
 				.geocode({
 					placeId: selectedLocation.value,
 				})
@@ -199,6 +210,26 @@ export default {
 		const handleChangeLocation = (e) => {
 			selectedLocation.value = e.target.value;
 		};
+
+		onMounted(() => {
+			const options = {
+				useLocale: true,
+				maxResults: 5,
+			};
+
+			Geolocation.getCurrentPosition()
+				.then((resp) => {
+					return NativeGeocoder.reverseGeocode(
+						resp.coords.latitude,
+						resp.coords.longitude,
+						options
+					);
+				})
+				.then((result) => console.log(JSON.stringify(result)))
+				.catch((error) => {
+					console.log('Error getting location', error);
+				});
+		});
 
 		return {
 			chevronBackOutline,

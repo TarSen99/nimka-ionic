@@ -22,11 +22,11 @@
 				<div class="is-flex ion-justify-content-center mt-2">
 					<canvas id="canvas"></canvas>
 				</div>
-				<div>
+				<!-- <div>
 					<Button class="mt-2" @click="scan" expand="block">
 						Scan
 					</Button>
-				</div>
+				</div> -->
 
 				<div class="mt-5">
 					<CheckoutItem
@@ -41,6 +41,12 @@
 					<h3 class="ion-text-end fz-18 mt-3">
 						Payment method: <span class="color-primary">Cash</span>
 					</h3>
+
+					<div class="pt-5">
+						<Button class="mt-5" color="danger" @click="scan" expand="block">
+							Cancel order
+						</Button>
+					</div>
 				</div>
 			</div>
 		</ion-modal>
@@ -55,7 +61,7 @@ import CheckoutItem from '@/components/checkout/CheckoutItem.vue';
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner';
 import QRCode from 'qrcode';
 import Button from '@/components/common/Button.vue';
-import alert from '@/composables/common/alert.js';
+import useAlert from '@/composables/common/alert.js';
 
 const DEFAULT_ITEMS = [
 	{
@@ -86,7 +92,7 @@ export default {
 	emits: ['complete-order', 'close'],
 	setup(_, { emit }) {
 		const items = ref(DEFAULT_ITEMS);
-		const { showMessage } = alert();
+		const { showMessage } = useAlert();
 
 		const totalPrice = computed(() => {
 			return items.value.reduce((prev, curr) => {

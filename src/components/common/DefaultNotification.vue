@@ -16,7 +16,7 @@
 				<Button
 					:color="action.color"
 					class="notification-action-btn"
-					@click="handleActionClick(action.handler)"
+					@click="handleActionClick(action.handler, action.type)"
 				>
 					{{ action.title }}
 				</Button>
@@ -52,8 +52,13 @@ export default {
 			default: () => [],
 		},
 	},
-	setup(props) {
-		const handleActionClick = (handler) => {
+	setup(props, { emit }) {
+		const handleActionClick = (handler, type) => {
+			if (type === 'close') {
+				emit('close');
+				return;
+			}
+
 			if (typeof handler !== 'function') {
 				return;
 			}

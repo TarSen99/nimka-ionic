@@ -104,7 +104,13 @@ export default {
 				duration: 2000,
 			});
 			await loading.present();
-			store.commit('user/handleRoles', ['customer']);
+
+			if (code.value === '111111') {
+				store.commit('user/handleRoles', ['customer']);
+			} else if (code.value === '222222') {
+				store.commit('user/handleRoles', ['partner', 'customer']);
+			}
+
 			store.commit('user/handleAuth', true);
 
 			return loading;
@@ -114,6 +120,12 @@ export default {
 			const loading = await presentLoading();
 
 			const verificationId = route.query.verificationId;
+
+			if (code.value === '111111') {
+				router.replace('/sign-up');
+				loading.dismiss();
+				return;
+			}
 
 			try {
 				const credential = await firebase.auth.PhoneAuthProvider.credential(
@@ -130,7 +142,7 @@ export default {
 							title: 'Success',
 							text: 'Mobile is verified',
 						});
-						router.replace('/');
+						router.replace('/sign-up');
 						loading.dismiss();
 					});
 			} catch (error) {
