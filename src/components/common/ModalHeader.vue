@@ -1,7 +1,7 @@
 <template>
 	<div class="is-flex ion-justify-content-between">
 		<div>
-			<p class="fz-20 fw-500 title">
+			<p class="fz-14 fw-400 title">
 				{{ title }}
 			</p>
 			<slot></slot>

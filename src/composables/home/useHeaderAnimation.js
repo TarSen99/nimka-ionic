@@ -30,13 +30,6 @@ const createChangeColorInputAnimation = (el) => {
 		.fromTo('color', '', `var(--white)`);
 };
 
-const createContainerAnimation = (el) => {
-	return createAnimation()
-		.addElement(el)
-		.duration(1000)
-		.fromTo('transform', 'translateY(0px)', `translateY(-100px)`);
-};
-
 const createTopContentAnimation = (el) => {
 	return createAnimation()
 		.addElement(el)
@@ -45,15 +38,14 @@ const createTopContentAnimation = (el) => {
 };
 
 const getStep = (y) => {
-	return Math.min(y / 150, 1);
+	return Math.min(y / 200, 1);
 };
 
-export default function() {
+export default function () {
 	const pageContent = ref(null);
 	const header = ref(null);
 	const accountButton = ref(null);
 	const searchInput = ref(null);
-	const itemsList = ref(null);
 	const topContent = ref(null);
 	let started = false;
 	let currentY = 0;
@@ -61,7 +53,6 @@ export default function() {
 	let buttonAnimation;
 	let inputAnimation;
 	let inputPlaceholderAnimation;
-	let pageContentAnimation;
 	let topContentAnimation;
 
 	const handleScroll = (e) => {
@@ -73,7 +64,6 @@ export default function() {
 			buttonAnimation.progressStart();
 			inputAnimation.progressStart();
 			inputPlaceholderAnimation.progressStart();
-			pageContentAnimation.progressStart();
 			topContentAnimation.progressStart();
 		}
 
@@ -81,7 +71,6 @@ export default function() {
 		buttonAnimation.progressStep(getStep(currentY));
 		inputAnimation.progressStep(getStep(currentY));
 		inputPlaceholderAnimation.progressStep(getStep(currentY));
-		pageContentAnimation.progressStep(getStep(currentY));
 		topContentAnimation.progressStep(getStep(currentY));
 	};
 
@@ -97,7 +86,6 @@ export default function() {
 		inputPlaceholderAnimation = createChangeColorInputAnimation(
 			searchInput.value.$refs.placeholder
 		);
-		pageContentAnimation = createContainerAnimation(itemsList.value);
 	});
 
 	return {
@@ -106,7 +94,6 @@ export default function() {
 		accountButton,
 		searchInput,
 		handleScroll,
-		itemsList,
 		topContent,
 	};
 }

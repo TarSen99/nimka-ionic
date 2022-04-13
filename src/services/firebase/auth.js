@@ -1,29 +1,31 @@
-import {
-	createUserWithEmailAndPassword,
-	onAuthStateChanged,
-	initializeAuth,
-} from 'firebase/auth';
+import firebase from 'firebase/app';
+import 'firebase/auth';
 
-import { app } from '@/services/firebase/init.js';
+export const authUserWithEmail = ({ email, password }) => {
+	firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
-// const auth = initializeAuth(app);
+	return firebase
+		.auth()
+		.signInWithEmailAndPassword(email, password)
+		.then((userCredential) => {
+			return userCredential.user;
+		})
+		.catch((error) => {
+			const errorCode = error.code;
+			const errorMessage = error.message;
 
-// export const authUser = ({ email, password }) => {
-// 	return createUserWithEmailAndPassword(auth, email, password)
-// 		.then((userCredential) => {
-// 			// Signed in
-// 			return userCredential.user;
-// 		})
-// 		.catch((error) => {
-// 			const errorCode = error.code;
-// 			const errorMessage = error.message;
+			return {
+				errorCode,
+				errorMessage,
+			};
+		});
+};
 
-// 			return {
-// 				errorCode,
-// 				errorMessage,
-// 			};
-// 		});
-// };
+export const signOut = async () => {
+	const auth = firebase.auth();
+
+	return auth.signOut();
+};
 
 // export const subscribeForAuthStateChange = function() {
 // 	return new Promise((resolve) => {

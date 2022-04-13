@@ -15,9 +15,7 @@
 						</ion-button>
 					</ion-buttons>
 
-					<ion-title class="ion-text-center">
-						Address
-					</ion-title>
+					<ion-title class="ion-text-center"> Address </ion-title>
 
 					<span class="placeholder"></span>
 				</div>
@@ -26,18 +24,27 @@
 
 		<ion-content :fullscreen="true">
 			<div class="ion-padding">
+				<template v-if="cachedGeolocation && !address">
+					<p class="fz-16 color-dark pb-2 ion-text-center fw-500 italic">
+						Your location is autodetected
+					</p>
+
+					<p class="fz-14 color-grey mt-1 ion-text-center">
+						You can also select your address from list:
+					</p>
+				</template>
 				<Input
 					@update:modelValue="handleAddressInput"
 					placeholder="Enter address here"
 					label="Address"
 					class="account-input"
-					:model-value="address"
+					:model-value="addressSearch"
 				/>
 
-				<div class="mt-5">
+				<div class="mt-1">
 					<p
 						v-if="!loading && !results.length"
-						class="ion-text-center fz-14 pl-5 pr-5"
+						class="ion-text-center fz-14 pl-5 pr-5 mb-1"
 					>
 						Enter your address and select correct one from results
 					</p>
@@ -46,18 +53,24 @@
 						<ion-spinner></ion-spinner>
 					</div>
 
-					<ion-radio-group mode="md" :value="selectedLocation">
+					<ion-radio-group
+						mode="md"
+						:value="selectedLocation"
+						@ionChange="handleChangeLocation"
+					>
+						<ion-item key="auto" class="location-item" lines="none">
+							<ion-radio slot="start" value="auto"></ion-radio>
+
+							<div class="p-2">Autodetection</div>
+						</ion-item>
+
 						<ion-item
 							v-for="location in results"
 							:key="location.place_id"
 							class="location-item"
 							lines="none"
 						>
-							<ion-radio
-								slot="start"
-								:value="location.place_id"
-								@click="handleChangeLocation"
-							></ion-radio>
+							<ion-radio slot="start" :value="location.place_id"></ion-radio>
 
 							<div class="p-2">
 								{{ location.description }}
@@ -77,8 +90,9 @@
 					color="primary"
 					expand="full"
 					shape="round"
-					@click="save"
 					class="save"
+					:disabled="!selectedLocation"
+					@click="save"
 				>
 					Save
 				</Button>
@@ -101,19 +115,20 @@ import {
 	IonItem,
 	IonRadio,
 	IonRadioGroup,
-	toastController,
 	IonSpinner,
 	IonFab,
-	onIonViewWillLeave,
+	onIonViewWillEnter,
 } from '@ionic/vue';
 import { chevronBackOutline } from 'ionicons/icons';
 import Input from '@/components/common/Input.vue';
 import { ref } from '@vue/reactivity';
 import Button from '@/components/common/Button.vue';
-import { inject, onBeforeUnmount, onMounted } from 'vue';
 import debounce from '@/helpers/debounce.js';
-import { Geolocation } from '@awesome-cordova-plugins/geolocation';
-import { NativeGeocoder } from '@awesome-cordova-plugins/native-geocoder';
+import googleService from '@/services/google';
+import useLoader from '@/composables/common/useLoader.js';
+import http from '@/services/http/index.js';
+import useAlert from '@/composables/common/alert.js';
+import useGeolocation from '@/composables/common/geoLocation.js';
 
 export default {
 	name: 'Address',
@@ -136,38 +151,40 @@ export default {
 		IonFab,
 	},
 	setup() {
-		const axios = inject('axios');
+		const userData = ref(null);
 		const address = ref(null);
+		const addressSearch = ref(null);
 		const selectedLocation = ref(null);
 		const results = ref([]);
 		const loading = ref(false);
-		const googleService = ref(null);
-		const geocoder = ref(null);
+		const { showLoader, hideLoader } = useLoader();
+		const { showMessage } = useAlert();
+		const { getCurrentLocation, cachedGeolocation } = useGeolocation();
 
-		onMounted(() => {
-			// if (window.google && window.google.maps) {
-			// 	return;
-			// }
+		const fetchDetails = () => {
+			showLoader();
+			http
+				.get('/users/mine')
+				.then((res) => {
+					const data = res.data.data;
+					userData.value = data;
 
-			const script = document.createElement('script');
-			script.onload = function() {
-				googleService.value = new window.google.maps.places.AutocompleteService();
-				geocoder.value = new window.google.maps.Geocoder();
-			};
-			script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.VUE_APP_GOOGLE_API_KEY}&libraries=places`;
-			document.getElementsByTagName('head')[0].appendChild(script);
-		});
-
-		// axios
-		// 	.get(
-		// 		`https://maps.googleapis.com/maps/api/place/autocomplete/json?input=test&key=${process.env.VUE_APP_GOOGLE_API_KEY}`
-		// 	)
-		// 	.then((response) => {
-		// 		console.log(JSON.stringify(response.data));
-		// 	});
+					address.value = data.address;
+					addressSearch.value = data.address;
+				})
+				.finally(() => {
+					hideLoader();
+				});
+		};
 
 		const displaySuggestions = debounce((v) => {
-			googleService.value.getQueryPredictions(
+			if (!v) {
+				loading.value = false;
+
+				return;
+			}
+
+			googleService.autocomplete.getQueryPredictions(
 				{ input: v, ComponentRestrictions: 'ua' },
 				(locations) => {
 					results.value = locations;
@@ -177,13 +194,60 @@ export default {
 		}, 1000);
 
 		const handleAddressInput = (v) => {
-			address.value = v;
-			displaySuggestions(v);
+			addressSearch.value = v;
 			loading.value = true;
+			displaySuggestions(v);
 		};
 
-		const save = () => {
-			geocoder.value
+		const updateAddress = ({ latitude, longtitude }) => {
+			const addressObj = results.value.find(
+				(el) => el.place_id === selectedLocation.value
+			);
+
+			let addressName = null;
+
+			if (addressObj) {
+				addressName = addressObj.description;
+			}
+
+			http
+				.put('/users/update', {
+					...userData.value,
+					address: addressName,
+					latitude,
+					longtitude,
+				})
+				.then(() => {
+					results.value = [];
+					address.value = addressName;
+					addressSearch.value = addressName;
+					showMessage({
+						color: 'success',
+						text: `Details were successfully updated`,
+						title: 'Success',
+					});
+				})
+				.catch(() => {
+					showMessage({
+						text: `Something went wrong. Please try again`,
+					});
+				})
+				.finally(() => {
+					hideLoader();
+				});
+		};
+
+		const save = async () => {
+			showLoader();
+
+			if (selectedLocation.value === 'auto') {
+				const location = await getCurrentLocation();
+
+				updateAddress(location);
+				return;
+			}
+
+			googleService.geocoder
 				.geocode({
 					placeId: selectedLocation.value,
 				})
@@ -192,18 +256,10 @@ export default {
 					const lat = result.geometry.location.lat();
 					const long = result.geometry.location.lng();
 
-					const toast = toastController.create({
-						header: 'Saved successfully',
-						message: `lat: ${lat} long: ${long}`,
-						position: 'top',
-						color: 'success',
-						duration: 1000,
+					updateAddress({
+						latitude: lat,
+						longtitude: long,
 					});
-
-					return toast;
-				})
-				.then((toast) => {
-					toast.present();
 				});
 		};
 
@@ -211,24 +267,9 @@ export default {
 			selectedLocation.value = e.target.value;
 		};
 
-		onMounted(() => {
-			const options = {
-				useLocale: true,
-				maxResults: 5,
-			};
-
-			Geolocation.getCurrentPosition()
-				.then((resp) => {
-					return NativeGeocoder.reverseGeocode(
-						resp.coords.latitude,
-						resp.coords.longitude,
-						options
-					);
-				})
-				.then((result) => console.log(JSON.stringify(result)))
-				.catch((error) => {
-					console.log('Error getting location', error);
-				});
+		onIonViewWillEnter(() => {
+			fetchDetails();
+			getCurrentLocation();
 		});
 
 		return {
@@ -240,6 +281,8 @@ export default {
 			selectedLocation,
 			handleChangeLocation,
 			loading,
+			cachedGeolocation,
+			addressSearch,
 		};
 	},
 };

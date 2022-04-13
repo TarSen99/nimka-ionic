@@ -7,21 +7,17 @@
 			<div>
 				<ion-icon :icon="bicycleOutline" class="icon"></ion-icon>
 			</div>
-			<p>
-				You have an active order
-			</p>
+			<p>You have an active order</p>
 			<div>
 				Please take it till
 				<br />
 
 				<Badge color="dark" class="px-3 mt-2">
-					<span class="fz-16"> 20:00 </span>
+					<span class="fz-16"> {{ toTime }} </span>
 				</Badge>
 			</div>
 
-			<p class="mt-2 fz-12">
-				Click here for more details
-			</p>
+			<p class="mt-2 fz-12">Click here for more details</p>
 		</div>
 
 		<active-order-modal :is-open="isModalOpen" @close="handleClose" />
@@ -34,6 +30,9 @@ import { bicycleOutline } from 'ionicons/icons';
 import Badge from '@/components/common/Badge.vue';
 import ActiveOrderModal from '@/components/common/ActiveOrderModal.vue';
 import { ref } from '@vue/reactivity';
+import { useStore } from 'vuex';
+import { computed } from '@vue/runtime-core';
+import { getTimeFromIsoDate } from '@/helpers';
 
 export default {
 	name: 'ActiveOrder',
@@ -43,10 +42,22 @@ export default {
 		ActiveOrderModal,
 	},
 	setup() {
+		const store = useStore();
 		const isModalOpen = ref(false);
+		const activeOrder = computed(() => {
+			return store.getters['myOrders/activeOrders'][0];
+		});
+
+		const productData = computed(() => {
+			const orderProducts = activeOrder.value?.OrderProducts || [];
+			return orderProducts[0]?.productData || {};
+		});
+
+		const toTime = computed(() => {
+			return getTimeFromIsoDate(productData.value.takeTimeTo);
+		});
 
 		const handleClose = () => {
-			console.log('close');
 			isModalOpen.value = false;
 		};
 
@@ -54,6 +65,7 @@ export default {
 			isModalOpen,
 			bicycleOutline,
 			handleClose,
+			toTime,
 		};
 	},
 };

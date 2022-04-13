@@ -1,6 +1,6 @@
 <template>
 	<ion-page v-bind="$attrs" class="ion-page">
-		<Menu />
+		<!-- <Menu /> -->
 
 		<ion-header class="header" mode="md">
 			<ion-toolbar class="toolbar" mode="md" ref="header">
@@ -45,43 +45,57 @@
 				></ion-refresher-content>
 			</ion-refresher>
 
-			<div ref="pageContent" id="main">
+			<div ref="pageContent" class="h-100">
 				<Filters
-					:active-filter="activeFilter"
-					@update-filter="updateFilter"
+					:active-filter="orderBy"
+					@update-order="handleUpdateOrderClick($event)"
 					ref="topContent"
 				/>
 
 				<div class="ion-padding main-content relative" ref="mainContent">
-					<!-- <Button @click="shareToInsta">
-						Share to insta
-					</Button> -->
 					<div class="food-items pt-2">
 						<transition name="fade-slide">
 							<active-order
-								v-if="hasActiveOrder && !isPartner"
+								v-if="hasActiveOrderAsCustomer && !isPartner"
 								key="order"
 								class="mb-5"
-								@complete-order="hasActiveOrder = false"
 							/>
 						</transition>
-						<transition name="fade-slide">
+						<list-placeholder v-if="loading && !itemsList.length" />
+						<!-- <transition name="fade-slide">
 							<active-incoming-orders
 								v-if="hasActiveIncomingOrder && isPartner"
 								key="order-2"
 								class="mb-5"
 								@complete-order="hasActiveIncomingOrder = false"
 							/>
-						</transition>
+						</transition> -->
 						<FoodItem
-							v-for="(item, index) in items"
-							:key="item"
+							v-for="product in itemsList"
+							:data="product"
+							:key="product"
 							class="mb-3"
-							@click="$router.push(`/product/${index + 1}`)"
+							@click="$router.push(`/product/${product.id}`)"
 						/>
+						<div class="is-flex ion-justify-content-center pt-2 pb-2">
+							<ion-spinner
+								v-if="loading && itemsList.length"
+								name="bubbles"
+							></ion-spinner>
+						</div>
 					</div>
 				</div>
 			</div>
+
+			<ion-infinite-scroll
+				@ionInfinite="updateList(meta.page + 1, $event)"
+				id="infinite-scroll"
+				threshold="200px"
+				:disabled="isDisabled"
+			>
+				<ion-infinite-scroll-content loading-spinner="bubbles">
+				</ion-infinite-scroll-content>
+			</ion-infinite-scroll>
 		</ion-content>
 	</ion-page>
 </template>
@@ -105,14 +119,19 @@ import {
 	IonButtons,
 	IonRefresher,
 	IonRefresherContent,
+	onIonViewDidEnter,
+	IonInfiniteScroll,
+	IonInfiniteScrollContent,
+	IonSpinner,
 } from '@ionic/vue';
-import { computed, reactive, ref, toRefs } from '@vue/reactivity';
+import { computed, ref } from '@vue/reactivity';
 import { personOutline } from 'ionicons/icons';
 import { useStore } from 'vuex';
-import Menu from '@/components/common/Menu.vue';
-// import { IGStory } from '@ionic-native/cordova-plugin-instagram-stories';
-
-// import {} from 'ionic-native';
+import http from '@/services/http';
+import { onMounted } from '@vue/runtime-core';
+import { ROLES } from '@/config/constants.js';
+import ListPlaceholder from '@/components/common/ListPlaceholder.vue';
+import useInfiniteList from '@/composables/common/infiniteList.js';
 
 export default {
 	name: 'Home',
@@ -129,10 +148,13 @@ export default {
 		IonRefresher,
 		IonRefresherContent,
 		Filters,
-		Menu,
 		ActiveOrder,
 		ActiveIncomingOrders,
 		Button,
+		IonInfiniteScroll,
+		IonInfiniteScrollContent,
+		IonSpinner,
+		ListPlaceholder,
 	},
 	setup() {
 		const {
@@ -141,15 +163,22 @@ export default {
 			handleScroll,
 			accountButton,
 			searchInput,
-			itemsList,
 			topContent,
 		} = useHeaderAnimation();
-		const items = ref([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]);
-		const activeFilter = ref(0);
+
 		const store = useStore();
 		const mainContent = ref(null);
-		const hasActiveOrder = ref(false);
 		const hasActiveIncomingOrder = ref(false);
+
+		const {
+			meta,
+			maxPage,
+			loading,
+			isDisabled,
+			itemsList,
+			orderBy,
+			updateOrder,
+		} = useInfiniteList();
 
 		const menuisOpen = computed(() => store.state.menu.isOpen);
 
@@ -157,75 +186,86 @@ export default {
 			store.commit('menu/handleMenu', !menuisOpen.value);
 		};
 
-		const isPartner = computed(() => {
-			return store.state.user.roles.includes('partner');
+		const hasActiveOrderAsCustomer = computed(() => {
+			return store.getters['myOrders/activeOrders'].length;
 		});
 
-		// const a = reactive({
-		// 	test: 1,
-		// });
+		const isPartner = computed(() => {
+			const role = store.state.user.role;
 
-		// const aAsRefs = toRefs(a);
+			return (
+				role === ROLES.EMPLOYEE ||
+				role === ROLES.MANAGER ||
+				role === ROLES.OWNER
+			);
+		});
 
-		// const { test } = aAsRefs;
+		const updateList = (page = 1, ev) => {
+			loading.value = true;
 
-		// setTimeout(() => {
-		// 	a.test = 3;
-		// }, 1000);
+			return http
+				.get(`/products?page=${page}&orderBy=${orderBy.value}`)
+				.then((res) => {
+					if (page === 1) {
+						itemsList.value = res.data.data;
+					} else {
+						itemsList.value = [...itemsList.value, ...res.data.data];
+					}
+					meta.value = res.data.meta;
+					loading.value = false;
+
+					if (ev) {
+						ev.target.complete();
+					}
+				});
+		};
 
 		const doRefresh = (e) => {
-			setTimeout(() => {
-				console.log('Async operation has ended');
+			updateList().finally(() => {
 				e.target.complete();
-			}, 1000);
+			});
 		};
 
-		const updateFilter = (v) => {
-			activeFilter.value = v;
+		const handleUpdateOrderClick = (order) => {
+			if (orderBy.value === order) {
+				return;
+			}
+
+			updateOrder(order);
+			updateList(1);
 		};
 
-		setTimeout(() => {
-			hasActiveOrder.value = true;
-		}, 3000);
+		onMounted(() => {
+			updateList();
+		});
 
-		setTimeout(() => {
-			hasActiveIncomingOrder.value = true;
-		}, 4000);
-
-		const shareToInsta = () => {
-			// window.IGStory.shareImageToStory(
-			// 	'https://media.istockphoto.com/photos/european-short-haired-cat-picture-id1072769156?k=20&m=1072769156&s=612x612&w=0&h=k6eFXtE7bpEmR2ns5p3qe_KYh098CVLMz4iKm5OuO6Y='
-			// );
-			// window.IGStory.shareImageToStory({
-			// 	// backgroundTopColor: '#000000',
-			// 	// backgroundBottomColor: '#ffffff',
-			// 	attributionURL: '',
-			// 	stickerImage:
-			// 		'https://developer.apple.com/assets/elements/icons/brandmark/apple-developer-brandmark.svg',
-			// 	backgroundImage:
-			// 		'https://media.istockphoto.com/photos/european-short-haired-cat-picture-id1072769156?k=20&m=1072769156&s=612x612&w=0&h=k6eFXtE7bpEmR2ns5p3qe_KYh098CVLMz4iKm5OuO6Y=',
-			// });
-		};
+		onIonViewDidEnter(() => {
+			store.dispatch('myOrders/getMyOrders');
+		});
 
 		return {
-			items,
 			personOutline,
 			doRefresh,
-			activeFilter,
-			updateFilter,
+			updateOrder,
 			pageContent,
 			header,
 			accountButton,
 			handleScroll,
 			searchInput,
-			itemsList,
 			handleMenuClick,
 			topContent,
 			mainContent,
-			hasActiveOrder,
+			hasActiveOrderAsCustomer,
 			hasActiveIncomingOrder,
 			isPartner,
-			shareToInsta,
+			itemsList,
+			isDisabled,
+			updateList,
+			loading,
+			maxPage,
+			meta,
+			orderBy,
+			handleUpdateOrderClick,
 		};
 	},
 };
@@ -277,5 +317,9 @@ ion-content {
 		--color: var(--white) !important;
 		//  background-color: #f17e48 !important;
 	}
+}
+
+.main-content {
+	min-height: 100%;
 }
 </style>

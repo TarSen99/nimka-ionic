@@ -10,9 +10,7 @@
 						@submit.prevent="handleSubmit"
 					>
 						<h2 class="ion-text-center color-white mb-5 fw-400 fz-16">
-							<span class="fz-50">
-								📱
-							</span>
+							<span class="fz-50"> 📱 </span>
 							<br />
 							<br />
 							Please enter your phone number.
@@ -36,6 +34,8 @@
 				</div>
 			</div>
 
+			<span id="sign-in-button"> </span>
+
 			<ion-fab vertical="bottom" horizontal="left" slot="fixed" class="w-100">
 				<div class="ion-padding w-100">
 					<Button
@@ -46,6 +46,16 @@
 					>
 						Continue
 					</Button>
+					<div class="p-3 ion-text-center color-light fw-500 fz-14">
+						<span class="or"> OR </span>
+					</div>
+					<Button
+						color="primary"
+						expand="block"
+						@click="$router.push('/login/email')"
+					>
+						Login for partners
+					</Button>
 				</div>
 			</ion-fab>
 		</IonContent>
@@ -53,16 +63,11 @@
 </template>
 
 <script>
-import { IonContent, IonPage, loadingController, IonFab } from '@ionic/vue';
+import { IonContent, IonPage, IonFab } from '@ionic/vue';
 import Input from '@/components/common/Input.vue';
 import Button from '@/components/common/Button.vue';
 import { computed, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import {
-	cfaSignInPhone,
-	cfaSignInPhoneOnCodeSent,
-} from 'capacitor-firebase-auth';
-import alert from '@/composables/common/alert.js';
+import usePhoneAuth from '@/composables/auth/usePhoneAuth.js';
 
 const PHONE_LENGTH = 9;
 
@@ -76,44 +81,19 @@ export default {
 		IonFab,
 	},
 	setup() {
-		const router = useRouter();
 		const phone = ref(null);
-		const isSubmitting = ref(false);
-		const { showMessage } = alert();
 
-		let loading;
+		const getNumber = () => {
+			return `+380${phone.value}`;
+		};
+
+		const { sendVirificationCode, isSubmitting } = usePhoneAuth({
+			getNumber,
+			phone,
+		});
 
 		const submit = async () => {
-			cfaSignInPhoneOnCodeSent().subscribe((verificationId) => {
-				isSubmitting.value = false;
-				loading.dismiss();
-				router.replace(`/phone-register-pin?verificationId=${verificationId}`);
-			});
-
-			loading = await loadingController.create();
-
-			await loading.present();
-
-			isSubmitting.value = true;
-
-			cfaSignInPhone(`+380${phone.value}`).subscribe({
-				next: (verificationId) => {
-					console.log('at next cfaSignInPhoneOnCodeSent!');
-					console.log(verificationId);
-				},
-				error: (error) => {
-					isSubmitting.value = false;
-					console.log('at error cfaSignInPhoneOnCodeSent!');
-					loading.dismiss();
-
-					console.log(error);
-
-					showMessage({ text: 'Phone number is invalid' });
-				},
-				complete: () => {
-					console.log('at complete cfaSignInPhoneOnCodeSent!');
-				},
-			});
+			sendVirificationCode();
 		};
 
 		const submitDisabled = computed(() => {
@@ -163,6 +143,29 @@ $gradientBottomColor: #ec5230;
 			font-weight: 500;
 			font-size: 20px;
 		}
+	}
+}
+
+.or {
+	display: block;
+	position: relative;
+
+	&::before,
+	&::after {
+		content: '';
+		display: block;
+		position: absolute;
+		left: 30px;
+		width: 30%;
+		height: 1px;
+		background-color: var(--ion-color-light);
+		top: 50%;
+		transform: translateY(-50%);
+	}
+
+	&::after {
+		left: initial;
+		right: 30px;
 	}
 }
 </style>

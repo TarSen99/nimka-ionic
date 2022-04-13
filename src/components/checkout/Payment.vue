@@ -1,27 +1,23 @@
 <template>
 	<div>
-		<h2 class="fz-18">
-			Payment method
-		</h2>
+		<h2 class="fz-18">Payment method</h2>
 
 		<div>
-			<ion-radio-group mode="md" :value="paymentType">
+			<ion-radio-group
+				mode="md"
+				v-model="paymentType"
+				@IonChange="handlePaymentTypeChange"
+			>
 				<ion-item class="radio-item">
 					<ion-label class="is-flex ion-align-items-center">
 						<ion-icon :icon="cardOutline" class="mr-2 icon"></ion-icon>
-						<span class="fw-500">
-							Credit Card
-						</span>
+						<span class="fw-500"> Credit Card </span>
 					</ion-label>
-					<ion-radio
-						slot="start"
-						value="credit"
-						@click="handlePaymentTypeChange"
-					></ion-radio>
+					<ion-radio slot="start" value="card"></ion-radio>
 				</ion-item>
 
 				<transition name="fade-slide">
-					<div v-if="paymentType === 'credit'">
+					<div v-if="paymentType === 'card'">
 						<div class="pb-5">
 							<div class="visa-master pt-2">
 								<img src="@/assets/images/payment.png" alt="" class="img" />
@@ -76,15 +72,9 @@
 				<ion-item class="radio-item">
 					<ion-label class="is-flex ion-align-items-center">
 						<ion-icon :icon="cashOutline" class="mr-2 icon"></ion-icon>
-						<span class="fw-500">
-							Cash
-						</span>
+						<span class="fw-500"> Cash </span>
 					</ion-label>
-					<ion-radio
-						slot="start"
-						value="cash"
-						@click="handlePaymentTypeChange"
-					></ion-radio>
+					<ion-radio slot="start" value="cash"></ion-radio>
 				</ion-item>
 
 				<transition name="fade-slide">
@@ -144,14 +134,8 @@ export default {
 		const saveCardDetails = ref(null);
 
 		const handlePaymentTypeChange = (e) => {
-			const v = e.target.value.trim();
-
-			if (!v) {
-				return;
-			}
-
 			paymentType.value = e.target.value;
-			emit('payment-type', paymentType);
+			emit('payment-type', paymentType.value);
 		};
 
 		watch(allCardDetailsAreValid, (newV) => {
@@ -159,8 +143,8 @@ export default {
 				card: card.value,
 				cvc: cvc.value,
 				date: date.value,
-				valid: newV
-			}
+				valid: newV,
+			};
 
 			emit('update-details', reactive(data));
 		});

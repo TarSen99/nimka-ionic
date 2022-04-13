@@ -10,9 +10,7 @@
 						@submit.prevent="handleSubmit"
 					>
 						<h2 class="ion-text-center color-white mb-5 fw-400 fz-16">
-							<span class="fz-50">
-								📩
-							</span>
+							<span class="fz-50"> 📩 </span>
 							<br />
 							<br />
 
@@ -30,6 +28,7 @@
 										if (el) valuesRefs[index] = el;
 									}
 								"
+								:disabled="pinIsDisabled"
 								:maxlength="1"
 								:max="9"
 								type="number"
@@ -41,14 +40,6 @@
 						</div>
 
 						<span id="sign-in-button"></span>
-
-						<!-- <Button @click="handleSubmit">
-							Submit
-						</Button>
-
-						<Button @click="handleSubmit2">
-							Submit 2
-						</Button> -->
 					</form>
 				</div>
 			</div>
@@ -57,16 +48,10 @@
 </template>
 
 <script>
-import { IonContent, IonPage, loadingController } from '@ionic/vue';
+import { IonContent, IonPage } from '@ionic/vue';
 import Input from '@/components/common/Input.vue';
 import Button from '@/components/common/Button.vue';
-
-import { onMounted, ref } from 'vue';
-import pincode from '@/composables/phone-register/pincode.js';
-import { useRouter, useRoute } from 'vue-router';
-import { useStore } from 'vuex';
-import firebase from 'firebase/app';
-import alert from '@/composables/common/alert.js';
+import verifyPin from '@/composables/auth/verifyPin.js';
 
 export default {
 	name: 'PhoneRegisterPin',
@@ -84,72 +69,12 @@ export default {
 			valuesRefs,
 			handleInputFocus,
 			handlePaste,
-		} = pincode();
-
-		const { showMessage } = alert();
-		const router = useRouter();
-		const route = useRoute();
-		const store = useStore();
-
-		const clearCode = () => {
-			values.forEach((v) => {
-				v.value = null;
-			});
-		};
-
-		const presentLoading = async () => {
-			const loading = await loadingController.create({
-				cssClass: 'my-custom-class',
-				message: 'Please wait...',
-				duration: 2000,
-			});
-			await loading.present();
-
-			if (code.value === '111111') {
-				store.commit('user/handleRoles', ['customer']);
-			} else if (code.value === '222222') {
-				store.commit('user/handleRoles', ['partner', 'customer']);
-			}
-
-			store.commit('user/handleAuth', true);
-
-			return loading;
-		};
+			verify,
+			pinIsDisabled,
+		} = verifyPin();
 
 		const submit = async () => {
-			const loading = await presentLoading();
-
-			const verificationId = route.query.verificationId;
-
-			if (code.value === '111111') {
-				router.replace('/sign-up');
-				loading.dismiss();
-				return;
-			}
-
-			try {
-				const credential = await firebase.auth.PhoneAuthProvider.credential(
-					verificationId,
-					code.value
-				);
-
-				await firebase
-					.auth()
-					.signInWithCredential(credential)
-					.then((auth) => {
-						showMessage({
-							color: 'success',
-							title: 'Success',
-							text: 'Mobile is verified',
-						});
-						router.replace('/sign-up');
-						loading.dismiss();
-					});
-			} catch (error) {
-				loading.dismiss();
-				clearCode();
-				showMessage({ text: 'SMS code is not valid' });
-			}
+			verify();
 		};
 
 		const handleValueUpdate = (v, index) => {
@@ -182,6 +107,7 @@ export default {
 			handleValueUpdate,
 			handleInputFocus,
 			handlePaste,
+			pinIsDisabled,
 		};
 	},
 };

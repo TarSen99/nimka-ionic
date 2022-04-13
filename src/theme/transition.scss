@@ -29,3 +29,25 @@
 	opacity: 0;
 	transform: translateY(-100px);
 }
+
+.image-left-enter-active,
+.image-left-leave-active {
+	transition: all 0.2s ease;
+}
+
+.image-left-enter-from,
+.image-left-leave-to {
+	opacity: 0;
+	transform: translateX(-100%);
+}
+
+.slide-y-enter-active,
+.slide-y-leave-active {
+	transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.slide-y-enter-from,
+.slide-y-leave-to {
+	opacity: 0;
+	transform: translateY(-20px);
+}

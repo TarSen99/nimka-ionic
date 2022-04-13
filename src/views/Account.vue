@@ -15,9 +15,7 @@
 						</ion-button>
 					</ion-buttons>
 
-					<ion-title class="ion-text-center">
-						Account
-					</ion-title>
+					<ion-title class="ion-text-center"> Account </ion-title>
 
 					<span class="placeholder"></span>
 				</div>
@@ -40,7 +38,14 @@
 					disabled
 				/>
 
-				<Button color="primary" expand="full" shape="round" @click="save" class="save">
+				<Button
+					color="primary"
+					expand="full"
+					shape="round"
+					class="save"
+					:disabled="!name"
+					@click="save"
+				>
 					Save
 				</Button>
 			</div>
@@ -58,11 +63,15 @@ import {
 	IonButtons,
 	IonTitle,
 	IonIcon,
+	onIonViewWillEnter,
 } from '@ionic/vue';
 import { chevronBackOutline } from 'ionicons/icons';
 import Input from '@/components/common/Input.vue';
 import { ref } from '@vue/reactivity';
 import Button from '@/components/common/Button.vue';
+import useLoader from '@/composables/common/useLoader.js';
+import http from '@/services/http/index.js';
+import useAlert from '@/composables/common/alert.js';
 
 export default {
 	name: 'Account',
@@ -80,8 +89,52 @@ export default {
 	},
 	setup() {
 		const name = ref(null);
-		const mobile = ref('0969045349');
-		const save = () => {};
+		const mobile = ref(null);
+		const { showLoader, hideLoader } = useLoader();
+		const { showMessage } = useAlert();
+
+		const save = () => {
+			showLoader();
+
+			http
+				.put('/users/update', {
+					name: name.value,
+				})
+				.then(() => {
+					showMessage({
+						color: 'success',
+						text: `Details were successfully updated`,
+						title: 'Success',
+					});
+				})
+				.catch(() => {
+					showMessage({
+						text: `Something went wrong. Please try again`,
+					});
+				})
+				.finally(() => {
+					hideLoader();
+				});
+		};
+
+		const fetchDetails = () => {
+			showLoader();
+			http
+				.get('/users/mine')
+				.then((res) => {
+					const data = res.data.data;
+
+					name.value = data.name;
+					mobile.value = data.phone;
+				})
+				.finally(() => {
+					hideLoader();
+				});
+		};
+
+		onIonViewWillEnter(() => {
+			fetchDetails();
+		});
 
 		return {
 			chevronBackOutline,
@@ -111,6 +164,6 @@ export default {
 }
 
 .save {
-    margin-top: 50px;
+	margin-top: 50px;
 }
 </style>

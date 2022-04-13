@@ -6,6 +6,7 @@ module.exports = {
 	extends: ['plugin:vue/vue3-essential', 'eslint:recommended'],
 	parserOptions: {
 		ecmaVersion: 2020,
+		parser: '@babel/eslint-parser',
 	},
 	rules: {
 		'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
@@ -15,6 +16,7 @@ module.exports = {
 		'no-unused-components': 'off',
 		'vue/no-unused-components': 'off',
 		'no-unreachable': 'warn',
+		'vue/multi-word-component-names': 'off',
 	},
 	overrides: [
 		{

@@ -6,6 +6,7 @@
 			content-id="main"
 			type="overlay"
 			mode="md"
+			:swipe-gesture="false"
 		>
 			<!-- <ion-header>
 				<ion-toolbar color="danger">
@@ -23,9 +24,7 @@
 					</div>
 
 					<div>
-						<h2 class="fz-18 ml-4 fw-600">
-							Username
-						</h2>
+						<h2 class="fz-18 ml-4 fw-600">Username</h2>
 					</div>
 
 					<ion-list class="mt-5">
@@ -34,11 +33,12 @@
 							:key="index"
 							class="menu-item"
 							lines="none"
-							@click="item.handler($router)"
+							@click="runHandler(item.handler, $router)"
+							:class="{ danger: item.danger }"
 						>
 							<ion-icon
 								:icon="item.icon"
-								class="fz-20 mr-5 color-dark"
+								class="fz-20 mr-5 color-dark icon"
 							></ion-icon>
 
 							<span class="fw-500"> {{ item.title }}</span></ion-item
@@ -70,9 +70,27 @@ import {
 	cardOutline,
 	locateOutline,
 	bagOutline,
+	addOutline,
 } from 'ionicons/icons';
 
 const MENU_ITEMS = [
+	{
+		title: 'Post new product',
+		roles: ['partner'],
+		icon: addOutline,
+		danger: true,
+		handler: (router) => {
+			router.push('/new-product');
+		},
+	},
+	{
+		title: 'My products',
+		roles: ['partner'],
+		icon: bagOutline,
+		handler: (router) => {
+			router.push('/my-products');
+		},
+	},
 	{
 		title: 'Account',
 		icon: personOutline,
@@ -123,13 +141,13 @@ export default {
 		const store = useStore();
 		const isOpen = computed(() => store.state.menu.isOpen);
 		const menuItems = ref([]);
-		const roles = computed(() => {
-			return store.state.user.roles;
+		const role = computed(() => {
+			return store.state.user.role;
 		});
 
 		const filterItems = () => {
 			menuItems.value = MENU_ITEMS.filter((item) => {
-				return item.roles.find((role) => roles.value.includes(role));
+				return item.roles.find((cr) => cr === role.value);
 			});
 		};
 
@@ -142,7 +160,7 @@ export default {
 		});
 
 		watch(
-			() => roles.value,
+			() => role.value,
 			() => {
 				filterItems();
 			},
@@ -156,11 +174,17 @@ export default {
 			store.commit('menu/handleMenu', false);
 		};
 
+		const runHandler = (handler, router) => {
+			menuController.close();
+			handler(router);
+		};
+
 		return {
 			isOpen,
 			handleClose,
 			personCircleOutline,
 			menuItems,
+			runHandler,
 		};
 	},
 };
@@ -227,5 +251,20 @@ export default {
 
 ion-list {
 	padding: 0;
+}
+
+.danger {
+	--background: linear-gradient(
+		180deg,
+		#f17e48 0.39%,
+		#ec5230 70.34%
+	) !important;
+	color: var(--white) !important;
+	font-weight: 600;
+
+	.icon {
+		color: var(--white) !important;
+		--ionicon-stroke-width: 60px;
+	}
 }
 </style>

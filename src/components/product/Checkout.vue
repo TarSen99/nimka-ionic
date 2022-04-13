@@ -3,7 +3,7 @@
 		class="checkout-section ion-padding-start ion-padding-end ion-padding-top"
 	>
 		<Button color="primary" expand="full" shape="round" @click="handleClick">
-			Checkout {{ count }} items ({{ price }}hrn.)
+			Checkout ({{ price }} UAH)
 		</Button>
 	</div>
 </template>
@@ -19,12 +19,8 @@ export default {
 		Button,
 	},
 	props: {
-		count: {
-			type: Number,
-			default: 0,
-		},
 		price: {
-			type: Number,
+			type: [Number, String],
 			default: 0,
 		},
 	},

@@ -38,7 +38,7 @@ const getStep = (y) => {
 	return Math.min(y / 100, 1);
 };
 
-export default function() {
+export default function () {
 	const header = ref(null);
 	const backButton = ref(null);
 	const tag = ref(null);

@@ -16,9 +16,7 @@
 						</ion-button>
 					</ion-buttons>
 
-					<ion-title class="ion-text-center">
-						Checkout
-					</ion-title>
+					<ion-title class="ion-text-center"> Checkout </ion-title>
 
 					<span class="right-notch"></span>
 				</div>
@@ -27,18 +25,24 @@
 
 		<ion-content :fullscreen="true" class="ion-padding">
 			<div class="content">
-				<h2 class="mt-2 mb-2">
-					Order from Best company
-				</h2>
+				<div class="is-flex ion-align-items-center mb-2">
+					<div class="logo mr-2">
+						<img :src="company.logo" alt="" />
+					</div>
+					<h2 class="mt-2 mb-2 color-dark fz-18">
+						Order from {{ company.name }}
+					</h2>
+				</div>
 				<CheckoutItem
-					v-for="(item, index) in items"
+					v-for="(item, index) in products"
 					:key="index"
 					:product="item"
-					@change-count="handleChangeCount($event, index)"
+					:total-products-count="products.length"
+					@change-count="handleChangeCount($event, item)"
 					class="mb-2"
 				></CheckoutItem>
 
-				<h2 class="ion-text-end fz-20 mt-3">Total: {{ totalPrice }}hrn.</h2>
+				<h2 class="ion-text-end fz-20 mt-3">Total: {{ totalPrice }} UAH</h2>
 
 				<Payment
 					class="mt-5 pt-5"
@@ -54,9 +58,9 @@
 						expand="block"
 						class="order"
 						@click="handleOrderClick"
-						:disabled="orderBtnIsDisabled"
+						:disabled="orderBtnIsDisabled || isLoading"
 					>
-						Order {{ totalPrice }}hrn.
+						Order {{ totalPrice }} UAH
 					</Button>
 				</div>
 			</ion-fab>
@@ -81,18 +85,10 @@ import CheckoutItem from '@/components/checkout/CheckoutItem.vue';
 import Payment from '@/components/checkout/Payment.vue';
 import { computed, ref } from '@vue/reactivity';
 import Button from '@/components/common/Button.vue';
-import { useRouter } from 'vue-router'
-
-const DEFAULT_ITEMS = [
-	{
-		price: 50,
-		count: 2,
-	},
-	{
-		price: 100,
-		count: 1,
-	},
-];
+import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
+import http from '@/services/http';
+import useLoader from '@/composables/common/useLoader.js';
 
 export default {
 	name: 'Checkout',
@@ -111,30 +107,55 @@ export default {
 		IonFab,
 	},
 	setup() {
-		const router = useRouter()
-		const items = ref(DEFAULT_ITEMS);
+		const router = useRouter();
+		const store = useStore();
+		const { showLoader, hideLoader, isLoading } = useLoader();
+
+		const items = ref([]);
 		const paymentType = ref(null);
 		const cardDetails = ref({});
 
-		const totalPrice = computed(() => {
-			return items.value.reduce((prev, curr) => {
-				return curr.count * curr.price + prev;
-			}, 0);
+		const products = computed(() => {
+			return store.state.products.products;
 		});
 
-		const handleChangeCount = (value, index) => {
-			const product = items.value[index];
-			const newV = product.count + value;
+		const placeId = computed(() => {
+			return products.value[0]?.PlaceId;
+		});
 
-			if (newV < 0) {
+		const totalPrice = computed(() => {
+			return store.getters['products/totalPrice'];
+		});
+
+		const clearProducts = () => {
+			store.commit('products/clear');
+		};
+
+		const addProduct = (product) => {
+			store.commit('products/addProduct', product);
+		};
+
+		const removeProduct = (product) => {
+			store.commit('products/removeProduct', product);
+		};
+
+		const company = computed(() => {
+			const product = products.value[0];
+
+			return product?.Company || {};
+		});
+
+		const handleChangeCount = (type, product) => {
+			if (type === 1) {
+				addProduct(product);
 				return;
 			}
 
-			items.value[index].count = newV;
+			removeProduct(product);
 		};
 
 		const handlePaymentTypeChange = (v) => {
-			paymentType.value = v.value;
+			paymentType.value = v;
 		};
 
 		const handleDetailsChange = (v) => {
@@ -150,7 +171,7 @@ export default {
 				return true;
 			}
 
-			if (paymentType.value === 'credit' && !cardDetails.value.valid) {
+			if (paymentType.value === 'card' && !cardDetails.value.valid) {
 				return true;
 			}
 
@@ -158,13 +179,33 @@ export default {
 		});
 
 		const handleOrderClick = () => {
-			if(paymentType.value === 'credit') {
-				router.push('/success?type=credit')
-				return
-			}
+			const data = {
+				paymentMethod: paymentType.value,
+				placeId: placeId.value,
+				products: products.value.map((p) => {
+					return {
+						id: p.id,
+						quantity: p.count,
+					};
+				}),
+			};
 
-			router.push('/success?type=cash')
-		}
+			showLoader();
+			http
+				.post('/orders/create', data)
+				.then(() => {
+					clearProducts();
+					if (paymentType.value === 'card') {
+						router.push('/success?type=credit');
+						return;
+					}
+
+					router.push('/success?type=cash');
+				})
+				.finally(() => {
+					hideLoader();
+				});
+		};
 
 		return {
 			chevronBackOutline,
@@ -176,7 +217,10 @@ export default {
 			handleDetailsChange,
 			cardDetails,
 			orderBtnIsDisabled,
-			handleOrderClick
+			handleOrderClick,
+			products,
+			company,
+			isLoading,
 		};
 	},
 };
@@ -192,8 +236,16 @@ export default {
 	min-width: 40px;
 }
 
-.order-container {
-	//	padding-top: 50px;
+.logo {
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	overflow: hidden;
+
+	img {
+		width: 100%;
+		height: 100%;
+	}
 }
 
 .content {

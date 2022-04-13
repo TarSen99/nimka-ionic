@@ -13,15 +13,13 @@
 				</div>
 				<h2 class="ion-text-center color-success">{{ title }}</h2>
 				<p class="ion-text-center fz-16 fw-500 mt-3">
-					<span>
-						You can pick your order till to
-					</span>
+					<span> You can pick your order till to </span>
 					<Badge color="primary" class="fz-16">20:00</Badge>
 				</p>
 
 				<ion-fab vertical="bottom" horizontal="left" slot="fixed" class="w-100">
 					<div class="w-100 ion-padding">
-						<Button class="mt-5" expand="block" @click="$router.push('/')">
+						<Button class="mt-5" expand="block" @click="$router.replace('/')">
 							Home
 						</Button>
 					</div>

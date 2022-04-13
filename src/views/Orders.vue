@@ -15,9 +15,7 @@
 						</ion-button>
 					</ion-buttons>
 
-					<ion-title class="ion-text-center">
-						My orders
-					</ion-title>
+					<ion-title class="ion-text-center"> My orders </ion-title>
 
 					<span class="placeholder"></span>
 				</div>
@@ -26,9 +24,20 @@
 
 		<ion-content :fullscreen="true">
 			<div class="ion-padding">
-				<FoodItem v-for="item in orders" :key="item" class="mb-3" done />
+				<OrderItem
+					v-for="item in orders"
+					:key="item.key"
+					class="mb-3"
+					:data="item"
+					@click="openModal(item)"
+				/>
 			</div>
 		</ion-content>
+		<active-order-modal
+			:is-open="isModalOpened"
+			@close="onHideModal"
+			:selected-order="selectedOrder"
+		/>
 	</ion-page>
 </template>
 
@@ -42,10 +51,14 @@ import {
 	IonButtons,
 	IonTitle,
 	IonIcon,
+	onIonViewWillEnter,
 } from '@ionic/vue';
 import { chevronBackOutline } from 'ionicons/icons';
-import { ref } from '@vue/reactivity';
-import FoodItem from '@/components/home/FoodItem.vue';
+import OrderItem from '@/components/orders/OrderItem.vue';
+import { useStore } from 'vuex';
+import { computed, ref } from '@vue/runtime-core';
+import ActiveOrderModal from '@/components/common/ActiveOrderModal.vue';
+import useLoader from '@/composables/common/useLoader.js';
 
 export default {
 	name: 'Orders',
@@ -58,14 +71,43 @@ export default {
 		IonButtons,
 		IonTitle,
 		IonIcon,
-		FoodItem,
+		OrderItem,
+		ActiveOrderModal,
 	},
 	setup() {
-		const orders = ref([1, 2, 3, 4, 5, 6]);
+		const store = useStore();
+		const isModalOpened = ref(false);
+		const selectedOrder = ref(null);
+		const { showLoader, hideLoader } = useLoader();
+
+		onIonViewWillEnter(() => {
+			showLoader();
+			store.dispatch('myOrders/getMyOrders').finally(() => {
+				hideLoader();
+			});
+		});
+
+		const orders = computed(() => {
+			return store.state.myOrders.orders;
+		});
+
+		const openModal = (data) => {
+			selectedOrder.value = data;
+			isModalOpened.value = true;
+		};
+
+		const onHideModal = () => {
+			selectedOrder.value = null;
+			isModalOpened.value = false;
+		};
 
 		return {
 			orders,
 			chevronBackOutline,
+			isModalOpened,
+			openModal,
+			onHideModal,
+			selectedOrder,
 		};
 	},
 };

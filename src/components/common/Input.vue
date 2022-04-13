@@ -3,7 +3,8 @@
 		<ion-label v-if="label" position="stacked" mode="ios" class="label">{{
 			label
 		}}</ion-label>
-		<ion-input
+		<component
+			:is="inputComponent"
 			mode="ios"
 			class="input-el"
 			:placeholder="placeholder"
@@ -15,23 +16,26 @@
 			:value="modelValue"
 			:type="type"
 			:required="required"
-			:class="{ danger: error }"
+			:class="{ danger: error, textarea }"
 			:maxlength="maxlength"
 			:max="max"
 			:inputmode="inputmode"
 			:pattern="pattern"
 			ref="input"
-		></ion-input>
+		></component>
 
-		<p v-if="error" class="color-danger pt-1 fz-12">
-			{{ error }}
-		</p>
+		<transition name="slide-y">
+			<p v-if="error" class="error color-danger pt-1 pl-2 fz-14">
+				{{ error }}
+			</p>
+		</transition>
 	</ion-item>
 </template>
 
 <script>
-import { IonLabel, IonInput, IonItem } from '@ionic/vue';
-import { ref } from '@vue/reactivity';
+import { IonLabel, IonInput, IonItem, IonTextarea } from '@ionic/vue';
+import { ref, toRefs } from '@vue/reactivity';
+import { computed } from '@vue/runtime-core';
 
 export default {
 	name: 'Input',
@@ -39,6 +43,7 @@ export default {
 		IonLabel,
 		IonInput,
 		IonItem,
+		IonTextarea,
 	},
 	props: {
 		type: {
@@ -81,10 +86,15 @@ export default {
 			type: Boolean,
 			default: false,
 		},
+		textarea: {
+			type: Boolean,
+			default: false,
+		},
 	},
 	emits: ['update:modelValue', 'blur', 'focus', 'keydown', 'keyup'],
 	setup(props, { emit }) {
 		let innerValue = ref('');
+		const { textarea } = toRefs(props);
 
 		const handleInput = (e) => {
 			emit('update:modelValue', e.target.value);
@@ -109,11 +119,20 @@ export default {
 			emit('keyup', e);
 		};
 
+		const inputComponent = computed(() => {
+			if (textarea.value) {
+				return 'textarea';
+			}
+
+			return 'ion-input';
+		});
+
 		return {
 			handleInput,
 			handleBlur,
 			handleKeydown,
 			handleKeyUp,
+			inputComponent,
 		};
 	},
 };
@@ -139,6 +158,21 @@ export default {
 	input {
 		height: 50px;
 		padding: 0 22px;
+	}
+}
+
+.textarea {
+	padding: 10px 22px !important;
+	height: auto;
+	background: var(--grey);
+	width: 100%;
+	border: none;
+	resize: none;
+	height: 100px;
+	outline: none;
+
+	&::placeholder {
+		color: var(--ion-color-medium);
 	}
 }
 

@@ -1,6 +1,6 @@
 import { computed, onBeforeUpdate, reactive, ref } from 'vue';
 
-export default function() {
+export default function () {
 	const values = reactive([
 		{
 			value: null,

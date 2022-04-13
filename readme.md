@@ -13,6 +13,12 @@ Add Google service file
 NSCameraUsageDescription
 We need access to your camera to scan QR codes.
 
+Privacy - Photo Library Usage Description
+We need access to photos to add images for product description
+
+Privacy - Photo Library Additions Usage Description
+We need access to camera to add images for product description
+
 ## Info.plist
 
 add "instagram-stories" to URL TYPES => URL SCHEMAS

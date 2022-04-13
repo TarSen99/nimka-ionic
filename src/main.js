@@ -2,6 +2,7 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
 import '@/validate/index.js';
+import { initFirebase } from '@/services/firebase/init.js';
 
 import { IonicVue } from '@ionic/vue';
 
@@ -32,18 +33,19 @@ import './theme/bg.scss';
 import './theme/colors.scss';
 import './theme/fz.scss';
 
+import 'swiper/css';
+
+import 'swiper/css/pagination';
+
 import { store } from './store';
-import axios from 'axios';
-import VueAxios from 'vue-axios';
+import { defineCustomElements } from '@ionic/pwa-elements/loader';
 
-const app = createApp(App)
-	.use(IonicVue)
-	.use(router)
-	.use(store)
-	.use(VueAxios, axios);
+initFirebase();
 
-app.provide('axios', app.config.globalProperties.axios); // provide 'axios'
+const app = createApp(App).use(IonicVue).use(router).use(store);
 
 router.isReady().then(() => {
 	app.mount('#app');
+
+	defineCustomElements(window);
 });

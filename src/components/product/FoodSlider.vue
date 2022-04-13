@@ -1,25 +1,26 @@
 <template>
 	<div>
 		<swiper :slides-per-view="2.5" :space-between="5" ref="slider" :width="375">
-			<swiper-slide v-for="slide in items" :key="slide">
+			<swiper-slide
+				v-for="product in products"
+				:key="product.id"
+				@click="$router.replace(`/product/${product.id}`)"
+				class="swiper-el"
+			>
 				<div class="slide-element relative overflow-hidden">
 					<Badge color="danger" class="p-1 price absolute">
-						<span class="fz-12">
-							50hrn.
-						</span>
+						<span class="fz-12"> {{ product.priceWithDiscount }} UAH </span>
 					</Badge>
 
-					<div class="img">
-						<img src="@/assets/images/product.png" alt="" />
+					<div class="img is-flex ion-justify-content-center">
+						<img :src="product.Images[0] && product.Images[0].url" alt="" />
 					</div>
 
 					<div class="descr p-2">
-						<h2 class="fz-14">
-							Fresh burger
-						</h2>
-						<p class="fz-14">
-							Take it...
-						</p>
+						<h2 class="fz-14">{{ product.title }}</h2>
+						<div class="view-description view-description-2">
+							<p class="fz-14">{{ product.description }}</p>
+						</div>
 					</div>
 				</div>
 			</swiper-slide>
@@ -29,21 +30,21 @@
 
 <script>
 import { Swiper, SwiperSlide } from 'swiper/vue';
-import 'swiper/swiper-bundle.css';
 import Badge from '@/components/common/Badge.vue';
 
 import { ref } from '@vue/reactivity';
-import { onMounted } from '@vue/runtime-core';
 export default {
 	name: 'FoodSlider',
 	components: { Swiper, SwiperSlide, Badge },
+	props: {
+		products: {
+			type: Array,
+			default: () => [],
+		},
+	},
 	setup(_) {
-		const items = ref([1, 2, 3, 4]);
+		const items = ref([]);
 		const slider = ref(null);
-
-		// onMounted(() => {
-		// 	slider.value.init();
-		// });
 
 		return {
 			items,
@@ -58,15 +59,21 @@ export default {
 	width: 100%;
 	height: 100%;
 	border-radius: 10px;
+	padding: 5px;
+	background-color: var(--white);
+	height: 230px;
 
 	.img {
 		width: 100%;
 		height: 140px;
+		border-radius: 10px;
+		overflow: hidden;
 	}
 
 	img {
+		height: 100%;
 		width: auto;
-        min-height: 100%;
+		max-width: initial;
 	}
 }
 
@@ -77,5 +84,9 @@ export default {
 
 .descr {
 	background-color: var(--white);
+}
+
+.view-description {
+	height: 37px;
 }
 </style>

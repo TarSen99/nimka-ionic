@@ -1,119 +1,131 @@
 <template>
 	<div>
-		<table class="w-100">
-			<tr>
-				<td>
-					Product name:
-				</td>
+		<div class="w-100">
+			<div class="item">
+				<div class="field-title">Order created at:</div>
 
-				<td>
-					<span class="fw-500 color-primary">Best burger</span>
-				</td>
-			</tr>
+				<div>
+					<span class="field-value">26.10.20 18:50</span>
+				</div>
+			</div>
 
-			<tr>
-				<td>
-					Order created at:
-				</td>
+			<div class="item">
+				<div class="field-title">QUAHity:</div>
 
-				<td>
-					<span class="fw-500 color-primary">26.10.20 18:50</span>
-				</td>
-			</tr>
+				<div>
+					<span class="field-value">2</span>
+				</div>
+			</div>
 
-			<tr>
-				<td>
-					Quanity:
-				</td>
+			<div class="item">
+				<div class="field-title">Price per one:</div>
 
-				<td>
-					<span class="fw-500 color-primary">2</span>
-				</td>
-			</tr>
+				<div>
+					<span class="field-value">50 UAH</span>
+				</div>
+			</div>
 
-			<tr>
-				<td>
-					Price per one:
-				</td>
+			<div class="item">
+				<div class="field-title">Payment method:</div>
 
-				<td>
-					<span class="fw-500 color-primary">50 UAN</span>
-				</td>
-			</tr>
+				<div>
+					<span class="field-value">Credit card</span>
+				</div>
+			</div>
 
-			<tr>
-				<td>
-					Total price:
-				</td>
+			<div class="item">
+				<div class="field-title">Status:</div>
 
-				<td>
-					<span class="fw-500 color-primary">100 UAN</span>
-				</td>
-			</tr>
+				<div>
+					<span class="field-value">PAYED</span>
+				</div>
+			</div>
 
-			<tr>
-				<td>
-					Comission:
-				</td>
+			<div>
+				<hr class="hr" />
 
-				<td>
-					<span class="fw-500 color-primary">15 UAN</span>
-				</td>
-			</tr>
+				<div class="item">
+					<div class="field-title">Customer name:</div>
 
-			<tr>
-				<td>
-					Total income:
-				</td>
+					<div>
+						<span class="field-value">Taras Seniv</span>
+					</div>
+				</div>
 
-				<td>
-					<span class="fw-500 color-primary">85 UAN</span>
-				</td>
-			</tr>
+				<div class="item">
+					<div class="field-title">Customer mobile:</div>
 
-			<tr>
-				<td>
-					Payment method:
-				</td>
+					<div>
+						<span class="field-value">+380 96 904 53 49</span>
+					</div>
+				</div>
+			</div>
+		</div>
 
-				<td>
-					<span class="fw-500 color-primary">Credit card</span>
-				</td>
-			</tr>
+		<div>
+			<hr class="hr" />
+			<div class="is-flex ion-justify-content-between item">
+				<div class="field-title bottom">Total price:</div>
 
-			<tr>
-				<td>
-					Status:
-				</td>
+				<div>
+					<span class="field-value">100 UAH</span>
+				</div>
+			</div>
 
-				<td>
-					<span class="fw-500 color-success">PAYED</span>
-				</td>
-			</tr>
+			<div class="is-flex ion-justify-content-between item">
+				<div class="field-title bottom">Comission:</div>
 
-			<tr class="tr-border">
-				<td>
-					Customer name:
-				</td>
+				<div>
+					<span class="field-value">-15 UAH</span>
+				</div>
+			</div>
 
-				<td>
-					<span class="fw-500 color-primary">Taras Seniv</span>
-				</td>
-			</tr>
+			<div class="is-flex ion-justify-content-between item">
+				<div class="field-title bottom">Total income:</div>
 
-			<tr>
-				<td>
-					Customer mobile:
-				</td>
+				<div>
+					<span class="field-value total-income">+85 UAH</span>
+				</div>
+			</div>
+		</div>
 
-				<td>
-					<span class="fw-500 color-primary">+380 96 904 53 49</span>
-				</td>
-			</tr>
-		</table>
+		<div class="is-flex is-flex-direction-column">
+			<div class="is-flex ion-justify-content-center mt-3 pb-2">
+				<div
+					class="is-flex is-flex-direction-column ion-align-items-center mr-5 pr-5"
+				>
+					<Button @click="scan" class="action">
+						<ion-icon :icon="checkmarkOutline" class="color-success" />
+					</Button>
+					<span class="ion-text-center mt-1 fz-12 color-dark">
+						Complete <br />
+						order
+					</span>
+				</div>
 
-		<div class="is-flex is-flex-direction-column mt-5 pt-5">
-			<p class="ion-text-center fw-500 color-dark">
+				<div
+					class="is-flex is-flex-direction-column ion-align-items-center mr-5 pr-5"
+				>
+					<Button class="action">
+						<ion-icon :icon="callOutline" class="color-secondary" />
+					</Button>
+					<span class="ion-text-center mt-1 fz-12 color-dark">
+						Call <br />
+						customer
+					</span>
+				</div>
+				<div class="is-flex is-flex-direction-column ion-align-items-center">
+					<Button class="action">
+						<ion-icon :icon="closeOutline" class="color-danger" />
+					</Button>
+					<span class="ion-text-center mt-1 fz-12 color-dark">
+						Cancel <br />
+						order
+					</span>
+				</div>
+			</div>
+
+			<p class="ion-text-center field-value color-dark mt-5 pt-5">
 				Please ask customer to show QR code and scan it by clicking on "Complete
 				order" button. <br />
 
@@ -123,17 +135,6 @@
 				</Badge>
 				or it will be automatically cancelled.
 			</p>
-			<Button @click="scan" color="success" class="w-100">
-				Complete order
-			</Button>
-
-			<Button color="secondary" class="w-100">
-				Call customer
-			</Button>
-
-			<Button color="danger" class="w-100">
-				Cancel order
-			</Button>
 		</div>
 	</div>
 </template>
@@ -143,13 +144,15 @@ import Button from '@/components/common/Button.vue';
 import Badge from '@/components/common/Badge.vue';
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner';
 import useAlert from '@/composables/common/alert.js';
-import { modalController } from '@ionic/vue';
+import { modalController, IonIcon } from '@ionic/vue';
+import { checkmarkOutline, callOutline, closeOutline } from 'ionicons/icons';
 
 export default {
 	name: 'OrderDetails',
 	components: {
 		Button,
 		Badge,
+		IonIcon,
 	},
 	setup(_, { emit }) {
 		const { showMessage } = useAlert();
@@ -181,21 +184,69 @@ export default {
 
 		return {
 			scan,
+			checkmarkOutline,
+			callOutline,
+			closeOutline,
 		};
 	},
 };
 </script>
 
 <style lang="scss" scoped>
-td {
-	padding: 5px 10px;
-
-	&:first-child {
-		padding-left: 0;
-	}
+.field-title {
+	font-size: 14px;
+	color: #a4a4a4;
 }
 
-.tr-border {
-	border-top: 1px solid var(--ion-text-color);
+.field-value {
+	font-size: 14px;
+	color: var(--ion-color-dark);
+	font-weight: 400;
+}
+
+.hr {
+	background: #f2f2f2;
+	max-width: 90%;
+	margin: auto;
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+.item {
+	margin-bottom: 5px;
+}
+
+.total-income {
+	font-size: 16px;
+	font-weight: 500;
+}
+
+.payed {
+	color: var(--ion-color-success);
+}
+
+.bottom {
+	color: var(--ion-color-dark);
+}
+
+.action {
+	width: 50px;
+	height: 50px;
+	padding: 0;
+	--padding-bottom: 0;
+	--padding-end: 0;
+	--padding-start: 0;
+	--padding-top: 0;
+	font-size: 14px;
+	margin-right: 20px;
+	box-shadow: 0px 2px 4px 2px rgb(0 0 0 / 3%);
+	border-radius: 50%;
+	--background: var(--white);
+	--background-activated: var(--ion-color-light) !important;
+	border-radius: 50%;
+
+	&:last-of-type {
+		margin-right: 0;
+	}
 }
 </style>

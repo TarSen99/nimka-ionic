@@ -10,7 +10,7 @@
 					:key="index"
 					class="filter-item is-flex is-flex-direction-column ion-align-items-center"
 					:class="{ active: activeFilter === filter.id }"
-					@click="$emit('update-filter', filter.id)"
+					@click="$emit('update-order', filter.id)"
 				>
 					<div
 						class="filter-icon is-flex ion-align-items-center ion-justify-content-center"
@@ -36,17 +36,17 @@ const FILTERS_LIST = [
 	{
 		title: 'By Date',
 		icon: calendarOutline,
-		id: 0,
+		id: 'date',
 	},
 	{
 		title: 'By Distance',
 		icon: mapOutline,
-		id: 1,
+		id: 'distance',
 	},
 	{
 		title: 'By Price',
 		icon: walletOutline,
-		id: 2,
+		id: 'price',
 	},
 ];
 
@@ -57,7 +57,7 @@ export default {
 	},
 	props: {
 		activeFilter: {
-			type: Number,
+			type: String,
 			default: null,
 		},
 	},

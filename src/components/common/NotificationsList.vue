@@ -61,21 +61,13 @@ export default {
 		];
 
 		const isPartner = computed(() => {
-			return store.state.user.roles.includes('partner');
+			return store.state.user.role === 'employee';
 		});
 
 		if (isPartner.value) {
-			setTimeout(() => {
-				orders.push({ key: 2 });
-			}, 2000);
-
-			setTimeout(() => {
-				orders.push({ key: 4 });
-			}, 3000);
-
-			setTimeout(() => {
-				orders.push({ key: 1 });
-			}, 5000);
+			// setTimeout(() => {
+			// 	orders.push({ key: 2 });
+			// }, 2000);
 		}
 
 		return {

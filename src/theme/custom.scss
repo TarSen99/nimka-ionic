@@ -88,12 +88,12 @@ p {
 	--padding-bottom: 0;
 	--padding-end: 0;
 	--padding-start: 0;
-	min-width: 25px;
-	height: 25px;
+	min-width: 30px;
+	height: 30px;
 }
 
 .action-btns {
-	top: 5px;
+	top: 0px;
 	left: 0;
 	transform: translateY(-50%);
 }
@@ -192,4 +192,43 @@ p {
 
 .rounded {
 	border-radius: 10px;
+}
+
+.decoration-line-through {
+	text-decoration: line-through;
+}
+
+.uppercase {
+	text-transform: uppercase;
+}
+
+.no-wrap {
+	white-space: nowrap;
+}
+
+.view-description,
+.view-description-2,
+.view-description-3 {
+	margin: 0;
+	-webkit-line-clamp: 5;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.view-description-2 {
+	-webkit-line-clamp: 2;
+}
+
+.view-description-3 {
+	-webkit-line-clamp: 3;
+}
+
+.viewAll {
+	display: block;
+}
+
+.italic {
+	font-style: italic;
 }

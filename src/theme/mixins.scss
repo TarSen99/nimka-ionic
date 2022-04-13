@@ -11,15 +11,16 @@ $white: var(--white);
 }
 
 @mixin default-modal-style {
-	.modal-wrapper {
-		max-height: 95vh;
-		margin-top: auto;
-		border-top-left-radius: 30px;
-		border-top-right-radius: 30px;
+	--background: var(--white);
+	// .modal-wrapper {
+	// 	max-height: 95vh;
+	// 	margin-top: auto;
+	// 	border-top-left-radius: 30px;
+	// 	border-top-right-radius: 30px;
 
-		.modal-content {
-			overflow: auto;
-			padding-bottom: var(var(--ion-safe-area-top));
-		}
-	}
+	// 	.modal-content {
+	// 		overflow: auto;
+	// 		padding-bottom: var(var(--ion-safe-area-top));
+	// 	}
+	// }
 }
