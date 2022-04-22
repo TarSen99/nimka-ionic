@@ -1,6 +1,6 @@
 <template>
 	<ion-app>
-		<notifications-list v-if="isAuthed" />
+		<!-- <notifications-list v-if="isAuthed" /> -->
 		<Menu />
 		<ion-router-outlet id="main"></ion-router-outlet>
 	</ion-app>
@@ -9,19 +9,21 @@
 <script>
 import { IonApp, IonRouterOutlet } from '@ionic/vue';
 import { useStore } from 'vuex';
-import { computed, ref } from '@vue/reactivity';
 import { onMounted } from '@vue/runtime-core';
 import NotificationsList from '@/components/common/NotificationsList.vue';
 import Menu from '@/components/common/Menu.vue';
 import firebase from 'firebase/app';
 import http from '@/services/http/index.js';
+import { clearLs } from '@/helpers/index.js';
 import 'firebase/auth';
-import useLoader from '@/composables/common/useLoader.js';
 import googleService from '@/services/google';
+import paymentService from '@/services/payment';
 import { signOut } from '@/services/firebase/auth.js';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { CURRENT_TOKEN } from '@/config/constants.js';
-import useGeolocation from '@/composables/common/geoLocation.js';
+import useUserData from '@/composables/common/initUserData.js';
+import usePushNotifications from '@/composables/common/pushNotifications.js';
+import useAppFocus from '@/composables/common/appFocus.js';
 
 export default {
 	name: 'App',
@@ -32,37 +34,41 @@ export default {
 		Menu,
 	},
 	setup() {
+		useAppFocus();
+
 		const store = useStore();
 		const router = useRouter();
-		const isAuthorized = computed(() => store.state.user.isAuthorizated);
-		const isInited = ref(false);
-		const { getCurrentLocation, cachedGeolocation } = useGeolocation();
-		const { showLoader, hideLoader } = useLoader();
-
-		const isAuthed = computed(() => {
-			return store.state.user.isAuthorizated;
-		});
+		const route = useRoute();
+		const { initUserData } = useUserData();
+		const { addListeners, resetNotificationBadge } = usePushNotifications();
 
 		http.interceptors.response.use(
 			(response) => {
 				return response;
 			},
 			(error) => {
-				if (error.response.status === 401) {
+				console.log(error?.response);
+				if (error?.response?.status === 401) {
+					const roles = route.meta.roles || [];
+
+					if (roles.includes('guest')) {
+						throw error;
+					}
+
 					signOut();
-					localStorage.clear();
-					store.dispatch('company/updateRole', null);
-					store.dispatch('company/updateId', null);
+					clearLs();
+					// store.dispatch('company/updateRole', null);
+					// store.dispatch('company/updateId', null);
 					router.replace('/phone-register');
 				}
 
-				return Promise.reject(error);
+				throw error;
 			}
 		);
 
 		onMounted(() => {
-			getCurrentLocation();
-
+			resetNotificationBadge();
+			addListeners();
 			firebase.auth().onAuthStateChanged(async (user) => {
 				if (!user) {
 					return;
@@ -73,13 +79,9 @@ export default {
 			});
 
 			googleService.init();
+			paymentService.init();
+			initUserData();
 		});
-
-		return {
-			isAuthorized,
-			isAuthed,
-			isInited,
-		};
 	},
 };
 </script>

@@ -9,15 +9,6 @@ export const authUserWithEmail = ({ email, password }) => {
 		.signInWithEmailAndPassword(email, password)
 		.then((userCredential) => {
 			return userCredential.user;
-		})
-		.catch((error) => {
-			const errorCode = error.code;
-			const errorMessage = error.message;
-
-			return {
-				errorCode,
-				errorMessage,
-			};
 		});
 };
 

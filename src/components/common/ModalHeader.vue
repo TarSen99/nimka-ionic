@@ -1,7 +1,7 @@
 <template>
 	<div class="is-flex ion-justify-content-between">
 		<div>
-			<p class="fz-14 fw-400 title">
+			<p class="fz-14 fw-500 title color-dark">
 				{{ title }}
 			</p>
 			<slot></slot>
@@ -50,10 +50,7 @@ export default {
 	--background-focused: var(--white);
 	height: 25px;
 	width: 25px;
-	color: var(--ion-text-color);
-}
-
-.title {
+	min-width: 25px;
 	color: var(--ion-text-color);
 }
 </style>

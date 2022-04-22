@@ -3,6 +3,19 @@ export const CURRENT_USER_KEY = 'user_id';
 export const CURRENT_USER_ROLE = 'role';
 export const CURRENT_TOKEN = 'fb_token';
 export const CURRENT_GEOLOCATION = 'geolocation';
+export const GEO_IS_HARDCODED = 'geolocation_hardcoded';
+export const USER_DETAILS = 'user_details';
+export const LOCATION_NOT_ALLOWED = 'location_not_allowed';
+export const LOCATION_PERMISSION_DENIED = 'location_denied';
+export const PUSH_NOTIFICATIONS_DENIED = 'push_denied';
+export const PUSH_NOTIFICATIONS_ASKED = 'push_asked';
+export const PUSH_NOTIFICATIONS_SCREEN_SHOWED = 'push_screen';
+export const FIRST_TIME_OPEN = 'first-time';
+export const CURRENT_SESSION_LOCATION = 'current-location';
+export const CURRENT_PUSH_TOKEN = 'current-token';
+export const CURRENT_RADIUS = 'current-radius';
+export const COMPANY_PLACES = 'places';
+export const COMPANY_DETAILS = 'company-details';
 
 export const ORDER_STATUSES_LIST = [
 	{
@@ -45,8 +58,26 @@ export const ROLES = {
 };
 
 export const ORDER_STATUSES = {
-	ACTIVE: 'active',
+	ACTIVE: 'pending',
+	TO_TAKE: 'to_take',
 	PAYED: 'payed',
-	COMPLETED: 'completed',
 	CANCELLED: 'cancelled',
+	COMPLETED: 'completed',
 };
+
+export const PRODUCT_STATUSES = {
+	ACTIVE: 'active',
+	UNPUBLISHED: 'unpublished',
+	OUT_OF_STOCK: 'out of stock',
+	EXPIRED: 'expired',
+};
+
+export const PAYMENT_TYPES = {
+	CASH: 'cash',
+	CARD: 'card',
+};
+
+export const DEFAULT_RADIUS = 10;
+
+export const PLACEHOLDER =
+	'https://niamka.s3.eu-central-1.amazonaws.com/images/default/placeholder_.jpg';

@@ -31,7 +31,11 @@ export default {
 	getters: {
 		activeOrders(state) {
 			const active = state.orders.filter((order) => {
-				return order.status === ORDER_STATUSES.ACTIVE;
+				return (
+					order.status === ORDER_STATUSES.ACTIVE ||
+					order.status === ORDER_STATUSES.TO_TAKE ||
+					order.status === ORDER_STATUSES.PAYED
+				);
 			});
 
 			return active;

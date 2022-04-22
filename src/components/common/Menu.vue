@@ -2,7 +2,7 @@
 	<div>
 		<ion-menu
 			@ionDidClose="handleClose"
-			side="end"
+			side="start"
 			content-id="main"
 			type="overlay"
 			mode="md"
@@ -24,7 +24,9 @@
 					</div>
 
 					<div>
-						<h2 class="fz-18 ml-4 fw-600">Username</h2>
+						<h2 class="fz-18 ml-4 fw-600">
+							{{ userDetails.name || 'No name' }}
+						</h2>
 					</div>
 
 					<ion-list class="mt-5">
@@ -34,11 +36,18 @@
 							class="menu-item"
 							lines="none"
 							@click="runHandler(item.handler, $router)"
-							:class="{ danger: item.danger }"
+							:class="{
+								danger: item.danger,
+								[`color-${item.color}`]: item.color,
+							}"
 						>
 							<ion-icon
 								:icon="item.icon"
-								class="fz-20 mr-5 color-dark icon"
+								class="fz-20 mr-5 icon"
+								:class="{
+									[`color-${item.color}`]: item.color,
+									'color-dark': !item.color,
+								}"
 							></ion-icon>
 
 							<span class="fw-500"> {{ item.title }}</span></ion-item
@@ -67,16 +76,20 @@ import { computed, ref, watch } from '@vue/runtime-core';
 import {
 	personCircleOutline,
 	personOutline,
-	cardOutline,
 	locateOutline,
 	bagOutline,
 	addOutline,
+	logOutOutline,
 } from 'ionicons/icons';
+import { signOut } from '@/services/firebase/auth.js';
+import { store } from '@/store';
+import { clearLs } from '@/helpers/index.js';
+import { ROLES } from '@/config/constants.js';
 
 const MENU_ITEMS = [
 	{
 		title: 'Post new product',
-		roles: ['partner'],
+		roles: [ROLES.OWNER, ROLES.EMPLOYEE, ROLES.MANAGER],
 		icon: addOutline,
 		danger: true,
 		handler: (router) => {
@@ -85,7 +98,7 @@ const MENU_ITEMS = [
 	},
 	{
 		title: 'My products',
-		roles: ['partner'],
+		roles: [ROLES.OWNER, ROLES.EMPLOYEE, ROLES.MANAGER],
 		icon: bagOutline,
 		handler: (router) => {
 			router.push('/my-products');
@@ -117,10 +130,25 @@ const MENU_ITEMS = [
 	},
 	{
 		title: 'Incoming orders',
-		roles: ['partner'],
+		roles: [ROLES.OWNER, ROLES.EMPLOYEE, ROLES.MANAGER],
 		icon: bagOutline,
 		handler: (router) => {
 			router.push('/incoming-orders');
+		},
+	},
+	{
+		title: 'Logout',
+		roles: ['customer', 'employee', 'owner', 'manager'],
+		icon: logOutOutline,
+		color: 'danger',
+		handler: (router) => {
+			signOut();
+			clearLs();
+
+			// store.dispatch('company/updateRole', null);
+			// store.dispatch('company/updateId', null);
+
+			router.replace('/phone-register');
 		},
 	},
 ];
@@ -179,12 +207,17 @@ export default {
 			handler(router);
 		};
 
+		const userDetails = computed(() => {
+			return store.state.user.details;
+		});
+
 		return {
 			isOpen,
 			handleClose,
 			personCircleOutline,
 			menuItems,
 			runHandler,
+			userDetails,
 		};
 	},
 };

@@ -5,22 +5,10 @@
 				<Badge class="status-badge" :class="data.status">
 					<span class="fw-500 fz-14"> {{ statusText }} </span>
 				</Badge>
-
-				<!-- <Badge v-if="!done" color="light">
-					<span class="fz-14 color-dark">
-						<ion-icon
-							:icon="basketOutline"
-							class="vertical-middle mr-1 fz-16 take-icon"
-						></ion-icon>
-						<span class="vertical-middle fz-14">
-							{{ fromTime }} - {{ toTime }}
-						</span>
-					</span>
-				</Badge> -->
 			</div>
 
 			<div
-				class="w-100 is-flex img-size ion-wrap"
+				class="w-100 h-100 is-flex img-size ion-wrap"
 				:class="`img-size-${products.length}`"
 			>
 				<div
@@ -28,10 +16,7 @@
 					:key="product.id"
 					class="img mr-1 mb-1"
 				>
-					<img
-						:src="product.Images && product.Images[0] && product.Images[0].url"
-						alt=""
-					/>
+					<img :src="getImage(product.Images)" alt="" />
 				</div>
 			</div>
 		</div>
@@ -66,7 +51,9 @@
 				class="is-flex ion-justify-content-end ion-align-items-center fz-14 color-dark-grey mt-1"
 			>
 				<div class="no-wrap">
-					<span class="fw-600 fz-16"> {{ data.totalPrice }} UAH </span>
+					<span class="fw-600 fz-16">
+						{{ data.totalPrice.toFixed(2) }} UAH
+					</span>
 				</div>
 			</div>
 		</div>
@@ -78,6 +65,7 @@ import Badge from '@/components/common/Badge.vue';
 import { IonIcon } from '@ionic/vue';
 import { toRefs } from '@vue/reactivity';
 import { computed } from '@vue/runtime-core';
+import usePlaceholder from '@/composables/common/usePlaceholder.js';
 
 export default {
 	name: 'FoodItem',
@@ -105,6 +93,7 @@ export default {
 	},
 	setup(props) {
 		const { data } = toRefs(props);
+		const { getImage } = usePlaceholder();
 
 		const products = computed(() => {
 			return data.value.OrderProducts.map((p) => {
@@ -113,7 +102,7 @@ export default {
 		});
 
 		const statusText = computed(() => {
-			const status = data.value.status || ' ';
+			const status = (data.value.status || ' ').replace('_', ' ');
 
 			return `${status[0].toUpperCase()}${status.slice(1, status.length)}`;
 		});
@@ -121,6 +110,7 @@ export default {
 		return {
 			products,
 			statusText,
+			getImage,
 		};
 	},
 };
@@ -150,14 +140,16 @@ export default {
 		padding: 5px;
 
 		.img-size {
-			img {
+			img,
+			.img {
 				width: 70px;
 				height: 70px;
 			}
 		}
 
 		.img-size-1 {
-			img {
+			img,
+			.img {
 				width: 150px;
 				height: 150px;
 			}
@@ -166,12 +158,6 @@ export default {
 		.img {
 			border-radius: 10px;
 			overflow: hidden;
-
-			img {
-				min-width: 100%;
-				min-height: 100%;
-				width: auto;
-			}
 		}
 
 		.time-take {
@@ -213,8 +199,12 @@ export default {
 }
 
 .status-badge {
-	&.active,
+	&.to_take,
 	&.payed {
+		background-color: var(--ion-color-success) !important;
+	}
+
+	&.pending {
 		background-color: var(--ion-color-primary) !important;
 	}
 
@@ -222,7 +212,8 @@ export default {
 		background-color: var(--ion-color-success) !important;
 	}
 
-	&.cancelled {
+	&.cancelled,
+	&.expired {
 		background-color: var(--ion-color-danger) !important;
 	}
 }

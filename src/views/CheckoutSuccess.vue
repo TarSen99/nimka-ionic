@@ -13,8 +13,8 @@
 				</div>
 				<h2 class="ion-text-center color-success">{{ title }}</h2>
 				<p class="ion-text-center fz-16 fw-500 mt-3">
-					<span> You can pick your order till to </span>
-					<Badge color="primary" class="fz-16">20:00</Badge>
+					<span> Please, pick up your order till </span>
+					<Badge color="primary" class="fz-16">{{ time }}</Badge>
 				</p>
 
 				<ion-fab vertical="bottom" horizontal="left" slot="fixed" class="w-100">
@@ -30,7 +30,13 @@
 </template>
 
 <script>
-import { IonContent, IonPage, IonIcon, IonFab } from '@ionic/vue';
+import {
+	IonContent,
+	IonPage,
+	IonIcon,
+	IonFab,
+	onIonViewWillEnter,
+} from '@ionic/vue';
 import { checkmarkOutline } from 'ionicons/icons';
 import { useRoute } from 'vue-router';
 
@@ -52,24 +58,22 @@ export default {
 	setup() {
 		const title = ref(null);
 		const route = useRoute();
+		const time = ref(null);
 
-		watch(
-			() => route.query.type,
-			() => {
-				if (route.query.type === 'cash') {
-					title.value = 'Order has been fulfilled';
-				} else {
-					title.value = 'Payment was success';
-				}
-			},
-			{
-				immediate: true,
+		onIonViewWillEnter(() => {
+			time.value = route.query.time;
+
+			if (route.query.type === 'cash') {
+				title.value = 'Order has been fulfilled';
+			} else {
+				title.value = 'Payment was success';
 			}
-		);
+		});
 
 		return {
 			checkmarkOutline,
 			title,
+			time,
 		};
 	},
 };

@@ -164,7 +164,7 @@ export default {
 		const scan = () => {
 			BarcodeScanner.scan()
 				.then((res) => {
-					console.log(res.text);
+					// console.log(res.text);
 					showMessage({
 						color: 'success',
 						//text: `Text is: ${res.text}`,

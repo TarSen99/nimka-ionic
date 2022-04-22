@@ -23,22 +23,59 @@
 		</ion-header>
 
 		<ion-content :fullscreen="true">
+			<ion-refresher
+				slot="fixed"
+				@ionRefresh="doRefresh($event)"
+				:pullMin="120"
+				:pullMax="200"
+				pull-factor="0.5"
+			>
+				<ion-refresher-content
+					class="refresher"
+					refreshing-spinner="crescent"
+				></ion-refresher-content>
+			</ion-refresher>
+
 			<view-product-modal
 				:is-open="showProductModal"
-				@close="showProductModal = false"
+				:currentProductDetails="currentProductDetails"
+				@close="handleClose($event)"
 			/>
 
 			<div class="ion-padding">
-				<ProductItem
-					v-for="item in orders"
-					:key="item.id"
-					:status="item.status"
+				<list-placeholder v-if="loading && !itemsList.length" />
+				<div v-if="!itemsList.length && !loading">
+					<p class="fz-14 ion-text-center fw-500 color-dark">No results</p>
+				</div>
+				<FoodItem
+					v-for="product in itemsList"
+					:data="product"
+					:key="product"
 					class="mb-3"
-					title="Tasty burger"
-					subtitle="My company"
-					@click="showProductModal = true"
-				/>
+					admin-view
+					@click="handleProductClick(product)"
+				>
+					<div class="product-status">
+						<product-status-badge :status="product.status" />
+					</div>
+				</FoodItem>
+
+				<div class="is-flex ion-justify-content-center pt-2 pb-2">
+					<ion-spinner
+						v-if="loading && itemsList.length"
+						name="bubbles"
+					></ion-spinner>
+				</div>
 			</div>
+
+			<ion-infinite-scroll
+				@ionInfinite="updateList(meta.page + 1, $event)"
+				threshold="200px"
+				:disabled="isDisabled"
+			>
+				<ion-infinite-scroll-content loading-spinner="bubbles">
+				</ion-infinite-scroll-content>
+			</ion-infinite-scroll>
 		</ion-content>
 	</ion-page>
 </template>
@@ -53,11 +90,24 @@ import {
 	IonButtons,
 	IonTitle,
 	IonIcon,
+	onIonViewWillEnter,
+	IonRefresher,
+	IonRefresherContent,
+	IonInfiniteScroll,
+	IonInfiniteScrollContent,
+	IonSpinner,
 } from '@ionic/vue';
 import { chevronBackOutline } from 'ionicons/icons';
 import { ref } from '@vue/reactivity';
+import { useStore } from 'vuex';
 import ProductItem from '@/components/admin/ProductItem.vue';
 import ViewProductModal from '@/components/admin/ViewProductModal.vue';
+import http from '@/services/http';
+import { computed } from '@vue/runtime-core';
+import ListPlaceholder from '@/components/common/ListPlaceholder.vue';
+import useInfiniteList from '@/composables/common/infiniteList.js';
+import FoodItem from '@/components/home/FoodItem.vue';
+import ProductStatusBadge from '@/components/admin/ProductStatusBadge.vue';
 
 export default {
 	name: 'My products',
@@ -72,28 +122,91 @@ export default {
 		IonIcon,
 		ViewProductModal,
 		ProductItem,
+		ListPlaceholder,
+		IonRefresher,
+		IonRefresherContent,
+		IonInfiniteScroll,
+		IonInfiniteScrollContent,
+		IonSpinner,
+		FoodItem,
+		ProductStatusBadge,
 	},
 	setup() {
-		const orders = ref([
-			{
-				status: 'active',
-				id: 1,
-			},
-			{
-				status: 'unpublished',
-				id: 2,
-			},
-			{
-				status: 'finished',
-				id: 3,
-			},
-		]);
+		const store = useStore();
+		const {
+			meta,
+			maxPage,
+			loading,
+			isDisabled,
+			itemsList,
+			orderBy,
+			updateOrder,
+			search,
+			handleResponse,
+		} = useInfiniteList();
+
+		const place = computed(() => {
+			return store.state.company.places[0] || {};
+		});
+
+		const updateList = async (page = 1, ev, doNotClearList) => {
+			loading.value = true;
+			return http
+				.get(
+					`/places/${place.value.id}/products?page=${page}&orderBy=${orderBy.value}&search=${search.value}`
+				)
+				.then((res) => {
+					handleResponse(res, page, ev, doNotClearList);
+				})
+				.catch(() => {
+					loading.value = false;
+				});
+		};
+
+		const doRefresh = (e) => {
+			updateList(1, null, true).finally(() => {
+				e.target.complete();
+			});
+		};
+
+		onIonViewWillEnter(() => {
+			updateList(1);
+		});
+
 		const showProductModal = ref(false);
+		const currentProductDetails = ref({});
+
+		const handleProductClick = (product) => {
+			currentProductDetails.value = product;
+			showProductModal.value = true;
+		};
+
+		const handleClose = (newStatus) => {
+			showProductModal.value = false;
+
+			if (newStatus) {
+				currentProductDetails.value.status = newStatus;
+			}
+
+			currentProductDetails.value = {};
+		};
 
 		return {
-			orders,
 			chevronBackOutline,
 			showProductModal,
+			loading,
+			doRefresh,
+			isDisabled,
+			itemsList,
+			orderBy,
+			updateOrder,
+			search,
+			meta,
+			maxPage,
+			updateList,
+			handleProductClick,
+			currentProductDetails,
+			handleClose,
 		};
 	},
 };
@@ -118,5 +231,12 @@ export default {
 
 .save {
 	margin-top: 50px;
+}
+
+.product-status {
+	position: absolute;
+	z-index: 2;
+	bottom: 10px;
+	left: 10px;
 }
 </style>

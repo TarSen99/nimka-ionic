@@ -8,68 +8,66 @@
 				v-model="paymentType"
 				@IonChange="handlePaymentTypeChange"
 			>
-				<ion-item class="radio-item">
+				<ion-item class="radio-item" lines="none">
 					<ion-label class="is-flex ion-align-items-center">
 						<ion-icon :icon="cardOutline" class="mr-2 icon"></ion-icon>
 						<span class="fw-500"> Credit Card </span>
 					</ion-label>
 					<ion-radio slot="start" value="card"></ion-radio>
 				</ion-item>
-
 				<transition name="fade-slide">
 					<div v-if="paymentType === 'card'">
-						<div class="pb-5">
-							<div class="visa-master pt-2">
-								<img src="@/assets/images/payment.png" alt="" class="img" />
-							</div>
-
-							<Input
-								label="Card number"
-								class="input"
-								placeholder="0000 0000 0000 0000"
-								@update:modelValue="handleCardInput"
-								:model-value="card"
-								:error="errorCard"
-							/>
-							<div class="is-flex">
-								<Input
-									label="Date"
-									class="input mr-5"
-									placeholder="02 / 24"
-									@update:modelValue="handleDateInput"
-									:model-value="date"
-									:error="errorDate"
-								/>
-
-								<Input
-									label="CVC"
-									class="input"
-									placeholder="000"
-									@update:modelValue="handleCvcInput"
-									:model-value="cvc"
-									:error="errorCvc"
-								/>
-							</div>
-
-							<ion-item
-								v-if="allCardDetailsAreValid"
-								class="checkbox-container"
-								lines="none"
+						<div
+							v-for="card in cards"
+							:key="card.id"
+							class="card-item"
+							:class="{ active: selectedCard === card.rectoken }"
+						>
+							<div
+								class="is-flex ion-align-items-center"
+								@click="itemClick(card)"
 							>
-								<ion-checkbox
-									slot="start"
-									@update:modelValue="saveCardDetails = $event"
-									:modelValue="saveCardDetails"
-									mode="md"
-								>
-								</ion-checkbox>
-								<ion-label>Save card details</ion-label>
-							</ion-item>
+								<div class="is-flex ion-align-items-center pb-3 pt-3 w-100">
+									<div class="mr-5 logo">
+										<img
+											v-if="card.cardType.includes('visa')"
+											src="@/assets/icons/visa.svg"
+											alt=""
+										/>
+										<img
+											v-if="card.cardType.includes('master')"
+											src="@/assets/icons/master.svg"
+											alt=""
+										/>
+									</div>
+
+									<p class="fw-500 fz-18 color-dark">
+										{{ card.mackedCard }}
+									</p>
+								</div>
+							</div>
+						</div>
+
+						<div
+							v-if="cards.length"
+							key="add"
+							class="card-item"
+							@click="$emit('add-new')"
+						>
+							<div class="ion-text-center">
+								<div class="pb-1 pt-1">
+									<span class="vertical-align-middle fz-22 fw-500"> + </span>
+
+									<span class="fw-500 fz-18 color-dark vertical-align-middle">
+										Add new card
+									</span>
+								</div>
+							</div>
 						</div>
 					</div>
 				</transition>
 
-				<ion-item class="radio-item">
+				<ion-item class="radio-item" lines="none">
 					<ion-label class="is-flex ion-align-items-center">
 						<ion-icon :icon="cashOutline" class="mr-2 icon"></ion-icon>
 						<span class="fw-500"> Cash </span>
@@ -92,7 +90,7 @@
 
 <script>
 import Input from '@/components/common/Input.vue';
-import { reactive, ref } from '@vue/reactivity';
+import { ref } from '@vue/reactivity';
 import {
 	IonItem,
 	IonLabel,
@@ -102,8 +100,8 @@ import {
 	IonCheckbox,
 } from '@ionic/vue';
 import { cardOutline, cashOutline } from 'ionicons/icons';
-import usePaymentValidation from '@/composables/checkout/paymentValidation.js';
-import { watch } from '@vue/runtime-core';
+
+const PAYMENT_TYPES = ['card', 'cash'];
 
 export default {
 	name: 'Payment',
@@ -116,55 +114,54 @@ export default {
 		IonIcon,
 		IonCheckbox,
 	},
+	props: {
+		paymentUrl: {
+			type: String,
+			default: null,
+		},
+		cards: {
+			type: Array,
+			default: null,
+		},
+	},
 	setup(_, { emit }) {
-		const {
-			card,
-			cvc,
-			date,
-			errorCard,
-			errorDate,
-			errorCvc,
-			allCardDetailsAreValid,
-			handleCardInput,
-			handleDateInput,
-			handleCvcInput,
-		} = usePaymentValidation();
-
 		const paymentType = ref(null);
 		const saveCardDetails = ref(null);
+		const selectedCard = ref(null);
 
 		const handlePaymentTypeChange = (e) => {
+			if (!PAYMENT_TYPES.includes(e.target.value)) {
+				e.preventDefault();
+				return;
+			}
+
 			paymentType.value = e.target.value;
+
+			if (paymentType.value === 'cash') {
+				selectedCard.value = null;
+			}
+
 			emit('payment-type', paymentType.value);
 		};
 
-		watch(allCardDetailsAreValid, (newV) => {
-			const data = {
-				card: card.value,
-				cvc: cvc.value,
-				date: date.value,
-				valid: newV,
-			};
+		const itemClick = (v) => {
+			if (selectedCard.value === v.rectoken) {
+				selectedCard.value = null;
+			} else {
+				selectedCard.value = v.rectoken;
+			}
 
-			emit('update-details', reactive(data));
-		});
+			emit('payment-card', selectedCard.value);
+		};
 
 		return {
-			card,
-			cvc,
-			date,
-			errorCard,
-			errorDate,
-			errorCvc,
-			handleCardInput,
-			handleDateInput,
-			handleCvcInput,
 			cardOutline,
 			cashOutline,
 			paymentType,
 			handlePaymentTypeChange,
-			allCardDetailsAreValid,
 			saveCardDetails,
+			selectedCard,
+			itemClick,
 		};
 	},
 };
@@ -174,6 +171,17 @@ export default {
 .visa-master {
 	.img {
 		width: 53px;
+	}
+}
+
+.logo {
+	width: 50px;
+	height: auto;
+	text-align: center;
+
+	img {
+		max-width: 100%;
+		max-height: 16px;
 	}
 }
 
@@ -196,5 +204,32 @@ export default {
 
 .icon {
 	font-size: 20px;
+}
+
+.card-item {
+	padding-left: 0 !important;
+	// background: var(--white);
+	transition: all 0.3s ease-in-out;
+
+	& > div {
+		border: 1px solid var(--ion-color-light);
+		border-radius: 10px;
+		padding: 10px;
+		background: var(--white);
+		margin-bottom: 5px;
+		transition: all 0.2s;
+	}
+
+	&.active {
+		& > div {
+			background-color: var(--grey-medium);
+		}
+	}
+
+	&:active {
+		& > div {
+			background-color: var(--grey-medium);
+		}
+	}
 }
 </style>

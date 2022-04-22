@@ -29,13 +29,22 @@
 					placeholder="Name"
 					label="Name"
 					class="account-input"
+					:error="nameError"
 				/>
 				<Input
 					v-model="mobile"
 					placeholder="Mobile"
 					label="Mobile"
 					class="account-input"
-					disabled
+					readonly
+				/>
+
+				<Input
+					v-model="email"
+					placeholder="Email"
+					label="Email"
+					class="account-input"
+					:error="emailError"
 				/>
 
 				<Button
@@ -72,6 +81,15 @@ import Button from '@/components/common/Button.vue';
 import useLoader from '@/composables/common/useLoader.js';
 import http from '@/services/http/index.js';
 import useAlert from '@/composables/common/alert.js';
+import { useStore } from 'vuex';
+import { useForm, useField } from 'vee-validate';
+import * as yup from 'yup';
+import { getErrors } from '@/helpers';
+
+const validationSchema = yup.object().shape({
+	email: yup.string().email('Email is not valid').notRequired().nullable(),
+	name: yup.string().notRequired().nullable(),
+});
 
 export default {
 	name: 'Account',
@@ -88,44 +106,66 @@ export default {
 		Button,
 	},
 	setup() {
-		const name = ref(null);
+		const store = useStore();
+
+		const { setErrors, validate } = useForm({
+			validationSchema,
+		});
+
 		const mobile = ref(null);
 		const { showLoader, hideLoader } = useLoader();
 		const { showMessage } = useAlert();
 
-		const save = () => {
-			showLoader();
+		const { value: email, errorMessage: emailError } = useField('email');
+		const { value: name, errorMessage: nameError } = useField('name');
+
+		const save = async () => {
+			const v = await validate();
+
+			if (!v.valid) {
+				return;
+			}
+
+			await showLoader();
 
 			http
 				.put('/users/update', {
 					name: name.value,
+					email: email.value,
 				})
-				.then(() => {
+				.then((res) => {
+					hideLoader();
+					store.dispatch('user/updateDetails', res.data.data);
+
 					showMessage({
 						color: 'success',
 						text: `Details were successfully updated`,
 						title: 'Success',
 					});
 				})
-				.catch(() => {
+				.catch((err) => {
+					hideLoader();
+
 					showMessage({
 						text: `Something went wrong. Please try again`,
 					});
-				})
-				.finally(() => {
-					hideLoader();
+
+					setErrors(getErrors(err));
 				});
 		};
 
-		const fetchDetails = () => {
-			showLoader();
+		const fetchDetails = async () => {
+			await showLoader();
 			http
 				.get('/users/mine')
 				.then((res) => {
 					const data = res.data.data;
 
+					store.dispatch('user/updateDetails', data);
+
 					name.value = data.name;
 					mobile.value = data.phone;
+					email.value = data.email;
 				})
 				.finally(() => {
 					hideLoader();
@@ -141,6 +181,9 @@ export default {
 			name,
 			mobile,
 			save,
+			email,
+			emailError,
+			nameError,
 		};
 	},
 };

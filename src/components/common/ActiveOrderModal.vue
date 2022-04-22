@@ -16,38 +16,50 @@
 						<div class="logo mr-2">
 							<img :src="activeOrder.Company.logo" alt="" />
 						</div>
-						<h2 class="mt-2 mb-2 color-dark-grey fz-16">
+						<h2 class="mt-2 mb-2 color-dark fz-16">
 							{{ activeOrder.Company.name }}
 						</h2>
 					</div>
 
-					<p class="color-dark fz-18">
+					<p class="color-dark fz-14">
 						Order <span class="fw-600"> #{{ activeOrder.orderNumber }}</span>
 					</p>
+
+					<div class="fz-14 color-dark">
+						Pick up time:
+						<span class="fw-600">
+							{{ productsPickupTimeFrom }} - {{ productsPickupTime }}</span
+						>
+					</div>
 
 					<!-- <p class="fw-500">
 						from <span class="color-primary fw-600">Best company</span>
 					</p> -->
 				</modal-header>
-				<p class="mt-1 fz-14 color-grey">
-					{{ activeOrder.Place.address }}
-				</p>
 
-				<div class="is-flex ion-justify-content-end pb-2">
-					<p
-						class="fz-14 color-primary mt-4 route fw-500 is-flex ion-justify-content-center ion-align-items-center"
-						@click="openMaps"
-					>
-						<ion-icon :icon="locationOutline" class="mr-1" />
-
-						<span> Route </span>
+				<div
+					class="is-flex ion-justify-content-between ion-align-items-start mb-5 pb-5"
+				>
+					<p class="mt-3 fz-14 color-grey pr-4">
+						{{ activeOrder.Place.address }}
 					</p>
+
+					<div class="is-flex ion-justify-content-end pb-2 mt-2">
+						<p
+							class="fz-14 mt-1 color-dark route fw-500 is-flex ion-justify-content-center ion-align-items-center"
+							@click="openMaps"
+						>
+							<ion-icon :icon="locationOutline" class="mr-1" />
+
+							<span> Route </span>
+						</p>
+					</div>
 				</div>
 
 				<p
 					v-if="
-						activeOrder.status === ORDER_STATUSES.ACTIVE ||
-						activeOrder.status === ORDER_STATUSES.PAYED
+						activeOrder.status === ORDER_STATUSES.PAYED ||
+						activeOrder.status === ORDER_STATUSES.TO_TAKE
 					"
 					class="ion-text-center mt-5 fz-14 color-dark"
 				>
@@ -56,7 +68,7 @@
 
 				<div
 					v-if="
-						activeOrder.status === ORDER_STATUSES.ACTIVE ||
+						activeOrder.status === ORDER_STATUSES.TO_TAKE ||
 						activeOrder.status === ORDER_STATUSES.PAYED
 					"
 					class="is-flex ion-justify-content-center ion-align-items-center is-flex-direction-column mt-2"
@@ -89,23 +101,39 @@
 					</div>
 
 					<hr class="hr" />
-					<h2 class="ion-text-end fz-18 mt-3 color-dark">
-						Total: {{ totalPrice }} UAH
-					</h2>
-					<h3 class="ion-text-end fz-14 fw-400 color-grey">
-						Payment method: <span>Cash</span>
+					<h3 class="ion-text-end fz-14 fw-400 color-grey mt-3">
+						Payment method:
+						<span class="payment-method fz-16 fw-500">
+							{{ activeOrder.paymentMethod }}
+						</span>
 					</h3>
-					<div class="pt-5">
+					<h2 class="ion-text-end mt-1 fz-18 color-dark">
+						Total: <span class="fz-20 fw-500"> {{ totalPrice }} UAH </span>
+					</h2>
+					<div class="pt-5 is-flex ion-justify-content-center">
 						<div
-							v-if="activeOrder.status === ORDER_STATUSES.ACTIVE"
+							v-if="showCancelButton"
 							class="is-flex is-flex-direction-column ion-align-items-center"
 						>
 							<Button class="action" @click="cancel">
 								<ion-icon :icon="closeOutline" class="color-danger" />
 							</Button>
-							<span class="ion-text-center mt-1 fz-12 color-dark">
+							<span class="ion-text-center mt-1 fz-16 color-dark fw-500">
 								Cancel <br />
 								order
+							</span>
+						</div>
+
+						<div
+							v-if="activeOrder.status === ORDER_STATUSES.ACTIVE"
+							class="is-flex is-flex-direction-column ion-align-items-center ml-5 pl-5"
+						>
+							<Button class="action" @click="finishPayment(activeOrder)">
+								<ion-icon :icon="cashOutline" class="color-success" />
+							</Button>
+							<span class="ion-text-center mt-1 fz-16 color-dark fw-500">
+								Finish <br />
+								Payment
 							</span>
 						</div>
 					</div>
@@ -117,7 +145,7 @@
 
 <script>
 import { IonModal, IonContent, modalController, IonIcon } from '@ionic/vue';
-import { locationOutline } from 'ionicons/icons';
+import { locationOutline, cashOutline } from 'ionicons/icons';
 
 import { computed, ref, toRefs } from '@vue/reactivity';
 import ModalHeader from '@/components/common/ModalHeader.vue';
@@ -134,6 +162,13 @@ import http from '@/services/http';
 import useLoader from '@/composables/common/useLoader.js';
 import { ORDER_STATUSES } from '@/config/constants.js';
 import { Swiper, SwiperSlide } from 'swiper/vue';
+import { useRouter } from 'vue-router';
+import { DateTime } from 'luxon';
+import {
+	getProductsPickupDate,
+	getProductsPickupTime,
+	getProductsPickupTimeFrom,
+} from '@/helpers';
 
 export default {
 	name: 'ActiveOrderModal',
@@ -161,6 +196,7 @@ export default {
 	setup(props) {
 		const { selectedOrder } = toRefs(props);
 		const store = useStore();
+		const router = useRouter();
 		const items = ref([]);
 		const { showMessage } = useAlert();
 		const { open } = useBrowser();
@@ -169,7 +205,7 @@ export default {
 
 		const openMaps = () => {
 			open(
-				`http://maps.google.com/?q=${activeOrder.value.Place.latitude},${activeOrder.value.Place.longtitude}`
+				`http://maps.google.com/?q=${activeOrder.value.Place.location.coordinates[1]},${activeOrder.value.Place.location.coordinates[0]}`
 			);
 		};
 
@@ -204,7 +240,7 @@ export default {
 
 		const generateQr = () => {
 			if (
-				activeOrder.value.status !== ORDER_STATUSES.ACTIVE &&
+				activeOrder.value.status !== ORDER_STATUSES.TO_TAKE &&
 				activeOrder.value.status !== ORDER_STATUSES.PAYED
 			) {
 				return;
@@ -258,6 +294,11 @@ export default {
 				});
 		};
 
+		const finishPayment = (order) => {
+			router.push(`/payment?orderId=${order.id}`);
+			handleClose();
+		};
+
 		// const scan = () => {
 		// 	BarcodeScanner.scan()
 		// 		.then((res) => {
@@ -278,6 +319,61 @@ export default {
 		// 		});
 		// };
 
+		const checkIfDiffLessThenOneHour = (a, b) => {
+			const aDate = DateTime.fromJSDate(a);
+			const bDate = DateTime.fromJSDate(b);
+
+			const diff = aDate.diff(bDate, ['hours']).toObject();
+
+			const { hours } = diff;
+
+			return hours < 1;
+		};
+
+		const pickupTime = computed(() => {
+			const products = activeOrder.value.OrderProducts.map(
+				(p) => p.productData
+			);
+
+			const pickupTime = getProductsPickupDate(products);
+
+			return pickupTime;
+		});
+
+		const productsPickupTime = computed(() => {
+			const products = activeOrder.value.OrderProducts.map(
+				(p) => p.productData
+			);
+
+			return getProductsPickupTime(products);
+		});
+
+		const productsPickupTimeFrom = computed(() => {
+			const products = activeOrder.value.OrderProducts.map(
+				(p) => p.productData
+			);
+
+			return getProductsPickupTimeFrom(products);
+		});
+
+		const showCancelButton = computed(() => {
+			if (
+				activeOrder.value.status === ORDER_STATUSES.ACTIVE ||
+				activeOrder.value.status === ORDER_STATUSES.TO_TAKE
+			) {
+				return true;
+			}
+
+			if (activeOrder.value.status === ORDER_STATUSES.PAYED) {
+				return !checkIfDiffLessThenOneHour(
+					new Date(pickupTime.value),
+					new Date()
+				);
+			}
+
+			return false;
+		});
+
 		return {
 			handleClose,
 			items,
@@ -290,6 +386,11 @@ export default {
 			cancel,
 			closeOutline,
 			ORDER_STATUSES,
+			finishPayment,
+			cashOutline,
+			showCancelButton,
+			productsPickupTime,
+			productsPickupTimeFrom,
 		};
 	},
 };
@@ -351,6 +452,10 @@ export default {
 
 .hr {
 	border-bottom: 1px solid var(--ion-color-light-shade);
+}
+
+.payment-method {
+	text-transform: capitalize;
 }
 </style>
 

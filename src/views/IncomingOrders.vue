@@ -15,9 +15,7 @@
 						</ion-button>
 					</ion-buttons>
 
-					<ion-title class="ion-text-center">
-						Incoming orders
-					</ion-title>
+					<ion-title class="ion-text-center"> Incoming orders </ion-title>
 
 					<span class="placeholder"></span>
 				</div>
@@ -31,7 +29,7 @@
 			/>
 
 			<div class="ion-padding">
-				<FoodItem
+				<!-- <FoodItem
 					v-for="item in orders"
 					:key="item"
 					class="mb-3"
@@ -39,7 +37,7 @@
 					title="#3456 Tasty burger"
 					subtitle="from Taras Seniv"
 					@click="showOrderDetails = true"
-				/>
+				/> -->
 			</div>
 		</ion-content>
 	</ion-page>

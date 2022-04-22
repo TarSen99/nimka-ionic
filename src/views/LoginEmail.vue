@@ -1,7 +1,9 @@
 <template>
 	<IonPage>
 		<IonContent :fullscreen="true">
-			<div class="page-content overflow-hidden">
+			<div
+				class="page-content overflow-hidden is-flex is-flex-direction-column ion-justify-content-between"
+			>
 				<div ref="topText">
 					<TopIcons> Hello!</TopIcons>
 				</div>
@@ -32,25 +34,25 @@
 							type="password"
 							:error="passwordError"
 						/>
+
+						<div class="w-100 mt-5 z-2 relative pt-5">
+							<Button color="light" class="mt-5" expand="block" @click="submit">
+								Log in
+							</Button>
+
+							<div
+								class="ion-text-center pb-5 is-flex ion-align-items-center ion-justify-content-center mt-2"
+							>
+								<ion-icon :icon="arrowBackOutline" class="color-light mr-1" />
+
+								<span class="color-light fz-14 fw-600" @click="$router.back()">
+									Back
+								</span>
+							</div>
+						</div>
 					</form>
 				</div>
 			</div>
-
-			<ion-fab vertical="bottom" horizontal="left" slot="fixed" class="w-100">
-				<div class="ion-padding w-100">
-					<Button color="light" expand="block" @click="submit"> Log in </Button>
-
-					<div
-						class="ion-text-center pb-5 is-flex ion-align-items-center ion-justify-content-center mt-2"
-					>
-						<ion-icon :icon="arrowBackOutline" class="color-light mr-1" />
-
-						<span class="color-light fz-14 fw-600" @click="$router.back()">
-							Back
-						</span>
-					</div>
-				</div>
-			</ion-fab>
 		</IonContent>
 	</IonPage>
 </template>
@@ -67,11 +69,7 @@ import http from '@/services/http';
 import * as yup from 'yup';
 import { useForm, useField } from 'vee-validate';
 import { authUserWithEmail } from '@/services/firebase/auth.js';
-import {
-	FIREBASE_ERROR_CODES,
-	CURRENT_USER_KEY,
-	CURRENT_TOKEN,
-} from '@/config/constants.js';
+import { FIREBASE_ERROR_CODES, FIRST_TIME_OPEN } from '@/config/constants.js';
 import useLoader from '@/composables/common/useLoader.js';
 import { getErrors } from '@/helpers';
 import { useStore } from 'vuex';
@@ -117,19 +115,14 @@ export default {
 					loginValue: email.value,
 					token,
 				})
-				.then((res) => {
+				.then(async (res) => {
 					const data = res.data.data;
+					localStorage.setItem(FIRST_TIME_OPEN, true);
+
 					const company = (data.Companies && data.Companies[0]) || {};
-					const role = company.UsersAndCompanies?.role;
 
-					localStorage.setItem(CURRENT_USER_KEY, data.id);
-					localStorage.setItem(CURRENT_TOKEN, token);
-
-					store.dispatch('company/updateId', company.id);
-					store.dispatch('company/updateRole', role);
-
-					store.commit('user/handleAuth', true);
-					store.commit('user/handleRole', role);
+					store.dispatch('user/updateDetails', { ...data, token });
+					await store.dispatch('company/fetchDetails', company.id);
 
 					router.replace('/');
 				})
@@ -153,6 +146,9 @@ export default {
 			authUserWithEmail({ email: email.value, password: password.value })
 				.then(async (user) => {
 					hideLoader();
+					if (!user) {
+						return;
+					}
 
 					const token = await user.getIdToken();
 
@@ -182,6 +178,10 @@ export default {
 <style scoped lang="scss">
 $gradientTopColor: #f17e48;
 $gradientBottomColor: #ec5230;
+
+.bottom-screen {
+	min-height: 600px;
+}
 
 .page-content {
 	max-height: 100vh;
@@ -225,5 +225,9 @@ $gradientBottomColor: #ec5230;
 	.error {
 		color: var(--ion-color-light) !important;
 	}
+}
+
+.z-2 {
+	z-index: 2;
 }
 </style>

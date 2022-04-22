@@ -20,9 +20,19 @@
 					<SearchInput
 						class="search-input-container"
 						ref="searchInput"
+						v-model="search"
+						@update:modelValue="handleUpdateSearch"
 					></SearchInput>
 
-					<span class="placeholder"></span>
+					<ion-buttons>
+						<ion-button
+							@click="settingsModalOpen = true"
+							class="user-btn default-icon-btn"
+							ref="settingsButton"
+						>
+							<ion-icon slot="icon-only" :icon="settingsOutline"></ion-icon>
+						</ion-button>
+					</ion-buttons>
 				</div>
 			</ion-toolbar>
 		</ion-header>
@@ -31,6 +41,7 @@
 			:fullscreen="true"
 			:scroll-events="true"
 			@ionScroll="handleScroll($event)"
+			forceOverscroll
 		>
 			<ion-refresher
 				slot="fixed"
@@ -45,6 +56,11 @@
 				></ion-refresher-content>
 			</ion-refresher>
 
+			<settings-modal
+				:model-value="settingsModalOpen"
+				@update:modelValue="handleCloseSettingns"
+			/>
+
 			<div ref="pageContent" class="h-100">
 				<Filters
 					:active-filter="orderBy"
@@ -54,6 +70,7 @@
 
 				<div class="ion-padding main-content relative" ref="mainContent">
 					<div class="food-items pt-2">
+						<location-access @update-list="updateList(1)" />
 						<transition name="fade-slide">
 							<active-order
 								v-if="hasActiveOrderAsCustomer && !isPartner"
@@ -70,12 +87,20 @@
 								@complete-order="hasActiveIncomingOrder = false"
 							/>
 						</transition> -->
+						<div v-if="!itemsList.length && !loading">
+							<p class="fz-14 ion-text-center fw-500 color-dark">No results</p>
+						</div>
 						<FoodItem
 							v-for="product in itemsList"
 							:data="product"
 							:key="product"
 							class="mb-3"
 							@click="$router.push(`/product/${product.id}`)"
+						/>
+						<more-results
+							v-if="search"
+							class="pt-2 pb-2"
+							@clear="handleClearSearch"
 						/>
 						<div class="is-flex ion-justify-content-center pt-2 pb-2">
 							<ion-spinner
@@ -96,6 +121,14 @@
 				<ion-infinite-scroll-content loading-spinner="bubbles">
 				</ion-infinite-scroll-content>
 			</ion-infinite-scroll>
+
+			<transition name="fade-slide">
+				<Checkout
+					v-if="totalBoughtCount && showCheckout"
+					:price="totalPrice"
+					hide-overlay
+				/>
+			</transition>
 		</ion-content>
 	</ion-page>
 </template>
@@ -108,6 +141,10 @@ import useHeaderAnimation from '@/composables/home/useHeaderAnimation.js';
 import ActiveOrder from '@/components/common/ActiveOrder.vue';
 import ActiveIncomingOrders from '@/components/admin/ActiveIncomingOrders.vue';
 import Button from '@/components/common/Button.vue';
+import LocationAccess from '@/components/home/LocationAccess.vue';
+import Checkout from '@/components/product/Checkout.vue';
+import MoreResults from '@/components/home/MoreResults.vue';
+import SettingsModal from '@/components/home/SettingsModal.vue';
 
 import {
 	IonContent,
@@ -123,15 +160,22 @@ import {
 	IonInfiniteScroll,
 	IonInfiniteScrollContent,
 	IonSpinner,
+	onIonViewWillLeave,
 } from '@ionic/vue';
 import { computed, ref } from '@vue/reactivity';
-import { personOutline } from 'ionicons/icons';
+import { personOutline, settingsOutline } from 'ionicons/icons';
 import { useStore } from 'vuex';
 import http from '@/services/http';
 import { onMounted } from '@vue/runtime-core';
-import { ROLES } from '@/config/constants.js';
+import { ROLES, CURRENT_SESSION_LOCATION } from '@/config/constants.js';
 import ListPlaceholder from '@/components/common/ListPlaceholder.vue';
 import useInfiniteList from '@/composables/common/infiniteList.js';
+import usePushNotifications from '@/composables/common/pushNotifications.js';
+import debounce from '@/helpers/debounce.js';
+import useStoreProducts from '@/composables/product/useStoreProducts.js';
+import useUserData from '@/composables/common/initUserData.js';
+import useGeolocation from '@/composables/common/geoLocation.js';
+import { getApproxCoords } from '@/helpers/index.js';
 
 export default {
 	name: 'Home',
@@ -155,20 +199,29 @@ export default {
 		IonInfiniteScrollContent,
 		IonSpinner,
 		ListPlaceholder,
+		LocationAccess,
+		Checkout,
+		MoreResults,
+		SettingsModal,
 	},
 	setup() {
+		const store = useStore();
+
 		const {
 			pageContent,
 			header,
 			handleScroll,
 			accountButton,
+			settingsButton,
 			searchInput,
 			topContent,
 		} = useHeaderAnimation();
-
-		const store = useStore();
-		const mainContent = ref(null);
-		const hasActiveIncomingOrder = ref(false);
+		// const { getSavedLocation } = useGeolocation();
+		const { getSavedLocation } = useGeolocation();
+		const { totalBoughtCount, totalPrice } = useStoreProducts();
+		const { getCurrentLocationIfNeeded } = useUserData();
+		const { addListeners, registerNotifications } = usePushNotifications();
+		addListeners();
 
 		const {
 			meta,
@@ -178,18 +231,20 @@ export default {
 			itemsList,
 			orderBy,
 			updateOrder,
+			search,
+			handleResponse,
 		} = useInfiniteList();
 
+		const mainContent = ref(null);
+		const hasActiveIncomingOrder = ref(false);
+		const showCheckout = ref(false);
+		const settingsModalOpen = ref(false);
+
 		const menuisOpen = computed(() => store.state.menu.isOpen);
-
-		const handleMenuClick = () => {
-			store.commit('menu/handleMenu', !menuisOpen.value);
-		};
-
+		const appRendered = computed(() => store.state.user.appRendered);
 		const hasActiveOrderAsCustomer = computed(() => {
 			return store.getters['myOrders/activeOrders'].length;
 		});
-
 		const isPartner = computed(() => {
 			const role = store.state.user.role;
 
@@ -200,30 +255,53 @@ export default {
 			);
 		});
 
-		const updateList = (page = 1, ev) => {
+		const listLocationSettings = computed(() => {
+			return store.state.user.listLocationSettings;
+		});
+
+		const handleMenuClick = () => {
+			store.commit('menu/handleMenu', !menuisOpen.value);
+		};
+
+		// clear location data on init
+		if (appRendered.value) {
+			localStorage.removeItem(CURRENT_SESSION_LOCATION);
+		}
+
+		const updateList = async (page = 1, ev, doNotClearList) => {
 			loading.value = true;
 
-			return http
-				.get(`/products?page=${page}&orderBy=${orderBy.value}`)
-				.then((res) => {
-					if (page === 1) {
-						itemsList.value = res.data.data;
-					} else {
-						itemsList.value = [...itemsList.value, ...res.data.data];
-					}
-					meta.value = res.data.meta;
-					loading.value = false;
+			if (!appRendered.value) {
+				await getCurrentLocationIfNeeded();
+				store.commit('user/changeAppRendered', true);
+			}
 
-					if (ev) {
-						ev.target.complete();
-					}
+			return http
+				.get(
+					`/products?page=${page}&orderBy=${orderBy.value}&search=${search.value}`
+				)
+				.then((res) => {
+					handleResponse(res, page, ev, doNotClearList);
 				});
 		};
 
 		const doRefresh = (e) => {
-			updateList().finally(() => {
+			updateList(1, null, true).finally(() => {
 				e.target.complete();
 			});
+		};
+
+		const handleUpdateSearch = debounce(() => {
+			itemsList.value = [];
+
+			updateList(1);
+		}, 500);
+
+		const handleClearSearch = () => {
+			itemsList.value = [];
+			search.value = null;
+
+			updateList(1);
 		};
 
 		const handleUpdateOrderClick = (order) => {
@@ -231,17 +309,50 @@ export default {
 				return;
 			}
 
+			itemsList.value = [];
+
 			updateOrder(order);
 			updateList(1);
 		};
 
 		onMounted(() => {
-			updateList();
+			registerNotifications();
 		});
 
-		onIonViewDidEnter(() => {
+		onIonViewDidEnter(async () => {
+			showCheckout.value = true;
 			store.dispatch('myOrders/getMyOrders');
+
+			const newLocationData = await getSavedLocation();
+			const newApprox = getApproxCoords(newLocationData);
+
+			if (listLocationSettings.value !== newApprox) {
+				itemsList.value = [];
+				updateList(1);
+			} else {
+				updateList(1, null, true);
+			}
+
+			store.commit('user/changeListLocationSettings', newApprox);
 		});
+
+		onIonViewWillLeave(() => {
+			showCheckout.value = false;
+		});
+
+		const handleCloseSettingns = (data) => {
+			settingsModalOpen.value = data.value;
+
+			if (!data.changed) {
+				return;
+			}
+
+			// Some delay to make sure radius is saved
+			setTimeout(() => {
+				itemsList.value = [];
+				updateList(1);
+			}, 100);
+		};
 
 		return {
 			personOutline,
@@ -266,6 +377,16 @@ export default {
 			meta,
 			orderBy,
 			handleUpdateOrderClick,
+			search,
+			handleUpdateSearch,
+			totalPrice,
+			showCheckout,
+			totalBoughtCount,
+			handleClearSearch,
+			settingsOutline,
+			settingsButton,
+			settingsModalOpen,
+			handleCloseSettingns,
 		};
 	},
 };
@@ -292,8 +413,6 @@ $gradientBottomColor: #ec5230;
 }
 
 .user-btn {
-	// --background: rgba(255, 255, 255, 0.2);
-	// --color: var(--white);
 	background: rgba(255, 255, 255, 0.2);
 	border-radius: 50%;
 	color: #fff;
@@ -317,9 +436,21 @@ ion-content {
 		--color: var(--white) !important;
 		//  background-color: #f17e48 !important;
 	}
+
+	.refresher-refreshing-icon {
+		color: var(--white) !important;
+	}
+
+	.refresher-pulling-icon {
+		color: var(--white) !important;
+	}
 }
 
 .main-content {
 	min-height: 100%;
+}
+
+.food-items {
+	padding-bottom: 35px;
 }
 </style>

@@ -1,40 +1,63 @@
 <template>
-	<div class="food-item is-flex">
+	<div
+		class="food-item relative is-flex"
+		:class="{
+			outOfStock:
+				data.status === PRODUCT_STATUSES.OUT_OF_STOCK ||
+				data.status === PRODUCT_STATUSES.EXPIRED,
+		}"
+	>
 		<div class="left relative">
-			<div class="absolute time-take is-flex is-flex-direction-column">
-				<Badge color="light">
-					<span class="fz-14 color-dark">
-						<ion-icon
-							:icon="basketOutline"
-							class="vertical-middle mr-1 fz-16 take-icon"
-						></ion-icon>
-						<span class="vertical-middle fz-14">
-							{{ fromTime }} - {{ toTime }}
-						</span>
+			<slot name="default"></slot>
+			<div
+				v-if="data.status === PRODUCT_STATUSES.ACTIVE && data.availableCount"
+				class="absolute time-take is-flex is-flex-direction-column"
+			>
+				<Badge color="white">
+					<span
+						v-if="data.availableCount < 100"
+						class="fz-14 color-dark fw-500"
+					>
+						{{ data.availableCount }} left
 					</span>
+
+					<span v-else class="fz-12 color-dark fw-600"> Left a lot </span>
 				</Badge>
 			</div>
 
-			<div class="img" :class="{ noImg: !data.Images || !data.Images.length }">
-				<img
-					:src="data.Images && data.Images[0] && data.Images[0].url"
-					alt=""
-				/>
+			<div class="img">
+				<img :src="images[0].url" alt="" />
 			</div>
 		</div>
 		<div
-			class="right p-3 is-flex is-flex-direction-column ion-justify-content-between"
+			class="right pt-3 pb-3 pr-2 pl-1 is-flex is-flex-direction-column ion-justify-content-between"
 		>
 			<div>
 				<div
-					class="w-100 title-container is-flex ion-justify-content-between ion-align-items-center"
+					class="w-100 title-container is-flex is-flex-direction-column ion-align-items-start"
 				>
-					<h1 class="title fz-16">
+					<div
+						v-if="data.status === PRODUCT_STATUSES.ACTIVE"
+						class="pickup-time"
+					>
+						<span class="fz-12 fw-400 color-dark vertical-align-middle">
+							Pick up
+						</span>
+
+						<span class="fz-12 color-dark fw-400 vertical-align-middle">
+							today
+						</span>
+
+						<span class="fz-12 color-dark fw-400 vertical-align-middle">
+							{{ fromTime }} - {{ toTime }}
+						</span>
+					</div>
+					<h1 class="title fz-16 mt-1 color-dark-grey">
 						{{ data.title }}
 					</h1>
 				</div>
 
-				<div v-if="data.Company" class="is-flex ion-align-items-center mt-1">
+				<div v-if="data.Company" class="is-flex ion-align-items-center mt-2">
 					<div class="company-logo mr-2">
 						<img :src="data.Company.logo" alt="" />
 					</div>
@@ -43,39 +66,50 @@
 					</p>
 				</div>
 
-				<div class="mt-1">
-					<Badge v-if="!done" color="primary">
-						{{ data.availableCount }} left
-					</Badge>
-				</div>
-
 				<p class="description fz-12 dark mt-2">
 					{{ data.description }}
 				</p>
 			</div>
 
-			<!-- <Badge color="dark" class="mr-2"> -->
 			<div
-				class="is-flex ion-justify-content-between ion-align-items-center fz-14 color-dark-grey mt-1"
+				class="is-flex ion-justify-content-between ion-align-items-end fz-14 color-dark-grey mt-1"
 			>
 				<div class="fz-12 distance no-wrap">
-					<ion-icon :icon="navigateOutline" class="vertical-middle"></ion-icon>
+					<template v-if="distance">
+						<ion-icon
+							:icon="navigateOutline"
+							class="vertical-middle mr-1"
+						></ion-icon>
 
-					<span class="vertical-middle fz-12 fw-500">
-						{{ (distance / 1000).toFixed(2) }}km
-					</span>
+						<span class="vertical-middle fz-12 fw-500"> {{ distance }}km </span>
+					</template>
 				</div>
 
-				<div class="no-wrap">
-					<span class="fz-12 line-through mr-2">
-						{{ data.fullPrice }} UAH
+				<div class="is-flex is-flex-direction-column ion-align-items-end">
+					<span class="fz-12 line-through">
+						{{ data.fullPrice.toFixed(2) }} UAH
 					</span>
 
-					<span class="fw-600 fz-16"> {{ data.priceWithDiscount }} UAH </span>
+					<span class="fw-600 fz-16">
+						{{ data.priceWithDiscount.toFixed(2) }} UAH
+					</span>
 				</div>
 			</div>
-			<!-- </Badge> -->
 		</div>
+
+		<EmodjiStatus
+			v-if="data.status === PRODUCT_STATUSES.OUT_OF_STOCK && !adminView"
+			emodji="😥"
+			text="Out of stock"
+			color="danger"
+		/>
+
+		<EmodjiStatus
+			v-if="data.status === PRODUCT_STATUSES.EXPIRED && !adminView"
+			emodji="🙁"
+			text="You missed it"
+			color="primary"
+		/>
 	</div>
 </template>
 
@@ -86,21 +120,22 @@ import { navigateOutline, basketOutline } from 'ionicons/icons';
 import { toRefs } from '@vue/reactivity';
 import { computed } from '@vue/runtime-core';
 import { DateTime } from 'luxon';
+import { distanceToKm } from '@/helpers';
+import { PRODUCT_STATUSES } from '@/config/constants.js';
+import usePlaceholder from '@/composables/common/usePlaceholder.js';
+import EmodjiStatus from '@/components/home/EmodjiStatus.vue';
 
 export default {
 	name: 'FoodItem',
 	components: {
 		Badge,
 		IonIcon,
+		EmodjiStatus,
 	},
 	props: {
 		data: {
 			type: Object,
 			default: () => {},
-		},
-		done: {
-			type: Boolean,
-			default: false,
 		},
 		title: {
 			type: String,
@@ -110,9 +145,14 @@ export default {
 			type: String,
 			default: null,
 		},
+		adminView: {
+			type: Boolean,
+			default: false,
+		},
 	},
 	setup(props) {
 		const { data } = toRefs(props);
+		const { getImages } = usePlaceholder();
 
 		const fromTime = computed(() => {
 			return DateTime.fromISO(data.value.takeTimeFrom).toFormat('HH:mm');
@@ -123,10 +163,11 @@ export default {
 		});
 
 		const distance = computed(() => {
-			const dist = data.value.distance;
-			const additional = (dist / 100) * 20;
+			return distanceToKm(data.value.distance);
+		});
 
-			return (dist + additional).toFixed(2);
+		const images = computed(() => {
+			return getImages(data.value.Images);
 		});
 
 		return {
@@ -135,14 +176,23 @@ export default {
 			fromTime,
 			toTime,
 			distance,
+			PRODUCT_STATUSES,
+			images,
 		};
 	},
 };
 </script>
 
 <style lang="scss" scoped>
+.outOfStock {
+	.left,
+	.right {
+		filter: grayscale(1);
+	}
+}
+
 .description {
-	-webkit-line-clamp: 3;
+	-webkit-line-clamp: 1;
 	display: -webkit-box;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
@@ -155,6 +205,7 @@ export default {
 	background-color: var(--white);
 	width: 100%;
 	overflow: hidden;
+	max-height: 160px;
 
 	.left {
 		height: 160px;
@@ -168,6 +219,20 @@ export default {
 			height: 100%;
 			border-radius: 10px;
 			overflow: hidden;
+			position: relative;
+
+			&::before {
+				content: '';
+				display: block;
+				width: 100%;
+				height: 100%;
+				background: #000;
+				opacity: 0.02;
+				position: absolute;
+				left: 0;
+				top: 0;
+				z-index: 2;
+			}
 
 			&.noImg {
 				background: var(--ion-color-light-tint);
@@ -183,6 +248,7 @@ export default {
 		.time-take {
 			top: 10px;
 			left: 10px;
+			z-index: 3;
 		}
 
 		.distance {
@@ -194,7 +260,14 @@ export default {
 		width: calc(100% - 160px);
 
 		.title {
-			color: var(--ion-color-dark);
+			-webkit-line-clamp: 2;
+			display: -webkit-box;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			width: 100%;
+
+			// color: var(--ion-color-dark);
 		}
 
 		.subtitle {
@@ -217,4 +290,20 @@ export default {
 .take-icon {
 	--ionicon-stroke-width: 40px;
 }
+
+.out-badge {
+	z-index: 3;
+	top: 10px;
+	left: 10px;
+}
+
+.take {
+	padding: 0px 7px !important;
+}
+
+// .pickup-time {
+// 	box-shadow: 0px 0px 2px 1px rgba(0, 0, 0, 0.06);
+// 	border-radius: 30px;
+// 	padding: 0 5px;
+// }
 </style>

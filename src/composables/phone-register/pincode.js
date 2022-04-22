@@ -1,4 +1,4 @@
-import { computed, onBeforeUpdate, reactive, ref } from 'vue';
+import { computed, nextTick, onBeforeUpdate, reactive, ref } from 'vue';
 
 export default function () {
 	const values = reactive([
@@ -21,11 +21,7 @@ export default function () {
 			value: null,
 		},
 	]);
-	const valuesRefs = ref([]);
-
-	onBeforeUpdate(() => {
-		valuesRefs.value = [];
-	});
+	const inputs = ref(null);
 
 	const getValueElement = (index) => {
 		const el = values[index];
@@ -34,14 +30,13 @@ export default function () {
 	};
 
 	const focusElementByIndex = (index) => {
-		const el = valuesRefs.value[index];
+		const el = inputs.value.querySelector(`#input_${index}`);
 
 		if (!el) {
 			return;
 		}
 
-		const nextRef = el.$refs.input;
-		nextRef.$el.setFocus();
+		el.focus();
 	};
 
 	const handleCodeInput = (item, index) => {
@@ -72,8 +67,12 @@ export default function () {
 		return values.map((v) => v.value).join('');
 	});
 
-	const handleInputFocus = () => {
+	const handleInputFocus = (index) => {
 		const emptyIndex = values.findIndex((v) => !v.value);
+
+		if (index === emptyIndex) {
+			return;
+		}
 
 		if (emptyIndex > -1) {
 			focusElementByIndex(emptyIndex);
@@ -109,8 +108,8 @@ export default function () {
 		handleCodeInput,
 		code,
 		values,
-		valuesRefs,
 		handleInputFocus,
 		handlePaste,
+		inputs,
 	};
 }

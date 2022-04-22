@@ -24,35 +24,40 @@
 		</ion-header>
 
 		<ion-content :fullscreen="true" class="ion-padding">
-			<div class="content">
-				<div class="is-flex ion-align-items-center mb-2">
-					<div class="logo mr-2">
-						<img :src="company.logo" alt="" />
+			<div
+				class="content is-flex is-flex-direction-column ion-justify-content-between"
+			>
+				<div>
+					<div class="is-flex ion-align-items-center mb-2">
+						<div class="logo mr-2">
+							<img :src="company.logo" alt="" />
+						</div>
+						<h2 class="mt-2 mb-2 color-dark fz-18">
+							Order from {{ company.name }}
+						</h2>
 					</div>
-					<h2 class="mt-2 mb-2 color-dark fz-18">
-						Order from {{ company.name }}
-					</h2>
+					<CheckoutItem
+						v-for="(item, index) in products"
+						:key="index"
+						:product="item"
+						:total-products-count="products.length"
+						:disabled="!editProductsAvailable"
+						class="mb-2"
+						@change-count="handleChangeCount($event, item)"
+					></CheckoutItem>
+
+					<h2 class="ion-text-end fz-20 mt-3">Total: {{ totalPrice }} UAH</h2>
+
+					<Payment
+						class="mt-5 pt-5"
+						:cards="cards"
+						@payment-type="handlePaymentTypeChange"
+						@payment-card="handlePaymentCardChange"
+						@add-new="addNewCard"
+					/>
 				</div>
-				<CheckoutItem
-					v-for="(item, index) in products"
-					:key="index"
-					:product="item"
-					:total-products-count="products.length"
-					@change-count="handleChangeCount($event, item)"
-					class="mb-2"
-				></CheckoutItem>
 
-				<h2 class="ion-text-end fz-20 mt-3">Total: {{ totalPrice }} UAH</h2>
-
-				<Payment
-					class="mt-5 pt-5"
-					@payment-type="handlePaymentTypeChange"
-					@update-details="handleDetailsChange"
-				/>
-			</div>
-
-			<ion-fab vertical="bottom" horizontal="left" slot="fixed" class="w-100">
-				<div class="order-container ion-padding w-100">
+				<div class="mt-5">
 					<Button
 						color="primary"
 						expand="block"
@@ -63,8 +68,19 @@
 						Order {{ totalPrice }} UAH
 					</Button>
 				</div>
-			</ion-fab>
+			</div>
+
+			<!-- <ion-fab vertical="bottom" horizontal="left" slot="fixed" class="w-100">
+				<div class="order-container ion-padding w-100"></div>
+			</ion-fab> -->
 		</ion-content>
+
+		<ErrorModal
+			:is-open="isOpen"
+			:error-data="errorData"
+			:products="products"
+			@close="onClose"
+		/>
 	</ion-page>
 </template>
 
@@ -79,16 +95,23 @@ import {
 	IonIcon,
 	IonTitle,
 	IonFab,
+	onIonViewWillEnter,
+	onIonViewDidLeave,
 } from '@ionic/vue';
 import { chevronBackOutline } from 'ionicons/icons';
 import CheckoutItem from '@/components/checkout/CheckoutItem.vue';
 import Payment from '@/components/checkout/Payment.vue';
-import { computed, ref } from '@vue/reactivity';
+import { ref } from '@vue/reactivity';
 import Button from '@/components/common/Button.vue';
 import { useRouter } from 'vue-router';
-import { useStore } from 'vuex';
 import http from '@/services/http';
 import useLoader from '@/composables/common/useLoader.js';
+import ErrorModal from '@/components/checkout/ErrorModal.vue';
+import useErrorModal from '@/composables/checkout/errorModal.js';
+import useAlert from '@/composables/common/alert.js';
+import useOrderData from '@/composables/checkout/useOrderData.js';
+import { PAYMENT_TYPES } from '@/config/constants.js';
+import { Haptics, NotificationType } from '@capacitor/haptics';
 
 export default {
 	name: 'Checkout',
@@ -105,80 +128,100 @@ export default {
 		Payment,
 		Button,
 		IonFab,
+		ErrorModal,
 	},
 	setup() {
 		const router = useRouter();
-		const store = useStore();
+		const { isOpen, onClose, errorData } = useErrorModal();
 		const { showLoader, hideLoader, isLoading } = useLoader();
+		const { showMessage } = useAlert();
+		const {
+			products,
+			placeId,
+			totalPrice,
+			clearProducts,
+			company,
+			handleChangeCount,
+			paymentType,
+			paymentCard,
+			handlePaymentTypeChange,
+			orderBtnIsDisabled,
+			editProductsAvailable,
+			setPickupTime,
+			pickupTime,
+		} = useOrderData();
 
-		const items = ref([]);
-		const paymentType = ref(null);
-		const cardDetails = ref({});
+		const orderCreated = ref(false);
+		const cards = ref([]);
+		const currentOrderData = ref(null);
 
-		const products = computed(() => {
-			return store.state.products.products;
-		});
-
-		const placeId = computed(() => {
-			return products.value[0]?.PlaceId;
-		});
-
-		const totalPrice = computed(() => {
-			return store.getters['products/totalPrice'];
-		});
-
-		const clearProducts = () => {
-			store.commit('products/clear');
+		const updateOrderPaymentTypeToCash = () => {
+			return http.put(
+				`/orders/${currentOrderData.value.id}/payment-type/update`
+			);
 		};
 
-		const addProduct = (product) => {
-			store.commit('products/addProduct', product);
+		const payWithSavedCard = async (orderId) => {
+			const body = {
+				orderId,
+				rectoken: paymentCard.value,
+			};
+
+			return http
+				.post(`/orders/pay`, body)
+				.then(async () => {
+					Haptics.impact(NotificationType.Success);
+					showMessage({
+						color: 'success',
+						text: `Payment was successfull`,
+						title: 'Success',
+					});
+
+					router.replace(`/success?type=card&time=${pickupTime.value}`);
+				})
+				.catch(() => {
+					Haptics.impact(NotificationType.Error);
+					showMessage({
+						color: 'danger',
+						text: `Something went wrong`,
+						title: 'Error',
+					});
+				});
 		};
 
-		const removeProduct = (product) => {
-			store.commit('products/removeProduct', product);
+		const redirectToPayment = (data) => {
+			router.replace(`/payment?orderId=${data.orderId}`);
 		};
 
-		const company = computed(() => {
-			const product = products.value[0];
+		const getUserSavedCards = () => {
+			http.get('/users/mine/cards').then((res) => {
+				cards.value = res.data.data
+					.filter((card) => {
+						const date = new Date(card.expiration);
+						const now = new Date();
 
-			return product?.Company || {};
-		});
+						return now < date;
+					})
+					.map((card) => {
+						return {
+							...card,
+							cardType: card.cardType.toLowerCase(),
+						};
+					});
+			});
+		};
 
-		const handleChangeCount = (type, product) => {
-			if (type === 1) {
-				addProduct(product);
-				return;
+		const createOrder = (data) => {
+			if (currentOrderData.value) {
+				return Promise.resolve({
+					data: { data: { order: currentOrderData.value } },
+				});
 			}
 
-			removeProduct(product);
+			return http.post('/orders/create', data);
 		};
 
-		const handlePaymentTypeChange = (v) => {
-			paymentType.value = v;
-		};
-
-		const handleDetailsChange = (v) => {
-			cardDetails.value = v;
-		};
-
-		const orderBtnIsDisabled = computed(() => {
-			if (!totalPrice.value) {
-				return true;
-			}
-
-			if (!paymentType.value) {
-				return true;
-			}
-
-			if (paymentType.value === 'card' && !cardDetails.value.valid) {
-				return true;
-			}
-
-			return false;
-		});
-
-		const handleOrderClick = () => {
+		const handleOrderClick = async () => {
 			const data = {
 				paymentMethod: paymentType.value,
 				placeId: placeId.value,
@@ -190,37 +233,100 @@ export default {
 				}),
 			};
 
-			showLoader();
-			http
-				.post('/orders/create', data)
-				.then(() => {
-					clearProducts();
+			await showLoader();
+			createOrder(data)
+				.then(async (res) => {
+					setPickupTime();
+					editProductsAvailable.value = false;
+					orderCreated.value = true;
+					currentOrderData.value = res.data.data.order;
+
 					if (paymentType.value === 'card') {
-						router.push('/success?type=credit');
+						if (paymentCard.value) {
+							await payWithSavedCard(res.data.data.order.id);
+							return;
+						}
+
+						redirectToPayment({
+							orderId: res.data.data.order.id,
+						});
+
 						return;
 					}
 
-					router.push('/success?type=cash');
+					if (
+						currentOrderData.value &&
+						currentOrderData.value.paymentMethod === PAYMENT_TYPES.CARD
+					) {
+						await updateOrderPaymentTypeToCash();
+						Haptics.impact(NotificationType.Success);
+						router.replace(`/success?type=cash&time=${pickupTime.value}`);
+
+						return;
+					}
+
+					Haptics.impact(NotificationType.Success);
+					router.replace(`/success?type=cash&time=${pickupTime.value}`);
+				})
+				.catch((err) => {
+					Haptics.impact(NotificationType.Error);
+
+					errorData.value = err.response.data.errors;
+					isOpen.value = true;
 				})
 				.finally(() => {
 					hideLoader();
 				});
 		};
 
+		onIonViewWillEnter(() => {
+			if (!products.value.length) {
+				router.replace('/');
+				return;
+			}
+
+			getUserSavedCards();
+		});
+
+		onIonViewDidLeave(() => {
+			currentOrderData.value = null;
+			editProductsAvailable.value = true;
+
+			if (orderCreated.value) {
+				clearProducts();
+			}
+
+			orderCreated.value = false;
+		});
+
+		const handlePaymentCardChange = (v) => {
+			paymentCard.value = v;
+		};
+
+		const addNewCard = () => {
+			paymentType.value = PAYMENT_TYPES.CARD;
+			paymentCard.value = null;
+			handleOrderClick();
+		};
+
 		return {
 			chevronBackOutline,
 			handleChangeCount,
 			totalPrice,
-			items,
 			paymentType,
 			handlePaymentTypeChange,
-			handleDetailsChange,
-			cardDetails,
 			orderBtnIsDisabled,
 			handleOrderClick,
 			products,
 			company,
 			isLoading,
+			isOpen,
+			onClose,
+			errorData,
+			cards,
+			handlePaymentCardChange,
+			editProductsAvailable,
+			addNewCard,
 		};
 	},
 };
@@ -249,6 +355,7 @@ export default {
 }
 
 .content {
-	padding-bottom: 100px !important;
+	padding-bottom: 10px !important;
+	min-height: 100%;
 }
 </style>

@@ -3,23 +3,31 @@
 		class="relative is-flex is-justify-content-center"
 		@click="handleContainerClick"
 	>
-		<input
+		<ion-input
 			type="text"
 			class="search-input w-100"
-			@input="handleInput"
 			ref="inputRef"
-			:value="search"
+			:value="modelValue"
+			@ionInput="handleInput"
+			@ionFocus="handleFocus"
+			@ionBlur="handleBlur"
 		/>
+		<span
+			v-show="!!modelValue"
+			ref="remove"
+			class="remove absolute"
+			@click="handleClearClick"
+		>
+			<ion-icon :icon="closeOutline" class="close-icon"></ion-icon>
+		</span>
 
 		<div
-			class="placeholder absolute w-100 is-flex ion-justify-content-center"
+			class="placeholder absolute w-100 is-flex"
 			ref="placeholder"
-			:class="{ hide: !showPlaceHolder }"
+			:class="{ hide: !showPlaceHolder || isFocused }"
 		>
 			<ion-icon :icon="searchOutline" class="vertical-middle mr-2"></ion-icon>
-			<span class="vertical-middle">
-				Search for restaurant
-			</span>
+			<span class="vertical-middle"> Search </span>
 		</div>
 	</div>
 </template>
@@ -27,45 +35,78 @@
 <script>
 import { IonIcon } from '@ionic/vue';
 import { searchOutline } from 'ionicons/icons';
-import { ref } from '@vue/reactivity';
+import { ref, toRefs } from '@vue/reactivity';
+import { IonInput } from '@ionic/vue';
+import { closeOutline } from 'ionicons/icons';
+import { watch } from '@vue/runtime-core';
 
 export default {
 	name: 'SearchInput',
 	components: {
 		IonIcon,
+		IonInput,
 	},
+	props: {
+		modelValue: {
+			type: [Number, String],
+			default: null,
+		},
+	},
+	emits: ['update:modelValue'],
 	setup(props, { emit }) {
-		const search = ref('');
+		const { modelValue } = toRefs(props);
 		const inputRef = ref(null);
 		const placeholder = ref(null);
 		let showPlaceHolder = ref(true);
+		const isFocused = ref(false);
+
+		watch(
+			() => modelValue.value,
+			(newValue) => {
+				if (newValue) {
+					showPlaceHolder.value = false;
+					return;
+				}
+
+				showPlaceHolder.value = true;
+			}
+		);
 
 		const handleContainerClick = () => {
-			inputRef.value.focus();
+			inputRef.value.$el.setFocus();
+		};
+
+		const handleFocus = () => {
+			isFocused.value = true;
+		};
+
+		const handleBlur = () => {
+			isFocused.value = false;
 		};
 
 		const handleInput = (e) => {
 			const value = e.target.value;
-			search.value = value;
 
-			emit('search', search.value);
+			emit('update:modelValue', value);
+		};
 
-			if (value) {
-				showPlaceHolder.value = false;
-				return;
-			}
-
+		const handleClearClick = () => {
+			emit('update:modelValue', '');
 			showPlaceHolder.value = true;
 		};
 
 		return {
 			searchOutline,
 			handleInput,
-			search,
 			handleContainerClick,
 			inputRef,
 			showPlaceHolder,
 			placeholder,
+			handleFocus,
+			handleBlur,
+			isFocused,
+			closeOutline,
+			handleClearClick,
 		};
 	},
 };
@@ -82,7 +123,26 @@ export default {
 	font-size: 12px;
 	height: 40px;
 	padding: 0 10px;
-	text-align: center;
+	text-align: left;
+	--padding-start: 20px;
+}
+
+.icon {
+	--ionicon-stroke-width: 50px;
+}
+
+.remove {
+	top: 50%;
+	right: 15px;
+	transform: translateY(-50%);
+	z-index: 3;
+	color: var(--ion-color-light);
+	line-height: 10px !important;
+
+	.close-icon {
+		height: 20px;
+		width: 20px;
+	}
 }
 
 .placeholder {
@@ -92,9 +152,14 @@ export default {
 	transform: translate(-50%, -50%);
 	font-weight: 400;
 	font-size: 14px;
+	text-align: left;
+	padding-left: 20px;
+	transition: all 0.15s ease;
+	z-index: 2;
+	opacity: 1;
 
 	&.hide {
-		display: none !important;
+		opacity: 0 !important;
 	}
 }
 </style>

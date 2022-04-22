@@ -1,27 +1,37 @@
 <template>
-	<div
-		class="checkout-section ion-padding-start ion-padding-end ion-padding-top"
+	<ion-fab
+		vertical="bottom"
+		horizontal="left"
+		slot="fixed"
+		class="w-100 bottom"
 	>
-		<Button color="primary" expand="full" shape="round" @click="handleClick">
-			Checkout ({{ price }} UAH)
-		</Button>
-	</div>
+		<div class="checkout-section ion-padding w-100" :class="{ hideOverlay }">
+			<Button color="primary" expand="full" shape="round" @click="handleClick">
+				Checkout ({{ price }} UAH)
+			</Button>
+		</div>
+	</ion-fab>
 </template>
 
 <script>
 import Button from '@/components/common/Button.vue';
-import { ref, toRefs } from '@vue/reactivity';
 import { useRouter } from 'vue-router';
+import { IonFab } from '@ionic/vue';
 
 export default {
 	name: 'Checkout',
 	components: {
 		Button,
+		IonFab,
 	},
 	props: {
 		price: {
 			type: [Number, String],
 			default: 0,
+		},
+		hideOverlay: {
+			type: Boolean,
+			default: false,
 		},
 	},
 	setup(props) {
@@ -41,12 +51,15 @@ export default {
 
 <style lang="scss" scoped>
 .checkout-section {
-	position: fixed;
-	bottom: 0;
-	left: 0;
-	width: 100%;
 	background-color: rgba(255, 255, 255, 0.7);
-	z-index: 2;
 	padding-bottom: calc(15px + var(--ion-safe-area-bottom));
+
+	&.hideOverlay {
+		background-color: transparent;
+	}
+}
+
+.bottom {
+	bottom: 0 !important;
 }
 </style>

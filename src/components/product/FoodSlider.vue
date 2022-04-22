@@ -13,7 +13,7 @@
 					</Badge>
 
 					<div class="img is-flex ion-justify-content-center">
-						<img :src="product.Images[0] && product.Images[0].url" alt="" />
+						<img :src="getImage(product.Images)" alt="" />
 					</div>
 
 					<div class="descr p-2">
@@ -31,6 +31,7 @@
 <script>
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import Badge from '@/components/common/Badge.vue';
+import usePlaceholder from '@/composables/common/usePlaceholder.js';
 
 import { ref } from '@vue/reactivity';
 export default {
@@ -45,10 +46,12 @@ export default {
 	setup(_) {
 		const items = ref([]);
 		const slider = ref(null);
+		const { getImage } = usePlaceholder();
 
 		return {
 			items,
 			slider,
+			getImage,
 		};
 	},
 };
@@ -84,9 +87,5 @@ export default {
 
 .descr {
 	background-color: var(--white);
-}
-
-.view-description {
-	height: 37px;
 }
 </style>

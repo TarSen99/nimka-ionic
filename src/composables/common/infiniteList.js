@@ -4,6 +4,7 @@ export default function () {
 	const loading = ref(false);
 	const itemsList = ref([]);
 	const orderBy = ref('date');
+	const search = ref(null);
 	const meta = ref({
 		count: 0,
 		limit: 0,
@@ -35,6 +36,45 @@ export default function () {
 		orderBy.value = v;
 	};
 
+	const handleResponse = (res, page = 1, ev, doNotClearList) => {
+		meta.value = res.data.meta;
+		loading.value = false;
+
+		if (ev) {
+			ev.target.complete();
+		}
+
+		if (page !== 1) {
+			itemsList.value = [...itemsList.value, ...res.data.data];
+		}
+
+		// If not items - just push new
+		if (!itemsList.value.length) {
+			itemsList.value = res.data.data;
+			return;
+		}
+
+		if (!doNotClearList) {
+			return;
+		}
+
+		// if there are already items, add only unique
+		const itemsToAdd = [];
+		for (const item of res.data.data) {
+			const exists = itemsList.value.findIndex((el) => el.id === item.id);
+
+			if (exists > -1) {
+				itemsList.value.splice(exists, 1, item);
+				continue;
+			} else {
+				itemsToAdd.push(item);
+			}
+
+			itemsList.value.unshift(...itemsToAdd);
+			return;
+		}
+	};
+
 	return {
 		meta,
 		maxPage,
@@ -43,5 +83,7 @@ export default function () {
 		itemsList,
 		orderBy,
 		updateOrder,
+		search,
+		handleResponse,
 	};
 }

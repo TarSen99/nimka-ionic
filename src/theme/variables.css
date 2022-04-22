@@ -36,7 +36,7 @@ http://ionicframework.com/docs/theming/ */
 	--ion-color-success-tint: #3cac68;
 
 	/** warning **/
-	--ion-color-warning: #ffc409;
+	--ion-color-warning: #e1a500;
 	--ion-color-warning-rgb: 255, 196, 9;
 	--ion-color-warning-contrast: #000000;
 	--ion-color-warning-contrast-rgb: 0, 0, 0;
@@ -80,6 +80,7 @@ http://ionicframework.com/docs/theming/ */
 	--ion-font-family: 'Roboto', sans-serif;
 	--white: #fff;
 	--grey: #eaeaea;
+	--grey-medium: #eee;
 	/* --grey: #DBDBDB; */
 	--dark-grey: #565656;
 	--ion-color-white: var(--white);
@@ -121,7 +122,7 @@ http://ionicframework.com/docs/theming/ */
 		--ion-color-success-shade: #29c467;
 		--ion-color-success-tint: #44e283;
 
-		--ion-color-warning: #ffd534;
+		--ion-color-warning: #9c7d00;
 		--ion-color-warning-rgb: 255, 213, 52;
 		--ion-color-warning-contrast: #000000;
 		--ion-color-warning-contrast-rgb: 0, 0, 0;

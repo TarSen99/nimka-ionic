@@ -47,13 +47,16 @@ export default function () {
 	const accountButton = ref(null);
 	const searchInput = ref(null);
 	const topContent = ref(null);
+	const settingsButton = ref(null);
 	let started = false;
 	let currentY = 0;
 	let headertAnimation;
 	let buttonAnimation;
+	let settingsButtonAnimation;
 	let inputAnimation;
 	let inputPlaceholderAnimation;
 	let topContentAnimation;
+	let removeAnimation;
 
 	const handleScroll = (e) => {
 		currentY = e.detail.currentY;
@@ -62,29 +65,42 @@ export default function () {
 			started = true;
 			headertAnimation.progressStart();
 			buttonAnimation.progressStart();
-			inputAnimation.progressStart();
+			settingsButtonAnimation.progressStart();
 			inputPlaceholderAnimation.progressStart();
+			inputAnimation.progressStart();
 			topContentAnimation.progressStart();
+			removeAnimation.progressStart();
 		}
 
 		headertAnimation.progressStep(getStep(currentY));
 		buttonAnimation.progressStep(getStep(currentY));
-		inputAnimation.progressStep(getStep(currentY));
+		settingsButtonAnimation.progressStep(getStep(currentY));
 		inputPlaceholderAnimation.progressStep(getStep(currentY));
+		inputAnimation.progressStep(getStep(currentY));
 		topContentAnimation.progressStep(getStep(currentY));
+		removeAnimation.progressStep(getStep(currentY));
 	};
 
 	onMounted(() => {
 		headertAnimation = createHeadertAnimation(header.value.$el);
 		buttonAnimation = createChangeBackgroundAnimation(accountButton.value.$el);
+		settingsButtonAnimation = createChangeBackgroundAnimation(
+			settingsButton.value.$el
+		);
 		topContentAnimation = createTopContentAnimation(
 			topContent.value.$refs.filtersList
 		);
-		inputAnimation = createChangeBackgroundInputAnimation(
-			searchInput.value.$refs.inputRef
-		);
+
 		inputPlaceholderAnimation = createChangeColorInputAnimation(
 			searchInput.value.$refs.placeholder
+		);
+
+		removeAnimation = createChangeColorInputAnimation(
+			searchInput.value.$refs.remove
+		);
+
+		inputAnimation = createChangeBackgroundInputAnimation(
+			searchInput.value.$refs.inputRef.$el
 		);
 	});
 
@@ -95,5 +111,6 @@ export default function () {
 		searchInput,
 		handleScroll,
 		topContent,
+		settingsButton,
 	};
 }

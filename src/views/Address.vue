@@ -23,85 +23,81 @@
 		</ion-header>
 
 		<ion-content :fullscreen="true">
-			<div class="ion-padding">
-				<template v-if="cachedGeolocation && !address">
-					<p class="fz-16 color-dark pb-2 ion-text-center fw-500 italic">
-						Your location is autodetected
-					</p>
-
-					<p class="fz-14 color-grey mt-1 ion-text-center">
-						You can also select your address from list:
-					</p>
-				</template>
-				<Input
-					@update:modelValue="handleAddressInput"
-					placeholder="Enter address here"
-					label="Address"
-					class="account-input"
-					:model-value="addressSearch"
-				/>
-
-				<div class="mt-1">
-					<p
-						v-if="!loading && !results.length"
-						class="ion-text-center fz-14 pl-5 pr-5 mb-1"
+			<div
+				class="h-100 is-flex is-flex-direction-column ion-justify-content-between"
+			>
+				<div class="ion-padding">
+					<template
+						v-if="
+							cachedGeolocation && !address && isLocationAllowed && !pageLoading
+						"
 					>
-						Enter your address and select correct one from results
-					</p>
+						<p class="fz-16 color-dark pb-2 ion-text-center fw-500 italic">
+							Your location is autodetected
+						</p>
 
-					<div v-if="loading" class="ion-text-center">
-						<ion-spinner></ion-spinner>
-					</div>
+						<p class="fz-14 color-grey mt-1 ion-text-center">
+							You can also enter your address below:
+						</p>
+					</template>
+					<Input
+						@update:modelValue="handleAddressInput"
+						placeholder="Enter address here"
+						label="Address"
+						class="account-input"
+						:model-value="addressSearch"
+					/>
 
-					<ion-radio-group
-						mode="md"
-						:value="selectedLocation"
-						@ionChange="handleChangeLocation"
-					>
-						<ion-item key="auto" class="location-item" lines="none">
-							<ion-radio slot="start" value="auto"></ion-radio>
+					<div class="mt-2 radios">
+						<div v-if="loading" class="ion-text-center">
+							<ion-spinner></ion-spinner>
+						</div>
 
-							<div class="p-2">Autodetection</div>
-						</ion-item>
-
-						<ion-item
-							v-for="location in results"
-							:key="location.place_id"
-							class="location-item"
-							lines="none"
+						<ion-radio-group
+							mode="md"
+							:value="selectedLocation"
+							@ionChange="handleChangeLocation"
 						>
-							<ion-radio slot="start" :value="location.place_id"></ion-radio>
+							<ion-item
+								v-for="location in results"
+								:key="location.place_id"
+								class="location-item"
+								lines="none"
+							>
+								<ion-radio slot="start" :value="location.place_id"></ion-radio>
 
-							<div class="p-2">
-								{{ location.description }}
-							</div>
-						</ion-item>
-					</ion-radio-group>
+								<div class="p-2">
+									{{ location.description }}
+								</div>
+							</ion-item>
+							<ion-item key="auto" class="location-item" lines="none">
+								<ion-radio slot="start" value="auto"></ion-radio>
+
+								<div class="p-2">Autodetection</div>
+							</ion-item>
+						</ion-radio-group>
+					</div>
+				</div>
+
+				<div class="ion-padding">
+					<Button
+						color="primary"
+						expand="full"
+						shape="round"
+						class="save"
+						:disabled="!selectedLocation"
+						@click="save"
+					>
+						Save
+					</Button>
 				</div>
 			</div>
-
-			<ion-fab
-				vertical="bottom"
-				horizontal="left"
-				slot="fixed"
-				class="w-100 ion-padding"
-			>
-				<Button
-					color="primary"
-					expand="full"
-					shape="round"
-					class="save"
-					:disabled="!selectedLocation"
-					@click="save"
-				>
-					Save
-				</Button>
-			</ion-fab>
 		</ion-content>
 	</ion-page>
 </template>
 
 <script>
+import { useStore } from 'vuex';
 import {
 	IonContent,
 	IonHeader,
@@ -129,6 +125,8 @@ import useLoader from '@/composables/common/useLoader.js';
 import http from '@/services/http/index.js';
 import useAlert from '@/composables/common/alert.js';
 import useGeolocation from '@/composables/common/geoLocation.js';
+import { GEO_IS_HARDCODED } from '@/config/constants.js';
+import useNativeStore from '@/composables/common/nativeStore.js';
 
 export default {
 	name: 'Address',
@@ -151,18 +149,28 @@ export default {
 		IonFab,
 	},
 	setup() {
+		const store = useStore();
+		const { setItem, removeItem } = useNativeStore();
+
 		const userData = ref(null);
 		const address = ref(null);
 		const addressSearch = ref(null);
 		const selectedLocation = ref(null);
 		const results = ref([]);
 		const loading = ref(false);
-		const { showLoader, hideLoader } = useLoader();
+		const { showLoader, hideLoader, isLoading: pageLoading } = useLoader();
 		const { showMessage } = useAlert();
-		const { getCurrentLocation, cachedGeolocation } = useGeolocation();
+		const {
+			getCurrentLocation,
+			cachedGeolocation,
+			saveLocation,
+			getNotAllowedValue,
+		} = useGeolocation();
 
-		const fetchDetails = () => {
-			showLoader();
+		const isLocationAllowed = ref(null);
+
+		const fetchDetails = async () => {
+			await showLoader();
 			http
 				.get('/users/mine')
 				.then((res) => {
@@ -171,6 +179,10 @@ export default {
 
 					address.value = data.address;
 					addressSearch.value = data.address;
+
+					if (!data.address && data.latitude) {
+						selectedLocation.value = 'auto';
+					}
 				})
 				.finally(() => {
 					hideLoader();
@@ -199,15 +211,18 @@ export default {
 			displaySuggestions(v);
 		};
 
-		const updateAddress = ({ latitude, longtitude }) => {
+		const updateAddress = async ({ latitude, longtitude }) => {
 			const addressObj = results.value.find(
 				(el) => el.place_id === selectedLocation.value
 			);
 
 			let addressName = null;
 
-			if (addressObj) {
-				addressName = addressObj.description;
+			if (selectedLocation.value !== 'auto') {
+				addressName = addressObj?.description || address.value;
+				await setItem(GEO_IS_HARDCODED, true);
+			} else {
+				await removeItem(GEO_IS_HARDCODED);
 			}
 
 			http
@@ -217,10 +232,24 @@ export default {
 					latitude,
 					longtitude,
 				})
-				.then(() => {
+				.then(async (res) => {
+					store.dispatch('user/updateDetails', res.data.data);
+
+					await saveLocation({
+						latitude,
+						longtitude,
+					});
+
 					results.value = [];
 					address.value = addressName;
 					addressSearch.value = addressName;
+
+					if (!res.data.data.address) {
+						selectedLocation.value = 'auto';
+					} else {
+						selectedLocation.value = null;
+					}
+
 					showMessage({
 						color: 'success',
 						text: `Details were successfully updated`,
@@ -238,10 +267,18 @@ export default {
 		};
 
 		const save = async () => {
-			showLoader();
-
+			await showLoader();
 			if (selectedLocation.value === 'auto') {
-				const location = await getCurrentLocation();
+				const location = await getCurrentLocation(true);
+
+				if (!location) {
+					showMessage({
+						text: `Geolocation is denied`,
+					});
+
+					hideLoader();
+					return;
+				}
 
 				updateAddress(location);
 				return;
@@ -267,9 +304,11 @@ export default {
 			selectedLocation.value = e.target.value;
 		};
 
-		onIonViewWillEnter(() => {
+		onIonViewWillEnter(async () => {
 			fetchDetails();
-			getCurrentLocation();
+			const notAllowed = await getNotAllowedValue();
+
+			isLocationAllowed.value = !notAllowed;
 		});
 
 		return {
@@ -283,6 +322,8 @@ export default {
 			loading,
 			cachedGeolocation,
 			addressSearch,
+			isLocationAllowed,
+			pageLoading,
 		};
 	},
 };
@@ -313,5 +354,10 @@ export default {
 	--padding-start: 5px;
 	--background: var(--white);
 	border-bottom: 1px solid var(--ion-color-light);
+}
+
+.radios {
+	border-radius: 30px;
+	overflow: hidden;
 }
 </style>

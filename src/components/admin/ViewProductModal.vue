@@ -6,26 +6,40 @@
 			css-class="view-product-modal"
 			mode="ios"
 			@willDismiss="$emit('close')"
-			@willPresent="handlePresentModal"
-			:breakpoints="[0.9, 1]"
+			@willPresent="handlePresent"
+			:breakpoints="[0, 0.9, 1]"
 			:initialBreakpoint="0.9"
 		>
 			<div class="ion-padding modal-content">
+				<div class="mb-3">
+					<span class="field-value">
+						<product-status-badge :status="currentProductDetails.status" />
+					</span>
+				</div>
 				<div class="is-flex">
 					<div class="logo mr-4">
-						<img src="@/assets/images/logo.png" alt="" />
+						<img :src="companyDetails.logo" alt="" />
 					</div>
-					<modal-header class="w-100" title="Best burger" @close="handleClose">
+					<modal-header
+						class="w-100"
+						:title="companyDetails.name"
+						@close="handleClose"
+					>
+						<template #default>
+							<p class="fz-14 color-grey view-description view-description-2">
+								{{ activePlace.address }}
+							</p>
+						</template>
 					</modal-header>
 				</div>
 
-				<div>
+				<div class="mt-5">
 					<div class="w-100">
 						<div class="item">
 							<div class="field-title">Created at:</div>
 
 							<div>
-								<span class="field-value">26.10.20 18:50</span>
+								<span class="field-value">{{ createdAt }}</span>
 							</div>
 						</div>
 
@@ -33,7 +47,9 @@
 							<div class="field-title">Title:</div>
 
 							<div>
-								<span class="field-value">Best burger</span>
+								<span class="field-value">
+									{{ currentProductDetails.title }}
+								</span>
 							</div>
 						</div>
 
@@ -45,11 +61,10 @@
 									class="field-value view-description"
 									:class="{ viewAll }"
 									ref="description"
-									>Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-									Quisquam aliquid, ex dolorum cupiditate molestias, est quod
-									sint doloribus provident atque harum laudantium soluta
-									voluptatum perferendis fugit, culpa iste sequi dolores!</span
+									:key="currentProductDetails.id"
 								>
+									{{ currentProductDetails.description }}
+								</span>
 
 								<a
 									v-if="showViewAll"
@@ -66,23 +81,25 @@
 							<div class="field-title">Take time:</div>
 
 							<div>
-								<span class="field-value">18:00 - 20:00</span>
+								<span class="field-value">{{ fromTime }} - {{ toTime }}</span>
 							</div>
 						</div>
 
-						<div class="item">
+						<!-- <div class="item">
 							<div class="field-title">Total qUAHity:</div>
 
 							<div>
 								<span class="field-value">5</span>
 							</div>
-						</div>
+						</div> -->
 
 						<div class="item">
-							<div class="field-title">Available qUAHity:</div>
+							<div class="field-title">Available quantity:</div>
 
 							<div>
-								<span class="field-value">2</span>
+								<span class="field-value">
+									{{ currentProductDetails.availableCount }}
+								</span>
 							</div>
 						</div>
 
@@ -90,7 +107,13 @@
 							<div class="field-title">Full price:</div>
 
 							<div>
-								<span class="field-value">50 UAH</span>
+								<span class="field-value"
+									>{{
+										currentProductDetails.fullPrice &&
+										currentProductDetails.fullPrice.toFixed(2)
+									}}
+									UAH</span
+								>
 							</div>
 						</div>
 
@@ -98,7 +121,13 @@
 							<div class="field-title">Price with discount:</div>
 
 							<div>
-								<span class="field-value">25 UAH</span>
+								<span class="field-value"
+									>{{
+										currentProductDetails.priceWithDiscount &&
+										currentProductDetails.priceWithDiscount.toFixed(2)
+									}}
+									UAH</span
+								>
 							</div>
 						</div>
 
@@ -106,21 +135,16 @@
 							<div class="field-title">Discount percent:</div>
 
 							<div>
-								<span class="field-value">50%</span>
+								<span class="field-value"
+									>{{ currentProductDetails.discountPercent }}%</span
+								>
 							</div>
 						</div>
 
-						<div class="item">
+						<!-- <div class="item">
 							<div class="field-title">Status:</div>
 
-							<div>
-								<span class="field-value">
-									<Badge color="success" class="px-3">
-										<span class="fz-14"> Active </span>
-									</Badge>
-								</span>
-							</div>
-						</div>
+						</div> -->
 					</div>
 					<div class="mt-5">
 						<hr class="hr" />
@@ -129,9 +153,10 @@
 					<div class="is-flex is-flex-direction-column">
 						<div class="is-flex ion-justify-content-center mt-3 pb-2">
 							<div
+								v-if="currentProductDetails.status === PRODUCT_STATUSES.ACTIVE"
 								class="is-flex is-flex-direction-column ion-align-items-center mr-5 pr-5"
 							>
-								<Button class="action">
+								<Button class="action" @click="unpublishProduct">
 									<ion-icon :icon="closeOutline" class="color-danger" />
 								</Button>
 								<span class="ion-text-center mt-1 fz-12 color-dark">
@@ -140,6 +165,25 @@
 							</div>
 
 							<div
+								v-if="
+									currentProductDetails.status === PRODUCT_STATUSES.UNPUBLISHED
+								"
+								class="is-flex is-flex-direction-column ion-align-items-center mr-5 pr-5"
+							>
+								<Button class="action" @click="unpublishProduct">
+									<ion-icon :icon="checkmarkOutline" class="color-success" />
+								</Button>
+								<span class="ion-text-center mt-1 fz-12 color-dark">
+									Publish
+								</span>
+							</div>
+
+							<div
+								v-if="
+									currentProductDetails.status ===
+										PRODUCT_STATUSES.UNPUBLISHED ||
+									currentProductDetails.status === PRODUCT_STATUSES.ACTIVE
+								"
 								class="is-flex is-flex-direction-column ion-align-items-center"
 							>
 								<Button @click="editProduct" class="action">
@@ -161,11 +205,18 @@
 import { IonModal, IonContent, modalController, IonIcon } from '@ionic/vue';
 import ModalHeader from '@/components/common/ModalHeader.vue';
 import Button from '@/components/common/Button.vue';
-import { closeOutline, pencilOutline } from 'ionicons/icons';
+import { closeOutline, pencilOutline, checkmarkOutline } from 'ionicons/icons';
 import Badge from '@/components/common/Badge.vue';
+import ProductStatusBadge from '@/components/admin/ProductStatusBadge.vue';
 import { useRouter } from 'vue-router';
 import { ref, toRefs } from '@vue/reactivity';
-import { nextTick, onMounted, watch } from '@vue/runtime-core';
+import { computed, watch } from '@vue/runtime-core';
+import { DateTime } from 'luxon';
+import { useStore } from 'vuex';
+import http from '@/services/http';
+import useLoader from '@/composables/common/useLoader.js';
+import useAlert from '@/composables/common/alert.js';
+import { PRODUCT_STATUSES } from '@/config/constants.js';
 
 export default {
 	name: 'ViewProductModal',
@@ -176,23 +227,58 @@ export default {
 		Button,
 		Badge,
 		IonIcon,
+		ProductStatusBadge,
 	},
 	props: {
 		isOpen: {
 			type: Boolean,
 			default: false,
 		},
+		currentProductDetails: {
+			type: Object,
+			default: () => {},
+		},
 	},
+	emits: ['close'],
 	setup(props, { emit }) {
 		const router = useRouter();
 		const viewAll = ref(false);
 		const showViewAll = ref(false);
 		const description = ref(null);
-		const { isOpen } = toRefs(props);
+		const { currentProductDetails } = toRefs(props);
+		const store = useStore();
+		const { showLoader, hideLoader } = useLoader();
+		const { showMessage } = useAlert();
 
-		const handlePresentModal = () => {};
+		const companyDetails = computed(() => {
+			return store.state.company.details || {};
+		});
+
+		const activePlace = computed(() => {
+			return store.state.company.places[0] || {};
+		});
+
+		const createdAt = computed(() => {
+			return DateTime.fromISO(currentProductDetails.value.createdAt).toFormat(
+				'DD HH:mm'
+			);
+		});
+
+		const fromTime = computed(() => {
+			return DateTime.fromISO(
+				currentProductDetails.value.takeTimeFrom
+			).toFormat('HH:mm');
+		});
+
+		const toTime = computed(() => {
+			return DateTime.fromISO(currentProductDetails.value.takeTimeTo).toFormat(
+				'HH:mm'
+			);
+		});
 
 		const handleClose = () => {
+			showViewAll.value = false;
+			viewAll.value = false;
 			modalController.dismiss();
 		};
 
@@ -205,29 +291,56 @@ export default {
 			viewAll.value = !viewAll.value;
 		};
 
-		watch(
-			() => isOpen.value,
-			(v) => {
-				if (!v) {
+		const handlePresent = () => {
+			viewAll.value = false;
+
+			setTimeout(() => {
+				const scrollHeight = description.value.scrollHeight;
+				const offsetHeight = description.value.offsetHeight;
+
+				if (scrollHeight > offsetHeight) {
+					showViewAll.value = true;
 					return;
 				}
 
-				setTimeout(() => {
-					const scrollHeight = description.value.scrollHeight;
-					const offsetHeight = description.value.offsetHeight;
+				showViewAll.value = false;
+			}, 100);
+		};
 
-					if (scrollHeight > offsetHeight) {
-						showViewAll.value = true;
-						return;
-					}
+		const unpublishProduct = async () => {
+			await showLoader();
+			const currStatus = currentProductDetails.value.status;
 
-					showViewAll.value = false;
-				});
+			let message;
+			let newStatus;
+
+			if (currStatus === PRODUCT_STATUSES.ACTIVE) {
+				message = 'Product was successfully unpublished';
+				newStatus = PRODUCT_STATUSES.UNPUBLISHED;
+			} else {
+				message = 'Product was successfully published';
+				newStatus = PRODUCT_STATUSES.ACTIVE;
 			}
-		);
+
+			http
+				.put(`/products/toggle/${currentProductDetails.value.id}`)
+				.then(() => {
+					showMessage({
+						color: 'success',
+						text: message,
+						title: 'Success',
+					});
+
+					hideLoader();
+
+					emit('close', newStatus);
+				})
+				.catch(() => {
+					hideLoader();
+				});
+		};
 
 		return {
-			handlePresentModal,
 			handleClose,
 			closeOutline,
 			pencilOutline,
@@ -236,6 +349,15 @@ export default {
 			viewAll,
 			description,
 			showViewAll,
+			fromTime,
+			toTime,
+			createdAt,
+			companyDetails,
+			activePlace,
+			unpublishProduct,
+			PRODUCT_STATUSES,
+			checkmarkOutline,
+			handlePresent,
 		};
 	},
 };
@@ -251,9 +373,15 @@ export default {
 .view-product-modal {
 	.logo {
 		width: 40px;
+		min-width: 40px;
 		height: 40px;
 		overflow: hidden;
-		border-radius: 10px;
+		border-radius: 50%;
+
+		img {
+			width: 100%;
+			height: 100%;
+		}
 	}
 }
 </style>

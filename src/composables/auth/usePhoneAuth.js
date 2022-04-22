@@ -67,16 +67,12 @@ export default function ({ getNumber, phone }) {
 		isSubmitting.value = true;
 
 		cfaSignInPhone(`+380${phone.value}`).subscribe({
-			next: (verificationId) => {
-				console.log('at next cfaSignInPhoneOnCodeSent!');
-				console.log(verificationId);
-			},
+			next: (verificationId) => {},
 			error: (error) => {
-				isSubmitting.value = false;
-				console.log('at error cfaSignInPhoneOnCodeSent!');
-				loading.dismiss();
-
+				console.log('----------------');
 				console.log(error);
+				isSubmitting.value = false;
+				loading.dismiss();
 
 				showMessage({ text: 'Phone number is invalid' });
 			},

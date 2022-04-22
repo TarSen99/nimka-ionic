@@ -1,40 +1,89 @@
 <template>
-	<ion-page class="ion-page">
-		<ion-header mode="md" class="header">
-			<ion-toolbar ref="header" mode="md" class="toolbar">
-				<div
-					class="is-flex ion-justify-content-between w-100 ion-align-items-center px-4 header-content relative"
-				>
-					<ion-buttons>
-						<ion-button
-							class="back-btn default-icon-btn"
-							ref="backButton"
-							@click.prevent="$router.back()"
-						>
-							<ion-icon slot="icon-only" :icon="chevronBackOutline"></ion-icon>
-						</ion-button>
-					</ion-buttons>
+	<ion-page
+		class="ion-page"
+		:class="{
+			outOfStock:
+				details.status === PRODUCT_STATUSES.OUT_OF_STOCK ||
+				details.status === PRODUCT_STATUSES.EXPIRED,
+		}"
+	>
+		<transition name="slide-y">
+			<ion-header v-show="viewCurrentImageIsHidden" mode="md" class="header">
+				<ion-toolbar ref="header" mode="md" class="toolbar">
+					<div
+						class="is-flex ion-justify-content-between w-100 ion-align-items-center px-4 header-content relative"
+					>
+						<ion-buttons>
+							<ion-button
+								class="back-btn default-icon-btn"
+								ref="backButton"
+								@click.prevent="$router.back()"
+							>
+								<ion-icon
+									slot="icon-only"
+									:icon="chevronBackOutline"
+								></ion-icon>
+							</ion-button>
+						</ion-buttons>
 
-					<Badge color="danger" class="p-1 take-time" ref="tag">
-						<span class="fz-14"> Take {{ fromTime }} - {{ toTime }} </span>
-					</Badge>
-				</div>
-			</ion-toolbar>
-		</ion-header>
+						<Badge
+							v-show="details.status === PRODUCT_STATUSES.OUT_OF_STOCK"
+							color="danger"
+							class="p-1 out-of-stock"
+						>
+							<span class="fz-16 px-5"> Out of stock</span>
+						</Badge>
+
+						<Badge
+							v-show="details.status === PRODUCT_STATUSES.EXPIRED"
+							color="primary"
+							class="p-1 out-of-stock"
+						>
+							<span class="fz-16 px-5"> You missed it</span>
+						</Badge>
+
+						<Badge
+							v-show="details.status === PRODUCT_STATUSES.ACTIVE"
+							color="danger"
+							class="p-1 take-time"
+							ref="tag"
+						>
+							<span class="fz-14"> Take {{ fromTime }} - {{ toTime }} </span>
+						</Badge>
+					</div>
+				</ion-toolbar>
+			</ion-header>
+		</transition>
 
 		<ion-content
 			:fullscreen="true"
 			:scroll-events="true"
+			:scroll-y="allowScroll"
 			@ionScroll="handleScroll($event)"
+			no-bounce
+			has-bouncing="false"
+			forceOverscroll="false"
 		>
+			<view-image-modal
+				v-model="viewCurrentImage"
+				@update:modelValue="handleAllowScroll"
+				:images="images"
+				:activeImageIndex="activeImageIndex"
+				@hide-started="viewCurrentImageIsHidden = true"
+			/>
+
 			<div class="top">
 				<swiper
-					ref="slider"
+					ref="swiper"
 					:pagination="true"
 					:modules="modules"
 					class="swiper-el"
 				>
-					<swiper-slide v-for="image in images" :key="image.id">
+					<swiper-slide
+						v-for="(image, index) in images"
+						:key="image.id"
+						@click="handleImageClick(image, index)"
+					>
 						<img :src="image.url" class="top-img" alt="" />
 					</swiper-slide>
 				</swiper>
@@ -46,11 +95,50 @@
 			>
 				<div class="ion-padding">
 					<div>
-						<Badge color="dark" class="p-1">
-							<span class="fz-14 px-3 color-light">
-								{{ details.availableCount }} left
+						<div class="is-flex ion-justify-content-between">
+							<div class="fz-14 distance no-wrap">
+								<template v-if="distance">
+									<ion-icon
+										:icon="navigateOutline"
+										class="vertical-middle mr-1"
+									></ion-icon>
+
+									<span class="vertical-middle fz-14 fw-600">
+										{{ distance }} km
+									</span>
+								</template>
+							</div>
+
+							<div>
+								<Badge
+									v-if="details.status === PRODUCT_STATUSES.ACTIVE"
+									color="dark"
+									class="p-1"
+								>
+									<span class="fz-14 px-3 color-light">
+										{{ details.availableCount }} left
+									</span>
+								</Badge>
+							</div>
+						</div>
+
+						<div
+							class="is-flex ion-justify-content-end ion-align-items-end mt-1"
+						>
+							<span class="fz-14 line-through color-grey mr-2 mb-1"
+								>{{
+									details.fullPrice && details.fullPrice.toFixed(2)
+								}}
+								UAH</span
+							>
+							<span class="fw-600 fz-22 color-dark">
+								{{
+									details.priceWithDiscount &&
+									details.priceWithDiscount.toFixed(2)
+								}}
+								UAH
 							</span>
-						</Badge>
+						</div>
 					</div>
 
 					<h1 class="fz-22 color-dark">{{ details.title }}</h1>
@@ -74,7 +162,7 @@
 					<div class="btn-container mt-5 pt-5 relative">
 						<transition name="fade">
 							<div
-								v-if="boughtCount"
+								v-if="currProductBoughtCount"
 								class="is-flex ion-justify-content-end absolute action-btns ion-align-items-center w-100"
 							>
 								<Button
@@ -87,28 +175,33 @@
 								</Button>
 
 								<span class="ml-2 mr-2 fw-500">
-									{{ boughtCount }}
+									{{ currProductBoughtCount }}
 								</span>
 
 								<Button
 									shape="round"
-									@click="addProduct(details)"
+									:disabled="addButtonDisabled"
 									color="success"
 									class="action-btn"
+									@click="addProduct(details)"
 								>
 									+
 								</Button>
 							</div>
 						</transition>
 
-						<div>
+						<div v-if="details.status === PRODUCT_STATUSES.ACTIVE">
 							<Button
 								expand="full"
 								shape="round"
 								class="order-btn w-100"
+								:disabled="
+									details.status !== PRODUCT_STATUSES.ACTIVE ||
+									addButtonDisabled
+								"
 								@click="addProduct(details)"
 							>
-								Order {{ details.priceWithDiscount }} UAH
+								Add to cart
 							</Button>
 						</div>
 					</div>
@@ -143,13 +236,26 @@
 			</div>
 
 			<transition name="fade-slide">
-				<Checkout v-if="boughtCount" :price="totalPrice" />
+				<Checkout v-if="totalBoughtCount" :price="totalPrice" />
 			</transition>
 		</ion-content>
 	</ion-page>
 </template>
 
 <script>
+import { chevronBackOutline, navigateOutline } from 'ionicons/icons';
+import { onIonViewWillEnter } from '@ionic/vue';
+import { distanceToKm } from '@/helpers';
+import useProductHeaderAnimation from '@/composables/product/useProductHeaderAnimation.js';
+import { ref } from '@vue/reactivity';
+import { useRoute } from 'vue-router';
+import { useStore } from 'vuex';
+import http from '@/services/http';
+import { computed } from '@vue/runtime-core';
+import { DateTime } from 'luxon';
+import useDescriptionCutter from '@/composables/common/useDescriptionCutter.js';
+import google from '@/services/google';
+
 import {
 	IonContent,
 	IonPage,
@@ -159,26 +265,59 @@ import {
 	IonButton,
 	IonIcon,
 } from '@ionic/vue';
-import { chevronBackOutline } from 'ionicons/icons';
-import { onIonViewWillEnter } from '@ionic/vue';
-
-import { Swiper, SwiperSlide } from 'swiper/vue';
-import { Pagination } from 'swiper';
-
 import Button from '@/components/common/Button.vue';
 import Badge from '@/components/common/Badge.vue';
-import useProductHeaderAnimation from '@/composables/product/useProductHeaderAnimation.js';
+import { Swiper, SwiperSlide } from 'swiper/vue';
+import { Pagination } from 'swiper';
 import CompanyInfo from '@/components/product/CompanyInfo.vue';
 import FoodSlider from '@/components/product/FoodSlider.vue';
 import Checkout from '@/components/product/Checkout.vue';
-import { ref } from '@vue/reactivity';
-import { useRoute } from 'vue-router';
-import { useStore } from 'vuex';
-import http from '@/services/http';
-import { computed } from '@vue/runtime-core';
-import { DateTime } from 'luxon';
-import useDescriptionCutter from '@/composables/common/useDescriptionCutter.js';
-import google from '@/services/google';
+import ViewImageModal from '@/components/common/ViewImageModal.vue';
+
+import { PRODUCT_STATUSES } from '@/config/constants.js';
+import { checkIfProductBuyAvailable } from '@/helpers';
+import useDialog from '@/composables/common/dialog.js';
+import useLoader from '@/composables/common/useLoader.js';
+import usePlaceholder from '@/composables/common/usePlaceholder.js';
+import useStoreProducts from '@/composables/product/useStoreProducts.js';
+
+const MAX_MINUTES_DIFFERENCE = 5;
+
+const compareTime = (a, b) => {
+	const aTime = DateTime.fromISO(a);
+	const bTime = DateTime.fromISO(b);
+
+	const diff = aTime.diff(bTime, 'minutes').toObject();
+
+	const abs = Math.abs(diff.minutes);
+
+	if (abs > MAX_MINUTES_DIFFERENCE) {
+		return false;
+	}
+
+	return true;
+};
+
+const compareProductsTime = (storeProducts, productToAdd) => {
+	for (const product of storeProducts) {
+		const isTimeFromOk = compareTime(
+			product.takeTimeFrom,
+			productToAdd.takeTimeFrom
+		);
+
+		if (!isTimeFromOk) {
+			return false;
+		}
+
+		const isTimeToOk = compareTime(product.takeTimeTo, productToAdd.takeTimeTo);
+
+		if (!isTimeToOk) {
+			return false;
+		}
+	}
+
+	return true;
+};
 
 export default {
 	name: 'Product',
@@ -197,18 +336,28 @@ export default {
 		Checkout,
 		Swiper,
 		SwiperSlide,
+		ViewImageModal,
 	},
 	setup() {
 		const { header, backButton, container, tag, handleScroll } =
 			useProductHeaderAnimation();
+		const swiper = ref(null);
+
+		const { confirm } = useDialog();
 		const route = useRoute();
 		const store = useStore();
 		const showMapOverlay = ref(true);
 		const map = ref(null);
+		const viewCurrentImage = ref(null);
+		const viewCurrentImageIsHidden = ref(true);
+		const activeImageIndex = ref(0);
+		const allowScroll = ref(true);
 		const details = ref({});
 		const placeProducts = ref([]);
-		const isLoading = ref(false);
 		const modules = [Pagination];
+		const { showLoader, hideLoader, isLoading } = useLoader();
+		const { getImages } = usePlaceholder();
+		const { totalBoughtCount, totalPrice } = useStoreProducts();
 
 		const { descriptionEl, showViewAll, handleViewAll, viewAll } =
 			useDescriptionCutter({
@@ -216,9 +365,7 @@ export default {
 			});
 
 		const images = computed(() => {
-			let result = details.value.Images || [{}];
-
-			return result;
+			return getImages(details.value.Images);
 		});
 
 		const fromTime = computed(() => {
@@ -233,7 +380,7 @@ export default {
 			return store.state.products.products;
 		});
 
-		const addProduct = (product) => {
+		const addProduct = async (product) => {
 			if (!storeProducts.value.length) {
 				store.commit('products/addProduct', product);
 				return;
@@ -243,6 +390,30 @@ export default {
 			const fromStorePlace = storeProducts.value[0].PlaceId;
 
 			if (place !== fromStorePlace) {
+				const confirmValue = await confirm({
+					message:
+						'You already added products from different store. Do you want to clear cart and continue?',
+				});
+
+				if (!confirmValue) {
+					return;
+				}
+
+				store.commit('products/clear');
+			}
+
+			const timeCheck = compareProductsTime(storeProducts.value, product);
+
+			if (!timeCheck) {
+				const confirmValue = await confirm({
+					message:
+						'You can not add products with pick up time more then 5min. difference to one order. Do you want to clear cart and continue?',
+				});
+
+				if (!confirmValue) {
+					return;
+				}
+
 				store.commit('products/clear');
 			}
 
@@ -253,7 +424,7 @@ export default {
 			store.commit('products/removeProduct', product);
 		};
 
-		const boughtCount = computed(() => {
+		const currProductBoughtCount = computed(() => {
 			const saved = store.state.products.products;
 
 			const currProduct = saved.find((p) => p.id === details.value.id);
@@ -265,19 +436,15 @@ export default {
 			return currProduct.count;
 		});
 
-		const totalPrice = computed(() => {
-			return store.getters['products/totalPrice'];
-		});
-
-		const updateDetails = () => {
-			isLoading.value = true;
+		const updateDetails = async () => {
+			await showLoader();
 			return http
 				.get(`/products/${route.params.id}`)
 				.then((res) => {
 					details.value = res.data.data;
 				})
 				.finally(() => {
-					isLoading.value = false;
+					hideLoader();
 				});
 		};
 
@@ -291,12 +458,24 @@ export default {
 				});
 		};
 
+		const distance = computed(() => {
+			return distanceToKm(details.value.distance);
+		});
+
+		const addButtonDisabled = computed(() => {
+			return checkIfProductBuyAvailable(
+				details.value,
+				currProductBoughtCount.value
+			);
+		});
+
 		onIonViewWillEnter(() => {
 			updateDetails().then(() => {
 				getPlaceProducts();
 				const place = details.value.Place;
+				const [longtitude, latitude] = place.location.coordinates;
 
-				const position = { lat: +place.latitude, lng: +place.longtitude };
+				const position = { lat: +latitude, lng: +longtitude };
 
 				google.onInit(() => {
 					const googleMap = new window.google.maps.Map(map.value, {
@@ -305,7 +484,7 @@ export default {
 						disableDefaultUI: true,
 					});
 
-					const marker = new window.google.maps.Marker({
+					new window.google.maps.Marker({
 						position: position,
 						map: googleMap,
 					});
@@ -313,14 +492,26 @@ export default {
 			});
 		});
 
+		const handleImageClick = (image, index) => {
+			allowScroll.value = false;
+			activeImageIndex.value = index;
+			viewCurrentImage.value = image.url;
+			viewCurrentImageIsHidden.value = false;
+		};
+
+		const handleAllowScroll = () => {
+			allowScroll.value = true;
+		};
+
 		return {
+			distance,
 			header,
 			backButton,
 			handleScroll,
 			chevronBackOutline,
 			tag,
 			container,
-			boughtCount,
+			currProductBoughtCount,
 			addProduct,
 			removeProduct,
 			totalPrice,
@@ -336,12 +527,33 @@ export default {
 			handleViewAll,
 			viewAll,
 			modules,
+			navigateOutline,
+			PRODUCT_STATUSES,
+			addButtonDisabled,
+			totalBoughtCount,
+			viewCurrentImage,
+			viewCurrentImageIsHidden,
+			activeImageIndex,
+			handleImageClick,
+			allowScroll,
+			handleAllowScroll,
+			swiper,
 		};
 	},
 };
 </script>
 
 <style scoped lang="scss">
+.outOfStock {
+	.top {
+		filter: grayscale(1);
+	}
+}
+
+.back-btn {
+	--background: rgba(0, 0, 0, 0.05);
+}
+
 .top {
 	min-height: 250px;
 	height: 250px;
@@ -372,7 +584,8 @@ export default {
 }
 
 .toolbar {
-	box-shadow: 0px 2px 4px 2px rgb(0 0 0 / 2%);
+	// box-shadow: 0px 2px 4px 2px rgb(0 0 0 / 2%);
+	box-shadow: none;
 }
 
 .map {
@@ -410,6 +623,9 @@ export default {
 	.swiper-pagination {
 		bottom: initial;
 		top: 190px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
 
 		.swiper-pagination-bullet {
 			background-color: var(--white);
@@ -425,5 +641,9 @@ export default {
 			height: 11px;
 		}
 	}
+}
+
+.view-description {
+	white-space: pre-line;
 }
 </style>

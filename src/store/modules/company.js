@@ -1,25 +1,21 @@
 import http from '@/services/http';
 import {
 	CURRENT_COMPANY_KEY,
-	CURRENT_USER_ROLE,
-	ROLES,
+	COMPANY_PLACES,
+	COMPANY_DETAILS,
 } from '@/config/constants.js';
 
 const toast = {
 	state: () => ({
 		id: +localStorage.getItem(CURRENT_COMPANY_KEY),
-		role: localStorage.getItem(CURRENT_USER_ROLE) || ROLES.GUEST,
-		details: {},
+		details: JSON.parse(localStorage.getItem(COMPANY_DETAILS) || '{}'),
+		places: JSON.parse(localStorage.getItem(COMPANY_PLACES) || '[]'),
 	}),
 	mutations: {
-		update(state, details) {
-			state.details = details;
-		},
-		updateId(state, id) {
-			state.id = id;
-		},
-		updateRole(state, role) {
-			state.role = role;
+		updateCompany(state, company) {
+			state.id = company.id;
+			state.details = company;
+			state.places = company.Places;
 		},
 	},
 	actions: {
@@ -27,18 +23,15 @@ const toast = {
 			const currId = id || state.id;
 
 			http.get(`/companies/${currId}`).then((res) => {
-				commit('update', res.data.data);
+				localStorage.setItem(CURRENT_COMPANY_KEY, res.data.data.id);
+				localStorage.setItem(
+					COMPANY_PLACES,
+					JSON.stringify(res.data.data.Places)
+				);
+				localStorage.setItem(COMPANY_DETAILS, JSON.stringify(res.data.data));
+
+				commit('updateCompany', res.data.data);
 			});
-		},
-		updateId({ commit }, id) {
-			localStorage.setItem(CURRENT_COMPANY_KEY, id);
-
-			commit('updateId', id);
-		},
-		updateRole({ commit }, role) {
-			localStorage.setItem(CURRENT_USER_ROLE, role);
-
-			commit('updateRole', role || ROLES.GUEST);
 		},
 	},
 	getters: {},

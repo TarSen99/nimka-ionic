@@ -217,12 +217,12 @@ p {
 	text-overflow: ellipsis;
 }
 
-.view-description-2 {
-	-webkit-line-clamp: 2;
-}
-
 .view-description-3 {
 	-webkit-line-clamp: 3;
+}
+
+.view-description-2 {
+	-webkit-line-clamp: 2 !important;
 }
 
 .viewAll {
@@ -231,4 +231,22 @@ p {
 
 .italic {
 	font-style: italic;
+}
+
+.capitalized {
+	text-transform: capitalize;
+}
+
+.underline {
+	text-decoration: underline;
+}
+
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+	display: none;
+	-webkit-overflow-scrolling: touch !important;
+}
+
+* {
+	-webkit-overflow-scrolling: touch !important;
 }

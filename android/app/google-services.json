@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1033159312679",
+    "project_id": "niamka-a6087",
+    "storage_bucket": "niamka-a6087.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1033159312679:android:20c939ed0263383a8c5502",
+        "android_client_info": {
+          "package_name": "app.niamka.com"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1033159312679-19kh0o1f69ndt13n56i0e0a4rm3nghtu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCM_hMNfhEApxXFGLioLNIVAiYoyGS7ZWQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1033159312679-19kh0o1f69ndt13n56i0e0a4rm3nghtu.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1033159312679-bq3df0d1l7tj2303qv0gf3vsoquug8pk.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "app.niamka.com",
+                "app_store_id": "1600489923"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -16,15 +16,43 @@ import NewProduct from '@/views/NewProduct.vue';
 import NewProductSuccess from '@/views/NewProductSuccess.vue';
 import MyProducts from '@/views/MyProducts.vue';
 import LoginEmail from '@/views/LoginEmail.vue';
+import AllowLocation from '@/views/AllowLocation.vue';
+import AllowPush from '@/views/AllowPush.vue';
+import PaymentPage from '@/views/PaymentPage.vue';
 import { store } from '@/store';
+import { FIRST_TIME_OPEN } from '@/config/constants.js';
 
 const routes = [
+	{
+		path: '/payment',
+		name: 'payment',
+		component: PaymentPage,
+		meta: {
+			roles: ['guest'],
+		},
+	},
 	{
 		path: '/login/email',
 		name: 'Choose_email',
 		component: LoginEmail,
 		meta: {
 			roles: ['guest'],
+		},
+	},
+	{
+		path: '/location/allow',
+		name: 'Allow_location',
+		component: AllowLocation,
+		meta: {
+			roles: ['guest', 'employee', 'owner', 'manager'],
+		},
+	},
+	{
+		path: '/push/allow',
+		name: 'Allow_push',
+		component: AllowPush,
+		meta: {
+			roles: ['guest', 'employee', 'owner', 'manager'],
 		},
 	},
 	{
@@ -155,7 +183,15 @@ const routes = [
 	},
 	{
 		path: '/',
-		redirect: '/home',
+		redirect: () => {
+			const notFirstTime = localStorage.getItem(FIRST_TIME_OPEN);
+
+			if (notFirstTime) {
+				return '/home';
+			}
+
+			return '/welcome';
+		},
 		exact: true,
 		meta: {
 			roles: ['customer', 'employee', 'owner', 'manager'],
@@ -175,9 +211,8 @@ const getUserRoles = () => {
 };
 
 router.beforeEach((to) => {
-	return true;
 	const requiredRoles = to.meta.roles || [];
-	const userRoles = getUserRoles();
+	const userRole = getUserRoles();
 
 	if (!requiredRoles.length) {
 		return true;
@@ -185,22 +220,33 @@ router.beforeEach((to) => {
 
 	let isAllowed = false;
 
-	requiredRoles.forEach((role) => {
-		if (userRoles.includes(role)) {
-			isAllowed = true;
-		}
-	});
+	if (requiredRoles.includes(userRole)) {
+		isAllowed = true;
+	}
 
 	if (isAllowed) {
 		return true;
 	}
 
-	//not allowed here
-	if (requiredRoles.includes('guest')) {
-		return '/';
-	} else {
-		return '/welcome';
-	}
+	// // if user is guest and route is for guests
+	// if (requiredRoles.includes('guest') && !userRole) {
+	// 	return true;
+	// }
+
+	// if (
+	// 	requiredRoles.includes('guest') &&
+	// 	requiredRoles.length === 1 &&
+	// 	userRole
+	// ) {
+	// 	return '/home';
+	// }
+
+	// //not allowed here
+	// if (to.path !== '/welcome') {
+	// 	return '/welcome';
+	// }
+
+	return true;
 });
 
 export default router;

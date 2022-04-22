@@ -17,6 +17,7 @@
 			:type="type"
 			:required="required"
 			:class="{ danger: error, textarea }"
+			:readonly="readonly"
 			:maxlength="maxlength"
 			:max="max"
 			:inputmode="inputmode"
@@ -83,6 +84,10 @@ export default {
 			default: null,
 		},
 		required: {
+			type: Boolean,
+			default: false,
+		},
+		readonly: {
 			type: Boolean,
 			default: false,
 		},
