@@ -12,6 +12,11 @@ const toast = {
 		places: JSON.parse(localStorage.getItem(COMPANY_PLACES) || '[]'),
 	}),
 	mutations: {
+		clear(state) {
+			state.id = null;
+			state.details = {};
+			state.places = [];
+		},
 		updateCompany(state, company) {
 			state.id = company.id;
 			state.details = company;
@@ -22,8 +27,9 @@ const toast = {
 		fetchDetails({ commit, state }, id) {
 			const currId = id || state.id;
 
-			http.get(`/companies/${currId}`).then((res) => {
+			return http.get(`/companies/${currId}`).then((res) => {
 				localStorage.setItem(CURRENT_COMPANY_KEY, res.data.data.id);
+
 				localStorage.setItem(
 					COMPANY_PLACES,
 					JSON.stringify(res.data.data.Places)

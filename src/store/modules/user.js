@@ -3,10 +3,10 @@ import {
 	CURRENT_USER_ROLE,
 	USER_DETAILS,
 	CURRENT_GEOLOCATION,
-	GEO_IS_HARDCODED,
 	CURRENT_TOKEN,
 	ROLES,
 	CURRENT_RADIUS,
+	CURRENT_PLACE,
 } from '@/config/constants.js';
 import useNativeStore from '@/composables/common/nativeStore.js';
 const { setItem } = useNativeStore();
@@ -17,14 +17,24 @@ export default {
 	state: () => ({
 		isAuthorizated: !!localStorage.getItem(CURRENT_USER_KEY),
 		role: localStorage.getItem(CURRENT_USER_ROLE),
-		details: {},
+		details: JSON.parse(localStorage.getItem(USER_DETAILS) || '{}'),
 		profileSettings: {},
 		appRendered: false,
 		pushListenersAdded: false,
 		notificationsAsked: false,
 		listLocationSettings: null,
+		activePlace: localStorage.getItem(CURRENT_PLACE) || '',
 	}),
 	mutations: {
+		clear(state) {
+			state.role = null;
+			state.details = {};
+			state.profileSettings = {};
+			state.listLocationSettings = null;
+			state.isAuthorizated = false;
+			state.activePlace = null;
+			state.notificationsAsked = false;
+		},
 		changeListLocationSettings(state, value) {
 			state.listLocationSettings = value;
 		},
@@ -48,6 +58,9 @@ export default {
 		},
 		updateSettings(state, value) {
 			state.profileSettings = value;
+		},
+		setPlace(state, place) {
+			state.activePlace = place;
 		},
 	},
 	actions: {
@@ -87,6 +100,15 @@ export default {
 
 			commit('handleRole', role);
 		},
+		updatePlace({ commit, state }, place) {
+			if (state.activePlace && !place) {
+				return;
+			}
+
+			localStorage.setItem(CURRENT_PLACE, place);
+
+			commit('setPlace', place);
+		},
 		async updateDetails({ commit, dispatch }, data) {
 			commit('updateDetails', data);
 			commit('updateSettings', data?.ProfileSetting);
@@ -101,11 +123,15 @@ export default {
 
 			commit('handleAuth', true);
 			setItem(USER_DETAILS, JSON.stringify(data));
+			localStorage.setItem(USER_DETAILS, JSON.stringify(data));
 			localStorage.setItem(CURRENT_USER_KEY, data.id);
 
 			const company = (data.Companies && data.Companies[0]) || {};
 			const role = company.UsersAndCompanies?.role;
+			const place = company.UsersAndCompanies?.placeId;
+
 			dispatch('updateRole', role || ROLES.CUSTOMER);
+			dispatch('updatePlace', place);
 
 			// There is no role for customer in db
 			if (role) {
@@ -124,10 +150,6 @@ export default {
 						longtitude: data.longtitude,
 					})
 				);
-			}
-
-			if (data.address && data.latitude && data.longtitude) {
-				await setItem(GEO_IS_HARDCODED, true);
 			}
 		},
 	},

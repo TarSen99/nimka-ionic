@@ -125,7 +125,6 @@ import useLoader from '@/composables/common/useLoader.js';
 import http from '@/services/http/index.js';
 import useAlert from '@/composables/common/alert.js';
 import useGeolocation from '@/composables/common/geoLocation.js';
-import { GEO_IS_HARDCODED } from '@/config/constants.js';
 import useNativeStore from '@/composables/common/nativeStore.js';
 
 export default {
@@ -220,9 +219,6 @@ export default {
 
 			if (selectedLocation.value !== 'auto') {
 				addressName = addressObj?.description || address.value;
-				await setItem(GEO_IS_HARDCODED, true);
-			} else {
-				await removeItem(GEO_IS_HARDCODED);
 			}
 
 			http

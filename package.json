@@ -9,7 +9,7 @@
 		"test:unit": "vue-cli-service test:unit",
 		"test:e2e": "vue-cli-service test:e2e",
 		"lint": "vue-cli-service lint",
-		"build-ios": "ionic build && npx cap copy && npx cap sync && npx cap open ios",
+		"build-ios": "VUE_APP_API=https://api.niamka.com ionic build && npx cap copy && npx cap sync && npx cap open ios",
 		"build-android": "ionic build && npx cap copy && npx cap sync && npx cap open android"
 	},
 	"dependencies": {

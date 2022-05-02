@@ -27,7 +27,12 @@
 
 		<IonContent :fullscreen="true">
 			<div class="ion-padding">
-				<ProductsHistory v-if="showHistory" @prefill="prefillData" />
+				<ProductsHistory
+					v-if="showHistory"
+					@prefill="prefillData"
+					:products="lastProducts"
+					:loading="loadingProducts"
+				/>
 
 				<div class="form">
 					<Input
@@ -35,6 +40,7 @@
 						class="input"
 						placeholder="Title"
 						label="Title"
+						:error="titleError"
 					/>
 
 					<Input
@@ -43,30 +49,29 @@
 						placeholder="Description"
 						label="Description"
 						textarea
+						:error="descriptionError"
 					/>
 
 					<div class="is-flex">
-						<Input
+						<Select
 							v-model="availableCount"
-							class="input mr-3 w-100"
-							placeholder="1"
+							class="w-50 mr-3"
 							label="Available count"
-							type="tel"
+							placeholder="Available count"
+							:options="PRODUCT_COUNT_OPTIONS"
+							:error="availableCountError"
 							@update:modelValue="onAvailableCount"
 						/>
 
-						<Input
+						<Select
 							v-model="availableCountPerPerson"
-							class="input w-100"
-							placeholder="1"
 							label="Available count per person"
-							type="tel"
+							placeholder="Available count per person"
+							class="w-50"
+							:options="PRODUCT_COUNT_OPTIONS"
+							:error="availableCountPerPersonError"
 						/>
 					</div>
-
-					<p class="mt-1 fw-500 fz-14 color-grey">
-						<span class="color-danger">*</span> Enter "99" if there is a lot
-					</p>
 
 					<div class="mt-3">
 						<Input
@@ -76,6 +81,7 @@
 							label="Full price, UAH"
 							type="tel"
 							@update:modelValue="handleFullPriceChange"
+							:error="fullPriceError"
 						/>
 					</div>
 
@@ -87,19 +93,21 @@
 							label="Discount percent, %"
 							type="tel"
 							@update:modelValue="handleDiscountInput('percent')"
+							:error="discountPercentError"
 						/>
 
 						<Input
-							v-model="discountPrice"
+							v-model="priceWithDiscount"
 							class="input w-100"
 							placeholder="50"
 							label="Price with discount, UAH"
 							type="tel"
 							@update:modelValue="handleDiscountInput('price')"
+							:error="priceWithDiscountError"
 						/>
 					</div>
 
-					<div class="mt-3">
+					<div v-if="!$route.params.id" class="mt-3">
 						<div>
 							<p class="fw-400 fz-14 color-dark-grey">Take time</p>
 
@@ -110,15 +118,27 @@
 									id="start_time"
 									class="date-input mr-2 w-100"
 									:value="startTimeFormatted"
+									:error="startTimeError"
 								/>
+								<div class="w-100">
+									<input
+										type="text"
+										placeholder="To"
+										id="end_time"
+										class="date-input w-100"
+										:value="endTimeFormatted"
+										:error="endTimeError"
+									/>
 
-								<input
-									type="text"
-									placeholder="To"
-									id="end_time"
-									class="date-input w-100"
-									:value="endTimeFormatted"
-								/>
+									<transition name="slide-y">
+										<p
+											v-if="tomorrowDayValue"
+											class="fz-14 fw-500 color-danger mt-2"
+										>
+											This time is for tomorrow - {{ tomorrowDayValue }}
+										</p>
+									</transition>
+								</div>
 
 								<ionPopover
 									trigger="start_time"
@@ -154,44 +174,32 @@
 							<p class="fw-400 fz-14 color-dark-grey">Images</p>
 
 							<div v-if="!images.length" class="mt-2">
-								<Button
-									expand="block"
-									color="primary"
-									@click="handlePhotoClick"
-								>
-									Upload images
-								</Button>
+								<div class="upload-images" @click="handlePhotoClick">
+									<span class="plus"> + </span>
+
+									<p class="fz-14 color-dark fw-500">Upload images</p>
+								</div>
 							</div>
 
 							<div v-else class="mt-2">
 								<images-slider v-model="images" />
 
-								<Button
-									expand="block"
-									color="primary"
-									class="mt-2"
-									@click="handlePhotoClick"
-								>
-									Add images
-								</Button>
+								<div class="upload-images mt-2" @click="handlePhotoClick">
+									<span class="plus"> + </span>
+
+									<p class="fz-14 color-dark fw-500">Upload images</p>
+								</div>
 							</div>
 						</div>
 					</div>
+
+					<div class="mt-5 pt-5">
+						<Button @click="handleSubmit" class="mt-5" expand="block">
+							{{ $route.params.id ? 'Update' : 'Create' }}
+						</Button>
+					</div>
 				</div>
 			</div>
-
-			<ionFab
-				vertical="bottom"
-				horizontal="left"
-				slot="fixed"
-				class="w-100 create-container pb-5"
-			>
-				<div class="w-100 ion-padding">
-					<Button @click="handleSubmit" class="mt-5" expand="block">
-						Create
-					</Button>
-				</div>
-			</ionFab>
 		</IonContent>
 	</IonPage>
 </template>
@@ -211,8 +219,10 @@ import {
 	IonLabel,
 	IonPopover,
 	IonFab,
+	onIonViewWillEnter,
 } from '@ionic/vue';
 import Input from '@/components/common/Input.vue';
+import Select from '@/components/common/Select.vue';
 import { ref } from '@vue/reactivity';
 import { chevronBackOutline } from 'ionicons/icons';
 import { computed } from '@vue/runtime-core';
@@ -222,6 +232,12 @@ import useCamera from '@/composables/new-product/camera.js';
 import ImagesSlider from '@/components/new-product/ImagesSlider.vue';
 import ProductsHistory from '@/components/new-product/ProductsHistory.vue';
 import { useRouter, useRoute } from 'vue-router';
+import useNewProductData from '@/composables/new-product/newProductData.js';
+import http from '@/services/http';
+import useLoader from '@/composables/common/useLoader.js';
+import { useStore } from 'vuex';
+import { withTime } from '@/helpers/index.js';
+import useCurrentPlace from '@/composables/common/currentPlace.js';
 
 export default {
 	name: 'NewProduct',
@@ -243,29 +259,77 @@ export default {
 		ImagesSlider,
 		IonFab,
 		ProductsHistory,
+		Select,
 	},
 	setup() {
-		const title = ref(null);
-		const description = ref(null);
-		const availableCount = ref(null);
-		const availableCountPerPerson = ref(null);
-		const fullPrice = ref(null);
-		const discountPercent = ref(null);
-		const discountPrice = ref(null);
-		const startTime = ref(new Date());
-		const endTime = ref(new Date());
-		const images = ref([]);
-		const { showCameraOptions } = useCamera();
+		const store = useStore();
 		const router = useRouter();
 		const route = useRoute();
+		const { activePlace } = useCurrentPlace();
+
+		const {
+			setErrors,
+			validate,
+			PRODUCT_COUNT_OPTIONS,
+			handleUpdateTime,
+			getData,
+
+			title,
+			description,
+			availableCount,
+			availableCountPerPerson,
+			fullPrice,
+			discountPercent,
+			priceWithDiscount,
+			startTime,
+			endTime,
+			tomorrowDayValue,
+			savedProductData,
+
+			titleError,
+			descriptionError,
+			availableCountError,
+			availableCountPerPersonError,
+			fullPriceError,
+			discountPercentError,
+			priceWithDiscountError,
+			startTimeError,
+			endTimeError,
+			getErrors,
+		} = useNewProductData();
+		const images = ref([]);
+		const loadingProducts = ref(false);
+		const { showCameraOptions } = useCamera();
+		const { showLoader, hideLoader } = useLoader();
+		const lastProducts = ref([]);
+
+		const getPlaceProducts = () => {
+			if (route.params.id) {
+				return;
+			}
+
+			loadingProducts.value = true;
+			return http
+				.get(`/places/${activePlace.value}/products`)
+				.then((res) => {
+					lastProducts.value = res.data.data;
+					loadingProducts.value = false;
+				})
+				.catch(() => {
+					loadingProducts.value = false;
+				});
+		};
 
 		const handlePhotoClick = async () => {
+			await showLoader();
 			const photos = await showCameraOptions();
+
+			await hideLoader();
 
 			images.value.push(
 				...(photos || []).map((img) => {
 					return {
-						base64: img.Base64,
+						blob: img.blob,
 						url: img.webPath,
 					};
 				})
@@ -289,6 +353,7 @@ export default {
 			}
 
 			endTime.value = v;
+			handleUpdateTime();
 		};
 
 		const getPriceOnPercent = (fullPrice, discountPercent) => {
@@ -304,7 +369,7 @@ export default {
 			}
 
 			if (type === 'percent') {
-				discountPrice.value = getPriceOnPercent(
+				priceWithDiscount.value = getPriceOnPercent(
 					fullPrice.value,
 					discountPercent.value
 				);
@@ -314,7 +379,7 @@ export default {
 			const onePercentValue = fullPrice.value / 100;
 
 			const percentSubsctructDiscount = Math.round(
-				discountPrice.value / onePercentValue
+				priceWithDiscount.value / onePercentValue
 			);
 
 			discountPercent.value = 100 - percentSubsctructDiscount;
@@ -329,34 +394,110 @@ export default {
 				return;
 			}
 
-			discountPrice.value = getPriceOnPercent(
+			priceWithDiscount.value = getPriceOnPercent(
 				fullPrice.value,
 				discountPercent.value
 			);
 		};
 
-		const handleSubmit = () => {
-			router.replace('/new-product-success');
+		const apiMethod = computed(() => {
+			if (route.params.id) {
+				return 'put';
+			}
+
+			return 'post';
+		});
+
+		const apiUrl = computed(() => {
+			if (!route.params.id) {
+				return '/products/add';
+			}
+
+			return `/products/${route.params.id}/update`;
+		});
+
+		const handleSubmit = async () => {
+			const v = await validate();
+
+			if (!v.valid) {
+				return;
+			}
+
+			await showLoader();
+
+			const data = getData(images.value, activePlace.value);
+
+			http[apiMethod.value](apiUrl.value, data)
+				.then((res) => {
+					let query = '?';
+					if (route.params.id) {
+						query += 'updated=true';
+					}
+
+					router.replace(`/product-success/${res.data.data.id}${query}`);
+
+					hideLoader();
+				})
+				.catch((err) => {
+					hideLoader();
+					setErrors(getErrors(err));
+				});
 		};
 
 		const onAvailableCount = () => {
 			availableCountPerPerson.value = availableCount.value;
 		};
 
-		const prefillData = (data) => {
+		const prefillData = (data, edit) => {
+			if (edit) {
+				savedProductData.value = data;
+			}
+
 			title.value = data.title;
 			description.value = data.description;
-			availableCount.value = data.availableCount;
+			availableCount.value = data.initialCount;
 			availableCountPerPerson.value = data.availableCountPerPerson;
 			fullPrice.value = data.fullPrice;
 			discountPercent.value = data.discountPercent;
-			discountPrice.value = data.discountPrice;
-			startTime.value = data.startTime;
-			endTime.value = data.endTime;
+			priceWithDiscount.value = data.priceWithDiscount;
+
+			const { start, end } = withTime(data.takeTimeFrom, data.takeTimeTo);
+
+			startTime.value = start;
+			endTime.value = end;
+			images.value = data.Images;
 		};
 
 		const showHistory = computed(() => {
+			if (!loadingProducts.value && !lastProducts.value.length) {
+				return false;
+			}
+
 			return !route.params.id;
+		});
+
+		const fetchProductDetails = async () => {
+			if (!route.params.id) {
+				return;
+			}
+
+			await showLoader();
+
+			http
+				.get(`/products/${route.params.id}`)
+				.then((res) => {
+					prefillData(res.data.data, true);
+
+					hideLoader();
+				})
+				.catch((err) => {
+					hideLoader();
+				});
+		};
+
+		onIonViewWillEnter(() => {
+			getPlaceProducts();
+			fetchProductDetails();
 		});
 
 		return {
@@ -366,7 +507,7 @@ export default {
 			chevronBackOutline,
 			fullPrice,
 			discountPercent,
-			discountPrice,
+			priceWithDiscount,
 			handleTimeChange,
 			startTimeFormatted,
 			endTimeFormatted,
@@ -379,6 +520,22 @@ export default {
 			onAvailableCount,
 			prefillData,
 			showHistory,
+			lastProducts,
+			tomorrowDayValue,
+			loadingProducts,
+
+			PRODUCT_COUNT_OPTIONS,
+			handleUpdateTime,
+
+			titleError,
+			descriptionError,
+			availableCountError,
+			availableCountPerPersonError,
+			fullPriceError,
+			discountPercentError,
+			priceWithDiscountError,
+			startTimeError,
+			endTimeError,
 		};
 	},
 };
@@ -387,13 +544,32 @@ export default {
 <style lang="scss" scoped>
 ::v-deep(.input) {
 	.input-el {
-		--background: var(--grey);
+		--background: var(--white);
+		background: var(--white);
+		border-radius: 10px !important;
+		border: 1px solid var(--ion-color-light-shade) !important;
 	}
 
 	.label {
 		color: var(--dark-grey);
 		font-size: 14px !important;
 		font-weight: 400;
+	}
+}
+
+.date-input {
+	outline: none;
+	border: none;
+	border-radius: 50px;
+	height: 50px;
+	text-align: center;
+	--background: var(--white);
+	background: var(--white);
+	border-radius: 10px !important;
+	border: 1px solid var(--ion-color-light-shade) !important;
+
+	&::placeholder {
+		color: var(--ion-color-medium);
 	}
 }
 
@@ -415,26 +591,28 @@ export default {
 	margin-top: 4px;
 }
 
-.date-input {
-	outline: none;
-	border: none;
-	border-radius: 50px;
-	height: 50px;
-	text-align: center;
-	background: var(--grey);
-
-	&::placeholder {
-		color: var(--ion-color-medium);
-	}
-}
-
 .create-container {
 	background-color: rgba(255, 255, 255, 0.7);
 	bottom: 0;
 }
 
-.form {
-	padding-bottom: 130px;
+.upload-images {
+	display: flex;
+	align-items: center;
+
+	.plus {
+		width: 30px;
+		height: 30px;
+		display: flex;
+		font-size: 20px;
+		margin-right: 5px;
+		color: var(--white);
+		background: var(--ion-color-success);
+		font-weight: 600;
+		align-items: center;
+		justify-content: center;
+		border-radius: 50%;
+	}
 }
 
 // .popover {

@@ -6,13 +6,14 @@ import {
 	CURRENT_GEOLOCATION,
 	CURRENT_RADIUS,
 	DEFAULT_RADIUS,
+	CURRENT_USER_ROLE,
 } from '@/config/constants.js';
 import useNativeStore from '@/composables/common/nativeStore.js';
 const { getItem } = useNativeStore();
 
 const http = axios.create({
 	// baseURL: 'http://192.168.1.223:3000',
-	baseURL: 'https://78e0-93-175-200-96.eu.ngrok.io',
+	baseURL: process.env.VUE_APP_API,
 	// withCredentials: true,
 });
 
@@ -23,6 +24,7 @@ http.interceptors.request.use(async (config) => {
 	const additionalHeaders = {
 		token: localStorage.getItem(CURRENT_TOKEN),
 		userId: localStorage.getItem(CURRENT_USER_KEY),
+		role: localStorage.getItem(CURRENT_USER_ROLE),
 		location: location,
 		radius: radius || DEFAULT_RADIUS,
 	};

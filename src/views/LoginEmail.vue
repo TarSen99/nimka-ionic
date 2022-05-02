@@ -45,7 +45,10 @@
 							>
 								<ion-icon :icon="arrowBackOutline" class="color-light mr-1" />
 
-								<span class="color-light fz-14 fw-600" @click="$router.back()">
+								<span
+									class="color-light fz-14 fw-600"
+									@click="$router.replace('/phone-register')"
+								>
 									Back
 								</span>
 							</div>
@@ -74,6 +77,8 @@ import useLoader from '@/composables/common/useLoader.js';
 import { getErrors } from '@/helpers';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
+import realtime from '@/services/firebase/db.js';
+import useCurrentPlace from '@/composables/common/currentPlace.js';
 
 const validationSchema = yup.object().shape({
 	loginValue: yup
@@ -98,6 +103,7 @@ export default {
 	setup() {
 		const store = useStore();
 		const router = useRouter();
+		const { activePlace, places } = useCurrentPlace();
 
 		const { setErrors, setFieldError, validate } = useForm({
 			validationSchema,
@@ -123,8 +129,20 @@ export default {
 
 					store.dispatch('user/updateDetails', { ...data, token });
 					await store.dispatch('company/fetchDetails', company.id);
+					realtime.connect(res.data.data.id);
 
-					router.replace('/');
+					if (activePlace.value) {
+						router.replace('/');
+						return;
+					}
+
+					if (places.value && places.value.length === 1) {
+						store.dispatch('user/updatePlace', places.value[0].id);
+						router.replace('/');
+						return;
+					}
+
+					router.replace('/places/select');
 				})
 				.catch((err) => {
 					setErrors(getErrors(err));

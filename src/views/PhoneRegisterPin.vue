@@ -34,22 +34,29 @@
 							Please enter code from SMS here
 						</h2>
 
+						<div>
+							<input
+								type="tel"
+								ref="codeEl"
+								class="pin-value"
+								:maxlength="CODE_LENGTH"
+								v-model="currentPin"
+								@paste="handlePaste"
+								@input="handleValueUpdate"
+							/>
+						</div>
+
 						<div ref="inputs" class="is-flex">
 							<div
-								v-for="(item, index) in values"
+								v-for="(item, index) in CODE_LENGTH"
 								:key="index"
 								class="px-1 code-input"
-								@click="handleInputClickFocus(index)"
+								@click="focusMainElement"
 							>
 								<input
-									:value="item.value"
-									:id="`input_${index}`"
-									:maxlength="1"
-									:max="9"
+									:value="currentPin[index] || ''"
 									type="tel"
 									class="ion-code-input"
-									@keydown="handleCodeInput(item, index)"
-									@input="handleValueUpdate($event, index)"
 									@paste="handlePaste"
 								/>
 							</div>
@@ -79,7 +86,7 @@ import Button from '@/components/common/Button.vue';
 import verifyPin from '@/composables/auth/verifyPin.js';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
-import { computed } from '@vue/runtime-core';
+import { computed, onMounted } from '@vue/runtime-core';
 import { chevronBackOutline } from 'ionicons/icons';
 import useGeolocation from '@/composables/common/geoLocation.js';
 import useLoader from '@/composables/common/useLoader.js';
@@ -107,13 +114,12 @@ export default {
 		const { showLoader, hideLoader } = useLoader();
 
 		const {
-			handleCodeInput,
-			code,
-			values,
-			handleInputFocus,
 			handlePaste,
 			verify,
-			inputs,
+			codeEl,
+			focusMainElement,
+			currentPin,
+			CODE_LENGTH,
 		} = verifyPin();
 
 		const hasLocation = computed(() => {
@@ -129,66 +135,54 @@ export default {
 		};
 
 		const submit = async () => {
-			verify().then(async (valid) => {
-				if (!valid) {
-					return;
-				}
-
-				localStorage.setItem(FIRST_TIME_OPEN, true);
-				const notAllowed = await getNotAllowedValue();
-
-				if (!hasLocation.value || notAllowed) {
-					router.replace('/location/allow');
-				} else {
-					await showLoader();
-					const location = await getCurrentLocation();
-
-					if (location) {
-						await saveLocation(location);
+			verify()
+				.then(async (valid) => {
+					if (!valid) {
+						return;
 					}
 
-					hideLoader();
-					router.replace('/');
-				}
+					localStorage.setItem(FIRST_TIME_OPEN, true);
+					const notAllowed = await getNotAllowedValue();
+
+					if (!hasLocation.value || notAllowed) {
+						router.replace('/location/allow');
+					} else {
+						await showLoader();
+						const location = await getCurrentLocation();
+
+						if (location) {
+							await saveLocation(location);
+						}
+
+						hideLoader();
+						router.replace('/');
+					}
+				})
+				.catch(() => {
+					codeEl.value.focus();
+				});
+		};
+
+		const handleValueUpdate = () => {
+			if (currentPin.value.length === 6) {
+				submit();
+			}
+		};
+
+		onMounted(() => {
+			setTimeout(() => {
+				codeEl.value.focus();
 			});
-		};
-
-		const handleValueUpdate = (v, index) => {
-			const newV = (v.target.value || '') + '';
-
-			if (newV.length === 6) {
-				handlePaste(v, true);
-				submit();
-				return;
-			}
-
-			const oneDigit = newV.slice(newV.length - 1, newV.length);
-
-			const test = /\d/.test(oneDigit);
-			if (!test) {
-				values[index].value = '0';
-			} else {
-				values[index].value = oneDigit;
-			}
-
-			if (code.value.length === values.length) {
-				submit();
-			}
-		};
-
-		const handleInputClickFocus = (index) => {
-			handleInputFocus(index);
-		};
+		});
 
 		return {
-			values,
-			handleCodeInput,
+			CODE_LENGTH,
 			handleValueUpdate,
-			handleInputFocus,
 			handlePaste,
 			chevronBackOutline,
-			inputs,
-			handleInputClickFocus,
+			codeEl,
+			currentPin,
+			focusMainElement,
 		};
 	},
 };
@@ -207,25 +201,6 @@ $gradientBottomColor: #ec5230;
 		$gradientBottomColor 70.34%
 	);
 }
-
-// ::v-deep(.code-input) {
-// 	.input-el {
-// 		--padding-start: 0 !important;
-// 		--padding-end: 0 !important;
-// 		border-radius: 5px !important;
-// 		--background: var(--ion-color-light);
-// 		border-radius: 30px;
-// 		--placeholder-color: var(--ion-color-medium);
-// 		--placeholder-opacity: 1;
-
-// 		input {
-// 			padding: 2px;
-// 			text-align: center;
-// 			font-size: 20px;
-// 			font-weight: 600;
-// 		}
-// 	}
-// }
 
 .code-input {
 	width: 100%;
@@ -265,29 +240,15 @@ $gradientBottomColor: #ec5230;
 	width: 50px !important;
 }
 
-// .input-el {
-// 	--background: var(--ion-color-light);
-// 	border-radius: 30px;
-// 	--placeholder-color: var(--ion-color-medium);
-// 	--placeholder-opacity: 1;
-// }
-
-// ::v-deep(.input-el) {
-// 	input {
-// 		height: 50px;
-// 		padding: 0 22px;
-// 	}
-// }
-
-// .ion-code-input {
-// 	background: var(--white);
-// 	border-radius: 10px;
-
-// 	height: 50px;
-// 	text-align: center;
-// 	text-align: center;
-// 	font-size: 20px;
-// 	font-weight: 600;
-// 	width: ;
-// }
+.pin-value {
+	opacity: 0;
+	outline: none;
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: 0;
+	width: 0;
+	color: transparent;
+	caret-color: transparent;
+}
 </style>

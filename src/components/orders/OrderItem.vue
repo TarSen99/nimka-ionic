@@ -24,6 +24,7 @@
 			class="right pt-3 pb-3 pr-3 pl-1 is-flex is-flex-direction-column ion-justify-content-between"
 		>
 			<div>
+				<slot name="top"></slot>
 				<div
 					class="w-100 title-container is-flex ion-justify-content-between ion-align-items-center"
 				>
@@ -33,7 +34,7 @@
 				</div>
 
 				<div v-if="data.Company">
-					<div class="is-flex ion-align-items-center">
+					<div v-if="!hideCompany" class="is-flex ion-align-items-center">
 						<div class="company-logo mr-2">
 							<img :src="data.Company.logo" alt="" />
 						</div>
@@ -41,7 +42,7 @@
 							{{ data.Company.name }}
 						</p>
 					</div>
-					<p class="fz-12 color-grey mt-2">
+					<p class="fz-12 color-grey mt-2 location-details">
 						{{ data.Place.address }}
 					</p>
 				</div>
@@ -85,6 +86,10 @@ export default {
 		title: {
 			type: String,
 			default: null,
+		},
+		hideCompany: {
+			type: Boolean,
+			default: false,
 		},
 		subtitle: {
 			type: String,

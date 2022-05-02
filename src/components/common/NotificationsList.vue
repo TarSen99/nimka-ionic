@@ -4,13 +4,12 @@
 			<transition-group name="notification">
 				<default-notification
 					v-for="(order, index) in orders"
-					:key="index"
-					:title="`New order just came for ${order.key}`"
-					subtitle="#5630 from Taras Seniv. You can view details on Orders page"
-					color-title="best burger"
-					:actions="actions"
+					:key="order.key"
+					:title="order.title"
+					:subtitle="order.subtitle"
 					class="mb-2"
 					@close="handleCloseNotification(index)"
+					@select="showModal(order, index)"
 				/>
 			</transition-group>
 		</div>
@@ -18,6 +17,8 @@
 		<order-details-modal
 			:is-open="showOrderDetails"
 			@close="showOrderDetails = false"
+			:data="activeOrder"
+			fetch
 		/>
 	</div>
 </template>
@@ -25,10 +26,12 @@
 <script>
 import DefaultNotification from '@/components/common/DefaultNotification.vue';
 import OrderDetailsModal from '@/components/admin/OrderDetailsModal.vue';
-import { computed, reactive, ref } from '@vue/reactivity';
-import { useStore } from 'vuex';
-
-const ORDERS = [];
+import { ref } from '@vue/reactivity';
+import realtime from '@/services/firebase/db.js';
+import { REALTIME_CHANNELS } from '@/config/constants.js';
+import { watch } from '@vue/runtime-core';
+import { ORDER_STATUSES } from '@/config/constants.js';
+import useCurrentPlace from '@/composables/common/currentPlace.js';
 
 export default {
 	name: 'NotificationsList',
@@ -38,43 +41,112 @@ export default {
 	},
 	setup() {
 		const showOrderDetails = ref(false);
-		const orders = reactive(ORDERS);
-		const store = useStore();
+		const orders = ref([]);
+		const activeOrder = ref(null);
+		const { activePlace } = useCurrentPlace();
 
 		const handleCloseNotification = (index) => {
-			orders.splice(index, 1);
+			orders.value.splice(index, 1);
 		};
 
-		const actions = [
-			{
-				title: 'View details',
-				color: 'primary',
-				handler() {
-					showOrderDetails.value = true;
-				},
+		const handleMessage = (data) => {
+			if (data.key === 'new') {
+				orders.value.unshift({
+					title: `New incoming order`,
+					subtitle: `#${data.data.orderNumber}. Payment method: ${data.data.paymentMethod}`,
+					id: data.data.id,
+					status: [ORDER_STATUSES.TO_TAKE, ORDER_STATUSES.PAYED],
+					key: new Date(),
+					data: data.data,
+				});
+
+				return;
+			}
+
+			if (data.key === 'cancelled') {
+				orders.value.unshift({
+					title: `Order cancellation`,
+					subtitle: `Order #${data.data.orderNumber} was cancelled by customer`,
+					id: data.data.id,
+					status: [ORDER_STATUSES.CANCELLED],
+					key: new Date(),
+					data: data.data,
+				});
+
+				return;
+			}
+		};
+
+		const showModal = (order, index) => {
+			activeOrder.value = order;
+			showOrderDetails.value = true;
+			handleCloseNotification(index);
+		};
+
+		watch(
+			() => {
+				return activePlace.value;
+			},
+			(newV, oldV) => {
+				if (oldV) {
+					console.log('----');
+					console.log(oldV);
+
+					realtime.unsubscribe(
+						'new',
+						handleMessage,
+						`${REALTIME_CHANNELS.PLACE_NEW.replace('{placeId}', oldV)}`
+					);
+
+					realtime.unsubscribe(
+						'cancelled',
+						handleMessage,
+						`${REALTIME_CHANNELS.PLACE_NEW.replace('{placeId}', oldV)}`
+					);
+				}
+
+				if (newV) {
+					realtime.onready(() => {
+						realtime.subscribe(
+							'new',
+							handleMessage,
+							`${REALTIME_CHANNELS.PLACE_NEW.replace(
+								'{placeId}',
+								activePlace.value
+							)}`
+						);
+
+						realtime.subscribe(
+							'cancelled',
+							handleMessage,
+							`${REALTIME_CHANNELS.PLACE_NEW.replace(
+								'{placeId}',
+								activePlace.value
+							)}`
+						);
+					});
+				}
 			},
 			{
-				title: 'Close',
-				color: 'danger',
-				type: 'close',
-			},
-		];
+				immediate: true,
+			}
+		);
 
-		const isPartner = computed(() => {
-			return store.state.user.role === 'employee';
-		});
+		// onMounted(() => {
+		// 	placeId = activePlace.value;
+		// });
 
-		if (isPartner.value) {
-			// setTimeout(() => {
-			// 	orders.push({ key: 2 });
-			// }, 2000);
-		}
+		// onBeforeUnmount(() => {
+		// 	placeId = null;
+		// });
 
 		return {
-			actions,
 			showOrderDetails,
 			orders,
+			activeOrder,
+
 			handleCloseNotification,
+			showModal,
 		};
 	},
 };

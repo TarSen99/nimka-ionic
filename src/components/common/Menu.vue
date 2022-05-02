@@ -82,9 +82,9 @@ import {
 	logOutOutline,
 } from 'ionicons/icons';
 import { signOut } from '@/services/firebase/auth.js';
-import { store } from '@/store';
 import { clearLs } from '@/helpers/index.js';
 import { ROLES } from '@/config/constants.js';
+import realtime from '@/services/firebase/db.js';
 
 const MENU_ITEMS = [
 	{
@@ -144,6 +144,7 @@ const MENU_ITEMS = [
 		handler: (router) => {
 			signOut();
 			clearLs();
+			realtime.disconnect();
 
 			// store.dispatch('company/updateRole', null);
 			// store.dispatch('company/updateId', null);

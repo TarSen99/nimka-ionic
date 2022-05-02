@@ -9,6 +9,7 @@ export const initFirebase = () => {
 		messagingSenderId: process.env.VUE_APP_FIREBASE_MESSAGING_SENDER_ID, // Cloud Messaging
 		projectId: process.env.VUE_APP_FIREBASE_PROJECT_ID,
 		appId: process.env.VUE_APP_FIREBASE_APP_ID,
+		databaseURL: process.env.VUE_APP_FIREBASE_DB,
 	});
 
 	return app;

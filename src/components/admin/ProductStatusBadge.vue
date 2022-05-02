@@ -1,7 +1,7 @@
 <template>
 	<Badge :class="statusClass" class="px-3">
 		<span class="fz-14 capitalized">
-			{{ status }}
+			{{ status && status.replaceAll('_', ' ') }}
 		</span>
 	</Badge>
 </template>
@@ -38,7 +38,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.active {
+.active,
+.to_take,
+.payed,
+.completed {
 	background-color: var(--ion-color-success) !important;
 }
 
@@ -50,7 +53,8 @@ export default {
 	background-color: var(--ion-color-primary) !important;
 }
 
-.expired {
+.expired,
+.cancelled {
 	background-color: var(--ion-color-danger) !important;
 }
 </style>

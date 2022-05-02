@@ -52,7 +52,7 @@
 					<Button
 						color="primary"
 						expand="block"
-						@click="$router.push('/login/email')"
+						@click="$router.replace('/login/email')"
 					>
 						Login for partners
 					</Button>

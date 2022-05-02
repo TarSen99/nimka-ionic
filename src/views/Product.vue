@@ -159,7 +159,10 @@
 						{{ viewAll ? 'Hide' : 'View all' }}
 					</a>
 
-					<div class="btn-container mt-5 pt-5 relative">
+					<div
+						v-if="userRole === ROLES.CUSTOMER"
+						class="btn-container mt-5 pt-5 relative"
+					>
 						<transition name="fade">
 							<div
 								v-if="currProductBoughtCount"
@@ -204,6 +207,17 @@
 								Add to cart
 							</Button>
 						</div>
+					</div>
+
+					<div v-else>
+						<Button
+							expand="full"
+							shape="round"
+							class="order-btn w-100"
+							@click="$router.push(`/new-product/${details.id}`)"
+						>
+							Edit
+						</Button>
 					</div>
 				</div>
 
@@ -255,6 +269,7 @@ import { computed } from '@vue/runtime-core';
 import { DateTime } from 'luxon';
 import useDescriptionCutter from '@/composables/common/useDescriptionCutter.js';
 import google from '@/services/google';
+import { ROLES } from '@/config/constants.js';
 
 import {
 	IonContent,
@@ -363,6 +378,10 @@ export default {
 			useDescriptionCutter({
 				isLoading,
 			});
+
+		const userRole = computed(() => {
+			return store.state.user.role;
+		});
 
 		const images = computed(() => {
 			return getImages(details.value.Images);
@@ -538,6 +557,8 @@ export default {
 			allowScroll,
 			handleAllowScroll,
 			swiper,
+			ROLES,
+			userRole,
 		};
 	},
 };

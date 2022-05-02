@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
 import Home from '../views/Home.vue';
+import HomeEmployee from '../views/HomeEmployee.vue';
 // import Login from '@/views/Login.vue';
 // import SignUp from '@/views/SignUp.vue';
 import Product from '@/views/Product.vue';
@@ -19,48 +20,57 @@ import LoginEmail from '@/views/LoginEmail.vue';
 import AllowLocation from '@/views/AllowLocation.vue';
 import AllowPush from '@/views/AllowPush.vue';
 import PaymentPage from '@/views/PaymentPage.vue';
+import SelectPlace from '@/views/SelectPlace.vue';
 import { store } from '@/store';
 import { FIRST_TIME_OPEN } from '@/config/constants.js';
+import { ROLES } from '../config/constants';
 
 const routes = [
+	{
+		path: '/places/select',
+		name: 'SelectPlace',
+		component: SelectPlace,
+		meta: {
+			roles: [ROLES.EMPLOYEE, ROLES.OWNER, ROLES.MANAGER],
+		},
+	},
+	{
+		path: '/dashboard',
+		name: 'dashboard',
+		component: HomeEmployee,
+		meta: {
+			roles: [ROLES.EMPLOYEE, ROLES.OWNER, ROLES.MANAGER],
+		},
+	},
 	{
 		path: '/payment',
 		name: 'payment',
 		component: PaymentPage,
 		meta: {
-			roles: ['guest'],
+			roles: [ROLES.CUSTOMER],
 		},
 	},
 	{
 		path: '/login/email',
 		name: 'Choose_email',
 		component: LoginEmail,
-		meta: {
-			roles: ['guest'],
-		},
 	},
 	{
 		path: '/location/allow',
 		name: 'Allow_location',
 		component: AllowLocation,
-		meta: {
-			roles: ['guest', 'employee', 'owner', 'manager'],
-		},
 	},
 	{
 		path: '/push/allow',
 		name: 'Allow_push',
 		component: AllowPush,
-		meta: {
-			roles: ['guest', 'employee', 'owner', 'manager'],
-		},
 	},
 	{
 		path: '/home',
 		name: 'Home',
 		component: Home,
 		meta: {
-			roles: ['customer', 'employee', 'owner', 'manager'],
+			roles: [ROLES.CUSTOMER],
 		},
 	},
 	// {
@@ -84,77 +94,77 @@ const routes = [
 		name: 'Product',
 		component: Product,
 		meta: {
-			roles: ['customer', 'employee', 'owner', 'manager'],
+			roles: [ROLES.EMPLOYEE, ROLES.OWNER, ROLES.MANAGER, ROLES.CUSTOMER],
 		},
 	},
 	{
 		path: '/checkout',
 		component: Checkout,
 		meta: {
-			roles: ['customer'],
+			roles: [ROLES.CUSTOMER],
 		},
 	},
 	{
 		path: '/success',
 		component: CheckoutSuccess,
 		meta: {
-			roles: ['customer'],
+			roles: [ROLES.CUSTOMER],
 		},
 	},
 	{
 		path: '/account',
 		component: Account,
 		meta: {
-			roles: ['customer'],
+			roles: [ROLES.CUSTOMER],
 		},
 	},
 	{
 		path: '/address',
 		component: Address,
 		meta: {
-			roles: ['customer'],
+			roles: [ROLES.CUSTOMER],
 		},
 	},
 	{
 		path: '/orders',
 		component: Orders,
 		meta: {
-			roles: ['customer'],
+			roles: [ROLES.CUSTOMER],
 		},
 	},
 	{
 		path: '/incoming-orders',
 		component: IncomingOrders,
 		meta: {
-			roles: ['employee', 'owner', 'manager'],
+			roles: [ROLES.EMPLOYEE, ROLES.OWNER, ROLES.MANAGER],
 		},
 	},
 	{
 		path: '/new-product',
 		component: NewProduct,
 		meta: {
-			roles: ['employee', 'owner', 'manager'],
+			roles: [ROLES.EMPLOYEE, ROLES.OWNER, ROLES.MANAGER],
 		},
 	},
 	{
 		path: '/new-product/:id',
 		component: NewProduct,
 		meta: {
-			roles: ['employee', 'owner', 'manager'],
+			roles: [ROLES.EMPLOYEE, ROLES.OWNER, ROLES.MANAGER],
 		},
 	},
 	{
-		path: '/new-product-success',
+		path: '/product-success/:id',
 		component: NewProductSuccess,
 		meta: {
-			roles: ['employee', 'owner', 'manager'],
+			roles: [ROLES.EMPLOYEE, ROLES.OWNER, ROLES.MANAGER],
 		},
 	},
 	{
 		path: '/my-products',
 		component: MyProducts,
 		meta: {
-			roles: ['employee', 'owner', 'manager'],
+			roles: [ROLES.EMPLOYEE, ROLES.OWNER, ROLES.MANAGER],
 		},
 	},
 	{
@@ -194,7 +204,7 @@ const routes = [
 		},
 		exact: true,
 		meta: {
-			roles: ['customer', 'employee', 'owner', 'manager'],
+			roles: [ROLES.CUSTOMER, ROLES.EMPLOYEE, ROLES.OWNER, ROLES.MANAGER],
 		},
 	},
 ];
@@ -210,36 +220,68 @@ const getUserRoles = () => {
 	return user.role;
 };
 
+const getPlace = () => {
+	const user = store.state.user;
+
+	return user.activePlace;
+};
+
+const getHomePath = (role) => {
+	if (role === ROLES.CUSTOMER) {
+		return '/home';
+	}
+
+	return '/dashboard';
+};
+
+const isNull = (v) => {
+	if (!v) {
+		return true;
+	}
+
+	return v === 'null' || v === 'undefined' || v === 'NaN';
+};
+
 router.beforeEach((to) => {
 	const requiredRoles = to.meta.roles || [];
 	const userRole = getUserRoles();
+
+	const place = getPlace();
+
+	if (
+		isNull(place) &&
+		to.path !== '/places/select' &&
+		(userRole === ROLES.OWNER ||
+			userRole === ROLES.MANAGER ||
+			userRole === ROLES.EMPLOYEE)
+	) {
+		return '/places/select';
+	}
 
 	if (!requiredRoles.length) {
 		return true;
 	}
 
-	let isAllowed = false;
-
 	if (requiredRoles.includes(userRole)) {
-		isAllowed = true;
-	}
-
-	if (isAllowed) {
 		return true;
 	}
 
-	// // if user is guest and route is for guests
-	// if (requiredRoles.includes('guest') && !userRole) {
-	// 	return true;
-	// }
+	if (
+		requiredRoles.includes('guest') &&
+		requiredRoles.length === 1 &&
+		userRole
+	) {
+		return getHomePath(userRole);
+	}
 
-	// if (
-	// 	requiredRoles.includes('guest') &&
-	// 	requiredRoles.length === 1 &&
-	// 	userRole
-	// ) {
-	// 	return '/home';
-	// }
+	// if user is guest and route is for guests
+	if (requiredRoles.includes('guest') && !userRole) {
+		return true;
+	}
+
+	if (!requiredRoles.includes(userRole) && userRole) {
+		return getHomePath(userRole);
+	}
 
 	// //not allowed here
 	// if (to.path !== '/welcome') {

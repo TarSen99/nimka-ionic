@@ -4,7 +4,24 @@ import {
 	CURRENT_USER_KEY,
 	CURRENT_COMPANY_KEY,
 	CURRENT_USER_ROLE,
+	USER_DETAILS,
+	CURRENT_GEOLOCATION,
+	COMPANY_PLACES,
+	COMPANY_DETAILS,
+	CURRENT_PLACE,
+	CURRENT_PUSH_TOKEN,
 } from '@/config/constants.js';
+import useNativeStore from '@/composables/common/nativeStore.js';
+import { store } from '@/store';
+
+const { removeItem } = useNativeStore();
+
+export const clearUserStore = () => {
+	store.commit('user/clear');
+	store.commit('company/clear');
+	store.commit('myOrders/clear');
+	store.commit('products/clear');
+};
 
 export const getErrors = (err) => {
 	const errors = err.response?.data?.errors || [];
@@ -93,6 +110,24 @@ export const clearLs = () => {
 	localStorage.removeItem(CURRENT_USER_KEY);
 	localStorage.removeItem(CURRENT_COMPANY_KEY);
 	localStorage.removeItem(CURRENT_USER_ROLE);
+	localStorage.removeItem(USER_DETAILS);
+	localStorage.removeItem(CURRENT_GEOLOCATION);
+	localStorage.removeItem(COMPANY_PLACES);
+	localStorage.removeItem(CURRENT_PLACE);
+	localStorage.removeItem(COMPANY_DETAILS);
+	localStorage.removeItem(CURRENT_PUSH_TOKEN);
+	clearUserStore();
+
+	removeItem(CURRENT_PUSH_TOKEN);
+	removeItem(CURRENT_PLACE);
+	removeItem(CURRENT_TOKEN);
+	removeItem(CURRENT_USER_KEY);
+	removeItem(CURRENT_COMPANY_KEY);
+	removeItem(CURRENT_USER_ROLE);
+	removeItem(USER_DETAILS);
+	removeItem(CURRENT_GEOLOCATION);
+	removeItem(COMPANY_PLACES);
+	removeItem(COMPANY_DETAILS);
 };
 
 export const getApproxCoords = (coords) => {
@@ -109,4 +144,39 @@ export const getApproxCoords = (coords) => {
 		latitude: latitude.slice(0, 7),
 		longtitude: longtitude.slice(0, 7),
 	});
+};
+
+export const getTime = (date, tomorrow) => {
+	const timeH = date.get('hour');
+	const timeM = date.get('minute');
+
+	const now = DateTime.now();
+	const withTime = now.set({
+		hour: timeH,
+		minute: timeM,
+		day: tomorrow ? now.get('day') + 1 : now.get('day'),
+	});
+
+	return withTime.toJSDate();
+};
+
+export const withTime = (dateStringFrom, dateStringTo) => {
+	const dateStart = DateTime.fromISO(dateStringFrom);
+	const dateEnd = DateTime.fromISO(dateStringTo);
+
+	const startDay = dateStart.get('day');
+	const endDay = dateEnd.get('day');
+	let isTomorrow = false;
+
+	if (endDay > startDay) {
+		isTomorrow = true;
+	}
+
+	const start = getTime(dateStart);
+	const end = getTime(dateEnd, isTomorrow);
+
+	return {
+		start,
+		end,
+	};
 };

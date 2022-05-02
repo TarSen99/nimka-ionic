@@ -27,7 +27,7 @@
 					>
 						<template #default>
 							<p class="fz-14 color-grey view-description view-description-2">
-								{{ activePlace.address }}
+								{{ currentPlaceDetails.address }}
 							</p>
 						</template>
 					</modal-header>
@@ -210,13 +210,14 @@ import Badge from '@/components/common/Badge.vue';
 import ProductStatusBadge from '@/components/admin/ProductStatusBadge.vue';
 import { useRouter } from 'vue-router';
 import { ref, toRefs } from '@vue/reactivity';
-import { computed, watch } from '@vue/runtime-core';
+import { computed } from '@vue/runtime-core';
 import { DateTime } from 'luxon';
 import { useStore } from 'vuex';
 import http from '@/services/http';
 import useLoader from '@/composables/common/useLoader.js';
 import useAlert from '@/composables/common/alert.js';
 import { PRODUCT_STATUSES } from '@/config/constants.js';
+import useCurrentPlace from '@/composables/common/currentPlace.js';
 
 export default {
 	name: 'ViewProductModal',
@@ -249,13 +250,10 @@ export default {
 		const store = useStore();
 		const { showLoader, hideLoader } = useLoader();
 		const { showMessage } = useAlert();
+		const { currentPlaceDetails } = useCurrentPlace();
 
 		const companyDetails = computed(() => {
 			return store.state.company.details || {};
-		});
-
-		const activePlace = computed(() => {
-			return store.state.company.places[0] || {};
 		});
 
 		const createdAt = computed(() => {
@@ -284,7 +282,7 @@ export default {
 
 		const editProduct = () => {
 			handleClose();
-			router.push('/new-product/1');
+			router.push(`/new-product/${currentProductDetails.value.id}`);
 		};
 
 		const handleViewAll = () => {
@@ -353,11 +351,11 @@ export default {
 			toTime,
 			createdAt,
 			companyDetails,
-			activePlace,
 			unpublishProduct,
 			PRODUCT_STATUSES,
 			checkmarkOutline,
 			handlePresent,
+			currentPlaceDetails
 		};
 	},
 };

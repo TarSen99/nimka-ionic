@@ -43,6 +43,13 @@
 			/>
 
 			<div class="ion-padding">
+				<status-filter
+					:model-value="productStatus"
+					:options="PRODUCT_STATUSES"
+					class="mt-2 mb-5"
+					@update:modelValue="updateProductStatus"
+				/>
+
 				<list-placeholder v-if="loading && !itemsList.length" />
 				<div v-if="!itemsList.length && !loading">
 					<p class="fz-14 ion-text-center fw-500 color-dark">No results</p>
@@ -108,6 +115,9 @@ import ListPlaceholder from '@/components/common/ListPlaceholder.vue';
 import useInfiniteList from '@/composables/common/infiniteList.js';
 import FoodItem from '@/components/home/FoodItem.vue';
 import ProductStatusBadge from '@/components/admin/ProductStatusBadge.vue';
+import StatusFilter from '@/components/common/StatusFilter.vue';
+import { PRODUCT_STATUSES } from '@/config/constants.js';
+import useCurrentPlace from '@/composables/common/currentPlace.js';
 
 export default {
 	name: 'My products',
@@ -130,6 +140,7 @@ export default {
 		IonSpinner,
 		FoodItem,
 		ProductStatusBadge,
+		StatusFilter,
 	},
 	setup() {
 		const store = useStore();
@@ -144,16 +155,19 @@ export default {
 			search,
 			handleResponse,
 		} = useInfiniteList();
+		const { activePlace } = useCurrentPlace();
 
-		const place = computed(() => {
-			return store.state.company.places[0] || {};
+		const productStatus = computed(() => {
+			return store.state.lastProducts.status;
 		});
 
 		const updateList = async (page = 1, ev, doNotClearList) => {
 			loading.value = true;
 			return http
 				.get(
-					`/places/${place.value.id}/products?page=${page}&orderBy=${orderBy.value}&search=${search.value}`
+					`/places/${activePlace.value}/products?page=${page}&orderBy=${
+						orderBy.value
+					}&search=${search.value}&status=${productStatus.value.join(',')}`
 				)
 				.then((res) => {
 					handleResponse(res, page, ev, doNotClearList);
@@ -191,6 +205,13 @@ export default {
 			currentProductDetails.value = {};
 		};
 
+		const updateProductStatus = (v) => {
+			store.commit('lastProducts/setStatus', v);
+			itemsList.value = [];
+
+			updateList(1);
+		};
+
 		return {
 			chevronBackOutline,
 			showProductModal,
@@ -207,6 +228,9 @@ export default {
 			handleProductClick,
 			currentProductDetails,
 			handleClose,
+			updateProductStatus,
+			productStatus,
+			PRODUCT_STATUSES,
 		};
 	},
 };

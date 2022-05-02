@@ -13,34 +13,8 @@ import { computed } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 
-// const not = {
-// 	data: {
-// 		'gcm.message_id': '1650622163910289',
-// 		fcm_options: {
-// 			image:
-// 				'https://niamka.s3.eu-central-1.amazonaws.com/images/1650612438337-1_5c99202aa7d3f.jpeg.jpeg',
-// 		},
-// 		id: '54',
-// 		aps: {
-// 			sound: 'default',
-// 			'mutable-content': 1,
-// 			'content-available': 1,
-// 			alert: { title: "New product from П'ятниця", body: 'testt' },
-// 		},
-// 		'google.c.fid': 'e9olRtBvC2M',
-// 		'google.c.sender.id': '1033159312679',
-// 		type: 'product',
-// 		'google.c.a.e': '1',
-// 	},
-// 	subtitle: '',
-// 	body: 'testt',
-// 	id: 'DDF6571A-0DE2-4E43-8088-A87CC0BC0498',
-// 	badge: 1,
-// 	title: "New product from П'ятниця",
-// };
-
 export default function () {
-	const { setItem, removeItem, getItem } = useNativeStore();
+	const { setItem, getItem } = useNativeStore();
 	const platform = Capacitor.getPlatform();
 	const store = useStore();
 	const router = useRouter();
@@ -78,7 +52,12 @@ export default function () {
 		}
 
 		await PushNotifications.addListener('registration', async (token) => {
+			console.log('REG COMPLETED');
+
 			if (!isAuthed.value) {
+				store.commit('user/changePushListenersAdded', false);
+				console.log('NOT AUTHED');
+
 				return;
 			}
 
@@ -90,6 +69,7 @@ export default function () {
 			}
 
 			await setItem(CURRENT_PUSH_TOKEN, tokenValue);
+
 			return http.post('/token/create', {
 				token: tokenValue,
 				type: platform,
@@ -111,8 +91,6 @@ export default function () {
 		await PushNotifications.addListener(
 			'pushNotificationActionPerformed',
 			(notification) => {
-				console.log('Performed');
-				console.log(notification);
 				handleNotification(notification.notification.data);
 				resetNotificationBadge();
 			}
@@ -124,6 +102,7 @@ export default function () {
 			return;
 		}
 
+		console.log('ASK notifications');
 		store.commit('user/changeNotificationsAsked', true);
 
 		if (platform === 'web') {
@@ -143,6 +122,8 @@ export default function () {
 
 			return;
 		}
+
+		console.log('Save token');
 
 		await PushNotifications.register();
 	};

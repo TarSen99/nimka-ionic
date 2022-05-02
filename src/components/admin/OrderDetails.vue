@@ -5,23 +5,7 @@
 				<div class="field-title">Order created at:</div>
 
 				<div>
-					<span class="field-value">26.10.20 18:50</span>
-				</div>
-			</div>
-
-			<div class="item">
-				<div class="field-title">QUAHity:</div>
-
-				<div>
-					<span class="field-value">2</span>
-				</div>
-			</div>
-
-			<div class="item">
-				<div class="field-title">Price per one:</div>
-
-				<div>
-					<span class="field-value">50 UAH</span>
+					<span class="field-value">{{ createdAt }}</span>
 				</div>
 			</div>
 
@@ -29,7 +13,9 @@
 				<div class="field-title">Payment method:</div>
 
 				<div>
-					<span class="field-value">Credit card</span>
+					<span class="field-value capitalized">{{
+						details.paymentMethod
+					}}</span>
 				</div>
 			</div>
 
@@ -37,18 +23,31 @@
 				<div class="field-title">Status:</div>
 
 				<div>
-					<span class="field-value">PAYED</span>
+					<product-status-badge :status="details.status" />
 				</div>
+			</div>
+
+			<div>
+				<swiper :slides-per-view="1.5" :space-between="8" ref="swiper">
+					<swiper-slide v-for="item in products" :key="item.id">
+						<CheckoutItem
+							:product="item"
+							:disabled="true"
+							hide-buttons
+							class="mb-2"
+						></CheckoutItem>
+					</swiper-slide>
+				</swiper>
 			</div>
 
 			<div>
 				<hr class="hr" />
 
-				<div class="item">
+				<div v-if="details.Customer.name" class="item">
 					<div class="field-title">Customer name:</div>
 
 					<div>
-						<span class="field-value">Taras Seniv</span>
+						<span class="field-value">{{ details.Customer.name }}</span>
 					</div>
 				</div>
 
@@ -56,7 +55,7 @@
 					<div class="field-title">Customer mobile:</div>
 
 					<div>
-						<span class="field-value">+380 96 904 53 49</span>
+						<span class="field-value">{{ customerPhoneNumber }}</span>
 					</div>
 				</div>
 			</div>
@@ -68,7 +67,9 @@
 				<div class="field-title bottom">Total price:</div>
 
 				<div>
-					<span class="field-value">100 UAH</span>
+					<span class="field-value">
+						{{ details.totalPrice.toFixed(2) }} UAH
+					</span>
 				</div>
 			</div>
 
@@ -76,7 +77,7 @@
 				<div class="field-title bottom">Comission:</div>
 
 				<div>
-					<span class="field-value">-15 UAH</span>
+					<span class="field-value">-{{ comissionPrice }} UAH</span>
 				</div>
 			</div>
 
@@ -84,7 +85,7 @@
 				<div class="field-title bottom">Total income:</div>
 
 				<div>
-					<span class="field-value total-income">+85 UAH</span>
+					<span class="field-value total-income fw-500">+{{ income }} UAH</span>
 				</div>
 			</div>
 		</div>
@@ -92,9 +93,13 @@
 		<div class="is-flex is-flex-direction-column">
 			<div class="is-flex ion-justify-content-center mt-3 pb-2">
 				<div
+					v-if="
+						details.status === ORDER_STATUSES.PAYED ||
+						details.status === ORDER_STATUSES.TO_TAKE
+					"
 					class="is-flex is-flex-direction-column ion-align-items-center mr-5 pr-5"
 				>
-					<Button @click="scan" class="action">
+					<Button @click="showActionSheet" class="action">
 						<ion-icon :icon="checkmarkOutline" class="color-success" />
 					</Button>
 					<span class="ion-text-center mt-1 fz-12 color-dark">
@@ -104,9 +109,13 @@
 				</div>
 
 				<div
-					class="is-flex is-flex-direction-column ion-align-items-center mr-5 pr-5"
+					class="is-flex is-flex-direction-column ion-align-items-center"
+					:class="{
+						'mr-5': details.status !== ORDER_STATUSES.CANCELLED,
+						'pr-5': details.status !== ORDER_STATUSES.CANCELLED,
+					}"
 				>
-					<Button class="action">
+					<Button class="action" @click="callCustomer">
 						<ion-icon :icon="callOutline" class="color-secondary" />
 					</Button>
 					<span class="ion-text-center mt-1 fz-12 color-dark">
@@ -114,24 +123,50 @@
 						customer
 					</span>
 				</div>
-				<div class="is-flex is-flex-direction-column ion-align-items-center">
-					<Button class="action">
+				<div
+					v-if="
+						details.status !== ORDER_STATUSES.CANCELLED &&
+						details.status !== ORDER_STATUSES.ACTIVE
+					"
+					class="is-flex is-flex-direction-column ion-align-items-center"
+				>
+					<Button class="action" @click="handleCancel">
 						<ion-icon :icon="closeOutline" class="color-danger" />
 					</Button>
-					<span class="ion-text-center mt-1 fz-12 color-dark">
+					<span
+						v-if="
+							details.status === ORDER_STATUSES.PAYED ||
+							details.status === ORDER_STATUSES.TO_TAKE
+						"
+						class="ion-text-center mt-1 fz-12 color-dark"
+					>
 						Cancel <br />
+						order
+					</span>
+					<span
+						v-else-if="details.status === ORDER_STATUSES.COMPLETED"
+						class="ion-text-center mt-1 fz-12 color-dark"
+					>
+						Cancel <br />
+						& Refund <br />
 						order
 					</span>
 				</div>
 			</div>
 
-			<p class="ion-text-center field-value color-dark mt-5 pt-5">
+			<p
+				v-if="
+					details.status === ORDER_STATUSES.PAYED ||
+					details.status === ORDER_STATUSES.TO_TAKE
+				"
+				class="ion-text-center field-value color-dark mt-5 pt-5"
+			>
 				Please ask customer to show QR code and scan it by clicking on "Complete
 				order" button. <br />
 
 				Customer needs to pickup order till
 				<Badge color="dark" class="px-3 mt-2">
-					<span class="fz-14"> 20:00 </span>
+					<span class="fz-14"> {{ productsPickupTime }} </span>
 				</Badge>
 				or it will be automatically cancelled.
 			</p>
@@ -142,10 +177,20 @@
 <script>
 import Button from '@/components/common/Button.vue';
 import Badge from '@/components/common/Badge.vue';
-import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner';
 import useAlert from '@/composables/common/alert.js';
 import { modalController, IonIcon } from '@ionic/vue';
 import { checkmarkOutline, callOutline, closeOutline } from 'ionicons/icons';
+import { DateTime } from 'luxon';
+import { computed, toRefs } from '@vue/runtime-core';
+import ProductStatusBadge from '@/components/admin/ProductStatusBadge.vue';
+import CheckoutItem from '@/components/checkout/CheckoutItem.vue';
+import { Swiper, SwiperSlide } from 'swiper/vue';
+import useBrowser from '@/composables/common/browser.js';
+import useCancelOrder from '@/composables/product/useCancelOrder.js';
+import useLoader from '@/composables/common/useLoader.js';
+import { ORDER_STATUSES } from '@/config/constants.js';
+import useCompleteOrder from '@/composables/product/completeOrder.js';
+import { getProductsPickupTime } from '@/helpers/index.js';
 
 export default {
 	name: 'OrderDetails',
@@ -153,40 +198,116 @@ export default {
 		Button,
 		Badge,
 		IonIcon,
+		ProductStatusBadge,
+		CheckoutItem,
+		Swiper,
+		SwiperSlide,
 	},
-	setup(_, { emit }) {
+	props: {
+		details: {
+			type: Object,
+			default: () => {},
+		},
+	},
+	emits: ['change-status'],
+	setup(props, { emit }) {
+		const { details } = toRefs(props);
 		const { showMessage } = useAlert();
+		const { open } = useBrowser();
+		const { showLoader, hideLoader } = useLoader();
 
 		const handleClose = () => {
 			modalController.dismiss();
 		};
 
-		const scan = () => {
-			BarcodeScanner.scan()
+		const { cancel } = useCancelOrder({
+			activeOrder: details,
+		});
+		const { showActionSheet } = useCompleteOrder({
+			handleClose,
+			details,
+			emit,
+		});
+
+		const createdAt = computed(() => {
+			return DateTime.fromISO(details.value.createdAt).toFormat('DD HH:mm');
+		});
+
+		const comissionPrice = computed(() => {
+			const comission =
+				(details.value.totalPrice / 100) * details.value.comission;
+			return comission && comission.toFixed(2);
+		});
+
+		const income = computed(() => {
+			return (details.value.totalPrice - comissionPrice.value).toFixed(2);
+		});
+
+		const products = computed(() => {
+			return details.value.OrderProducts.map((p) => {
+				return {
+					...p.productData,
+					count: p.quantity,
+				};
+			});
+		});
+
+		const productsPickupTime = computed(() => {
+			return getProductsPickupTime(products.value);
+		});
+
+		const handleCancel = () => {
+			cancel(showLoader)
 				.then((res) => {
-					// console.log(res.text);
+					if (!res) {
+						return;
+					}
+
+					emit('change-status', ORDER_STATUSES.CANCELLED);
+
 					showMessage({
 						color: 'success',
-						//text: `Text is: ${res.text}`,
-						text: `Order is successfully completed`,
+						text: `Order is successfully cancelled`,
 						title: 'Success',
 					});
 
-					// emit('complete-order');
 					handleClose();
 				})
 				.catch(() => {
 					showMessage({
-						text: `Something went wrong. Plase try again`,
+						text: `Something went wrong. Please try again`,
 					});
+				})
+				.finally(() => {
+					hideLoader();
 				});
 		};
 
+		const customerPhoneNumber = computed(() => {
+			return details.value.Customer.phone.slice(
+				2,
+				details.value.Customer.phone.length
+			);
+		});
+
+		const callCustomer = () => {
+			open(`tel:${customerPhoneNumber.value}`);
+		};
+
 		return {
-			scan,
 			checkmarkOutline,
 			callOutline,
 			closeOutline,
+			createdAt,
+			comissionPrice,
+			income,
+			products,
+			customerPhoneNumber,
+			callCustomer,
+			handleCancel,
+			ORDER_STATUSES,
+			showActionSheet,
+			productsPickupTime,
 		};
 	},
 };
@@ -219,10 +340,6 @@ export default {
 .total-income {
 	font-size: 16px;
 	font-weight: 500;
-}
-
-.payed {
-	color: var(--ion-color-success);
 }
 
 .bottom {

@@ -1,37 +1,52 @@
-import { Camera, CameraResultType } from '@capacitor/camera';
+import { Camera } from '@capacitor/camera';
 import { ref } from 'vue';
-import { loadingController } from '@ionic/vue';
+
+// const convertBlobToBase64 = (blob) => {
+// 	return new Promise((resolve, reject) => {
+// 		const reader = new FileReader();
+// 		reader.onerror = reject;
+// 		reader.onload = () => {
+// 			resolve(reader.result);
+// 		};
+// 		reader.readAsDataURL(blob);
+// 	});
+// };
+
+const readAsBlob = async (photo) => {
+	const response = await fetch(photo.webPath);
+	const blob = await response.blob();
+
+	return await blob;
+};
 
 export default function () {
 	const images = ref([]);
 
 	const showCameraOptions = async () => {
-		const loading = await loadingController.create({});
-
-		await loading.present();
-
 		let result;
 
 		try {
 			result = await Camera.pickImages({
 				quality: 90,
 				allowEditing: true,
-				resultType: CameraResultType.Uri,
+				limit: 5,
 			});
-			console.log(result);
-
-			loading.dismiss();
-
-			images.value.push(...(result.photos || []));
-
-			const save = [...images.value];
-			images.value = [];
-
-			return save;
 		} catch (e) {
-			console.log(e);
-			loading.dismiss();
+			return;
 		}
+
+		for await (const photo of result.photos) {
+			const blob = await readAsBlob(photo);
+
+			photo.blob = blob;
+		}
+
+		images.value.push(...(result.photos || []));
+
+		const save = [...images.value];
+		images.value = [];
+
+		return save;
 	};
 
 	return {

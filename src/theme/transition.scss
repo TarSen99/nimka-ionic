@@ -21,12 +21,29 @@
 
 .notification-enter-active,
 .notification-leave-active {
-	transition: opacity 0.2s ease, transform 0.2s ease;
+	transition: all 0.2s ease;
+	overflow: hidden;
 }
 
-.notification-enter-from,
+.notification-enter-to {
+	height: 71px;
+	padding: 16px;
+}
+
+.notification-enter-from {
+	transform: translateY(-100px);
+}
+
+.notification-leave-from {
+	opacity: 1;
+	height: 71px;
+	padding: 16px;
+}
+
 .notification-leave-to {
 	opacity: 0;
+	height: 0;
+	padding: 0;
 	transform: translateY(-100px);
 }
 

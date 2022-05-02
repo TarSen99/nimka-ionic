@@ -8,7 +8,7 @@ import 'firebase/auth';
 import useLoader from '@/composables/common/useLoader.js';
 import http from '@/services/http';
 import { computed } from 'vue';
-import { ROLES } from '@/config/constants.js';
+import realtime from '@/services/firebase/db.js';
 
 export default function () {
 	const platform = Capacitor.getPlatform();
@@ -21,19 +21,11 @@ export default function () {
 		return store.state.register.phone;
 	});
 
-	const {
-		handleCodeInput,
-		code,
-		values,
-		handleInputFocus,
-		handlePaste,
-		inputs,
-	} = pincode();
+	const { handlePaste, focusMainElement, codeEl, currentPin, CODE_LENGTH } =
+		pincode();
 
 	const clearCode = () => {
-		values.forEach((v) => {
-			v.value = null;
-		});
+		currentPin.value = '';
 	};
 
 	const handleUserLogin = async (user) => {
@@ -47,18 +39,8 @@ export default function () {
 			.then((res) => {
 				hideLoader();
 				const data = res.data.data;
-				// const company = (data.Companies && data.Companies[0]) || {};
-				// const role = company.UsersAndCompanies?.role;
-
-				// store.dispatch('company/updateId', company.id);
-				// store.dispatch('company/updateRole', role || ROLES.CUSTOMER);
 				store.dispatch('user/updateDetails', { ...data, token });
-
-				// showMessage({
-				// 	color: 'success',
-				// 	title: 'Success',
-				// 	text: 'Mobile is verified',
-				// });
+				realtime.connect(data.id);
 
 				return true;
 			})
@@ -76,7 +58,7 @@ export default function () {
 		try {
 			const credential = await firebase.auth.PhoneAuthProvider.credential(
 				verificationId,
-				code.value
+				currentPin.value
 			);
 
 			return await firebase
@@ -90,6 +72,7 @@ export default function () {
 
 			hideLoader();
 			showMessage({ text: 'SMS code is not valid' });
+			throw new Error('erroe');
 		}
 	};
 
@@ -97,7 +80,7 @@ export default function () {
 		showLoader();
 
 		return window.confirmationResult
-			.confirm(code.value)
+			.confirm(currentPin.value)
 			.then(async (result) => {
 				const user = result.user;
 				return handleUserLogin(user);
@@ -110,6 +93,7 @@ export default function () {
 				clearCode();
 				hideLoader();
 				showMessage({ text: 'SMS code is not valid' });
+				throw new Error('erroe');
 			});
 	};
 
@@ -124,12 +108,11 @@ export default function () {
 	};
 
 	return {
-		handleCodeInput,
-		code,
-		values,
-		handleInputFocus,
 		handlePaste,
 		verify,
-		inputs,
+		codeEl,
+		focusMainElement,
+		currentPin,
+		CODE_LENGTH,
 	};
 }

@@ -122,5 +122,4 @@ export default {
 	padding-top: 50px;
 	height: calc(100% - 20px);
 }
-
 </style>

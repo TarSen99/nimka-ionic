@@ -30,6 +30,7 @@
 					label="Name"
 					class="account-input"
 					:error="nameError"
+					@input="allowSave"
 				/>
 				<Input
 					v-model="mobile"
@@ -45,6 +46,7 @@
 					label="Email"
 					class="account-input"
 					:error="emailError"
+					@input="allowSave"
 				/>
 
 				<Button
@@ -52,7 +54,7 @@
 					expand="full"
 					shape="round"
 					class="save"
-					:disabled="!name"
+					:disabled="!name || saveDisabled"
 					@click="save"
 				>
 					Save
@@ -118,6 +120,7 @@ export default {
 
 		const { value: email, errorMessage: emailError } = useField('email');
 		const { value: name, errorMessage: nameError } = useField('name');
+		const saveDisabled = ref(true);
 
 		const save = async () => {
 			const v = await validate();
@@ -136,6 +139,7 @@ export default {
 				.then((res) => {
 					hideLoader();
 					store.dispatch('user/updateDetails', res.data.data);
+					saveDisabled.value = true;
 
 					showMessage({
 						color: 'success',
@@ -172,6 +176,10 @@ export default {
 				});
 		};
 
+		const allowSave = () => {
+			saveDisabled.value = false;
+		};
+
 		onIonViewWillEnter(() => {
 			fetchDetails();
 		});
@@ -184,6 +192,8 @@ export default {
 			email,
 			emailError,
 			nameError,
+			saveDisabled,
+			allowSave,
 		};
 	},
 };

@@ -1,8 +1,39 @@
 <template>
 	<div>
-		<h2 class="fz-18 color-dark fw-500">Products history</h2>
+		<h2 class="fz-16 color-dark fw-500">Last products</h2>
+		<p class="fz-12 color-grey">Click on product to prefill form</p>
 
-		<div>
+		<div class="mt-2">
+			<div v-if="loading" class="is-flex">
+				<ion-item
+					v-for="(item, index) in 10"
+					:key="index"
+					color="item"
+					class="mb-3 placeholder-item"
+					lines="none"
+				>
+					<ion-thumbnail slot="start" class="logo">
+						<ion-skeleton-text animated></ion-skeleton-text>
+					</ion-thumbnail>
+					<ion-label class="h-100 pt-2 is-flex is-flex-direction-column pb-5">
+						<div>
+							<p class="pt-1">
+								<ion-skeleton-text
+									animated
+									style="width: 100%"
+								></ion-skeleton-text>
+							</p>
+						</div>
+						<p class="pt-2">
+							<ion-skeleton-text
+								animated
+								style="width: 100%"
+							></ion-skeleton-text>
+						</p>
+					</ion-label>
+				</ion-item>
+			</div>
+
 			<swiper
 				:slides-per-view="1.2"
 				:space-between="8"
@@ -15,23 +46,32 @@
 						@click="prefillData(slide)"
 					>
 						<div class="is-flex product-card">
-							<div class="img is-flex">
-								<img src="@/assets/images/product.png" alt="" />
+							<div class="img-container">
+								<div class="img is-flex">
+									<img :src="getImage(slide.Images)" alt="" />
+								</div>
 							</div>
+
 							<div
 								class="is-flex is-flex-direction-column ion-align-items-start p-2"
 							>
 								<span class="fz-12 fw-400 is-flex color-dark-grey">
-									<span class="decoration-line-through"> 100 UAH</span>
-									<span class="ml-2 fw-500"> 50 UAH</span>
+									<span class="decoration-line-through">
+										{{ slide.fullPrice && slide.fullPrice.toFixed(2) }}
+										UAH</span
+									>
+									<span class="ml-2 fw-500">
+										{{
+											slide.priceWithDiscount &&
+											slide.priceWithDiscount.toFixed(2)
+										}}
+										UAH</span
+									>
 								</span>
-								<span class="fz-14 fw-500 mt-2"> Product title </span>
+								<span class="fz-14 fw-500 mt-2"> {{ slide.title }} </span>
 								<div class="description-container">
 									<p class="description fz-12">
-										Lorem ipsum, dolor sit amet consectetur adipisicing elit.
-										Ratione similique ut ab culpa, rem sint quasi, voluptatem
-										vel ducimus, quam neque cupiditate quos perferendis
-										architecto ex voluptates? Perferendis, quam sapiente?
+										{{ slide.description }}
 									</p>
 								</div>
 							</div>
@@ -48,6 +88,14 @@ import { Swiper, SwiperSlide } from 'swiper/vue';
 import Badge from '@/components/common/Badge.vue';
 import { ref } from '@vue/reactivity';
 import useScreen from '@/composables/screen/screen.js';
+import usePlaceholder from '@/composables/common/usePlaceholder.js';
+import {
+	IonIcon,
+	IonItem,
+	IonLabel,
+	IonSkeletonText,
+	IonThumbnail,
+} from '@ionic/vue';
 
 export default {
 	name: 'ProductsHistory',
@@ -55,73 +103,70 @@ export default {
 		Swiper,
 		SwiperSlide,
 		Badge,
+		IonIcon,
+		IonItem,
+		IonLabel,
+		IonSkeletonText,
+		IonThumbnail,
 	},
 	emits: ['prefill'],
+	props: {
+		products: {
+			type: Array,
+			default: () => [],
+		},
+		loading: {
+			type: Boolean,
+			default: false,
+		},
+	},
 	setup(_, { emit }) {
 		const swiper = ref(null);
 		const { screenWidthPadding } = useScreen();
-
-		const products = [
-			{
-				id: 1,
-				title: 'test',
-				description: 'description',
-				availableCount: 2,
-				availableCountPerPerson: 2,
-				fullPrice: 105,
-				discountPercent: 25,
-				discountPrice: 78,
-				startTime: new Date(),
-				endTime: new Date(),
-			},
-			{
-				id: 2,
-				title: 'test 2',
-				description: 'description',
-				availableCount: 2,
-				availableCountPerPerson: 2,
-				fullPrice: 105,
-				discountPercent: 25,
-				discountPrice: 78,
-				startTime: new Date(),
-				endTime: new Date(),
-			},
-			{
-				id: 3,
-				title: 'test 3',
-				description: 'description',
-				availableCount: 2,
-				availableCountPerPerson: 2,
-				fullPrice: 105,
-				discountPercent: 25,
-				discountPrice: 78,
-				startTime: new Date(),
-				endTime: new Date(),
-			},
-		];
+		const { getImage } = usePlaceholder();
 
 		const prefillData = (data) => {
 			emit('prefill', data);
 		};
 
 		return {
-			products,
 			swiper,
 			screenWidthPadding,
 			prefillData,
+			getImage,
 		};
 	},
 };
 </script>
 
 <style lang="scss" scoped>
+.placeholder-item {
+	width: 300px;
+	min-width: 300px;
+	--padding-start: 0;
+	padding: 4px;
+
+	.logo {
+		width: 90px;
+		height: 90px;
+		border-radius: 10px;
+		overflow: hidden;
+	}
+}
 .slide-element {
 	width: 100%;
 	height: 100%;
-	border-radius: 10px;
+	border-radius: 5px;
+
+	.img-container {
+		padding: 4px;
+	}
 
 	.img {
 		height: 100px;
+		width: 100px;
+		border-radius: 10px;
+		overflow: hidden;
 	}
 
 	img {

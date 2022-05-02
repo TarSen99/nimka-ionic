@@ -133,3 +133,9 @@ class NotificationService: UNNotificationServiceExtension {
 
 ```
 ````
+
+## Android
+
+###Camera
+
+https://capacitorjs.com/docs/apis/camera

@@ -4,7 +4,6 @@ import {
 	CURRENT_GEOLOCATION,
 	LOCATION_NOT_ALLOWED,
 	LOCATION_PERMISSION_DENIED,
-	GEO_IS_HARDCODED,
 	ROLES,
 } from '@/config/constants.js';
 import useNativeStore from '@/composables/common/nativeStore.js';
@@ -18,6 +17,10 @@ export default function () {
 	onMounted(async () => {
 		const currentGeo = await getItem(CURRENT_GEOLOCATION);
 		cachedGeolocation.value = JSON.parse(currentGeo || '{}');
+	});
+
+	const hasHardcodedAddress = computed(() => {
+		return !!store.state.user.details.address;
 	});
 
 	const setLocationNotAllowed = async (v) => {
@@ -51,8 +54,9 @@ export default function () {
 	const getNotAllowedValue = async () => {
 		const v = await getItem(LOCATION_NOT_ALLOWED);
 
+		// If no saved value - means location is allowed
 		if (!v) {
-			return true;
+			return false;
 		}
 
 		const notAllowed = v === 'yes';
@@ -83,9 +87,7 @@ export default function () {
 			return new Promise((resolve) => resolve(false));
 		}
 
-		const addressIsHardcoded = await getItem(GEO_IS_HARDCODED);
-
-		if (addressIsHardcoded && !force) {
+		if (hasHardcodedAddress.value && !force) {
 			return new Promise((resolve) => resolve(false));
 		}
 
@@ -134,5 +136,6 @@ export default function () {
 		setLocationNotAllowed,
 		getDeniedValue,
 		getNotAllowedValue,
+		hasHardcodedAddress,
 	};
 }

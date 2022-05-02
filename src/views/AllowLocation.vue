@@ -44,10 +44,10 @@ import Button from '@/components/common/Button.vue';
 import useLocation from '@/composables/common/geoLocation.js';
 import useLoader from '@/composables/common/useLoader.js';
 import { useRouter } from 'vue-router';
-import http from '@/services/http/index.js';
-import { USER_DETAILS } from '@/config/constants.js';
-import useNativeStore from '@/composables/common/nativeStore.js';
 import { OpenNativeSettings } from '@awesome-cordova-plugins/open-native-settings';
+import useSaveLocation from '@/composables/auth/saveLocation.js';
+import { useStore } from 'vuex';
+import { computed } from '@vue/runtime-core';
 
 export default {
 	name: 'PhoneRegister',
@@ -59,26 +59,17 @@ export default {
 		IonFab,
 	},
 	setup() {
+		const store = useStore();
+
 		const { getCurrentLocation, setLocationNotAllowed, getDeniedValue } =
 			useLocation();
 		const { showLoader, hideLoader } = useLoader();
-		const { getItem } = useNativeStore();
+		const { updateAddress } = useSaveLocation();
 		const router = useRouter();
 
-		const updateAddress = async ({ latitude, longtitude }) => {
-			const userDetails = await getItem(USER_DETAILS);
-			const userData = JSON.parse(userDetails || '{}');
-
-			if (!Object.keys(userData).length) {
-				return Promise.resolve();
-			}
-
-			return http.put('/users/update', {
-				...userData,
-				latitude,
-				longtitude,
-			});
-		};
+		const hasHardcodedAddress = computed(() => {
+			return !!store.state.user.details.address;
+		});
 
 		const submit = async () => {
 			const isDenied = await getDeniedValue();
@@ -91,11 +82,19 @@ export default {
 			}
 
 			await showLoader();
-			getCurrentLocation(true)
+			getCurrentLocation()
 				.then((res) => {
 					if (!res) {
 						hideLoader();
 						router.replace('/push/allow');
+					}
+
+					if (hasHardcodedAddress.value) {
+						hideLoader();
+
+						router.replace('/push/allow');
+
+						return;
 					}
 
 					const { latitude, longtitude } = res;

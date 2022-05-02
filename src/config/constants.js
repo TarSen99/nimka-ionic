@@ -3,7 +3,6 @@ export const CURRENT_USER_KEY = 'user_id';
 export const CURRENT_USER_ROLE = 'role';
 export const CURRENT_TOKEN = 'fb_token';
 export const CURRENT_GEOLOCATION = 'geolocation';
-export const GEO_IS_HARDCODED = 'geolocation_hardcoded';
 export const USER_DETAILS = 'user_details';
 export const LOCATION_NOT_ALLOWED = 'location_not_allowed';
 export const LOCATION_PERMISSION_DENIED = 'location_denied';
@@ -16,6 +15,7 @@ export const CURRENT_PUSH_TOKEN = 'current-token';
 export const CURRENT_RADIUS = 'current-radius';
 export const COMPANY_PLACES = 'places';
 export const COMPANY_DETAILS = 'company-details';
+export const CURRENT_PLACE = 'current-place';
 
 export const ORDER_STATUSES_LIST = [
 	{
@@ -78,6 +78,11 @@ export const PAYMENT_TYPES = {
 };
 
 export const DEFAULT_RADIUS = 10;
+
+export const REALTIME_CHANNELS = {
+	ORDERS: 'orders',
+	PLACE_NEW: 'places/_{placeId}/orders',
+};
 
 export const PLACEHOLDER =
 	'https://niamka.s3.eu-central-1.amazonaws.com/images/default/placeholder_.jpg';

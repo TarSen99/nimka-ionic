@@ -8,6 +8,9 @@ export default {
 		orders: [],
 	}),
 	mutations: {
+		clear(state) {
+			state.orders = [];
+		},
 		updateMyOrders(state, orders) {
 			state.orders = orders;
 		},

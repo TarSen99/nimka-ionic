@@ -5,6 +5,8 @@ import company from './modules/company.js';
 import register from './modules/register.js';
 import products from './modules/products.js';
 import myOrders from './modules/myOrders.js';
+import placeOrders from './modules/placeOrders.js';
+import lastProducts from './modules/lastProducts.js';
 
 export const store = createStore({
 	modules: {
@@ -14,5 +16,7 @@ export const store = createStore({
 		register,
 		products,
 		myOrders,
+		placeOrders,
+		lastProducts,
 	},
 });

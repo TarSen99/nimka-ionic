@@ -3,8 +3,8 @@
 		<ion-label v-if="label" position="stacked" mode="ios" class="label">{{
 			label
 		}}</ion-label>
-		<component
-			:is="inputComponent"
+		<ion-input
+			v-if="!textarea"
 			mode="ios"
 			class="input-el"
 			:placeholder="placeholder"
@@ -23,7 +23,26 @@
 			:inputmode="inputmode"
 			:pattern="pattern"
 			ref="input"
-		></component>
+		/>
+		<ion-textarea
+			v-else
+			mode="ios"
+			class="input-el"
+			:placeholder="placeholder"
+			@ionInput="handleInput"
+			@ionBlur="handleBlur"
+			@ionFocus="$emit('focus')"
+			@keydown="handleKeydown"
+			@keyup="handleKeyUp"
+			:value="modelValue"
+			:type="type"
+			:required="required"
+			:class="{ danger: error, textarea }"
+			:readonly="readonly"
+			:maxlength="maxlength"
+			:max="max"
+			ref="input"
+		/>
 
 		<transition name="slide-y">
 			<p v-if="error" class="error color-danger pt-1 pl-2 fz-14">
@@ -99,7 +118,6 @@ export default {
 	emits: ['update:modelValue', 'blur', 'focus', 'keydown', 'keyup'],
 	setup(props, { emit }) {
 		let innerValue = ref('');
-		const { textarea } = toRefs(props);
 
 		const handleInput = (e) => {
 			emit('update:modelValue', e.target.value);
@@ -124,20 +142,11 @@ export default {
 			emit('keyup', e);
 		};
 
-		const inputComponent = computed(() => {
-			if (textarea.value) {
-				return 'textarea';
-			}
-
-			return 'ion-input';
-		});
-
 		return {
 			handleInput,
 			handleBlur,
 			handleKeydown,
 			handleKeyUp,
-			inputComponent,
 		};
 	},
 };

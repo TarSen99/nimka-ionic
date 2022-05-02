@@ -48,7 +48,7 @@ export default function () {
 			itemsList.value = [...itemsList.value, ...res.data.data];
 		}
 
-		// If not items - just push new
+		// If no items - just push new
 		if (!itemsList.value.length) {
 			itemsList.value = res.data.data;
 			return;

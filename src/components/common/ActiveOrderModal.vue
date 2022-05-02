@@ -1,5 +1,5 @@
 <template>
-	<div class="modal" ref="container">
+	<div class="modal">
 		<ion-modal
 			:is-open="isOpen"
 			:swipe-to-close="true"
@@ -9,8 +9,12 @@
 			@didPresent="handlePresentModal"
 			:breakpoints="[0, 0.9, 1]"
 			:initialBreakpoint="0.9"
+			ref="container"
 		>
-			<div class="ion-padding modal-content">
+			<div
+				v-if="activeOrder && Object.keys(activeOrder).length"
+				class="ion-padding modal-content"
+			>
 				<modal-header @close="handleClose">
 					<div class="is-flex ion-align-items-center mb-2">
 						<div class="logo mr-2">
@@ -41,7 +45,7 @@
 					class="is-flex ion-justify-content-between ion-align-items-start mb-5 pb-5"
 				>
 					<p class="mt-3 fz-14 color-grey pr-4">
-						{{ activeOrder.Place.address }}
+						{{ activeOrder && activeOrder.Place && activeOrder.Place.address }}
 					</p>
 
 					<div class="is-flex ion-justify-content-end pb-2 mt-2">
@@ -115,7 +119,7 @@
 							v-if="showCancelButton"
 							class="is-flex is-flex-direction-column ion-align-items-center"
 						>
-							<Button class="action" @click="cancel">
+							<Button class="action" @click="handleCancel">
 								<ion-icon :icon="closeOutline" class="color-danger" />
 							</Button>
 							<span class="ion-text-center mt-1 fz-16 color-dark fw-500">
@@ -156,14 +160,13 @@ import Button from '@/components/common/Button.vue';
 import useAlert from '@/composables/common/alert.js';
 import { useStore } from 'vuex';
 import useBrowser from '@/composables/common/browser.js';
-import useDialog from '@/composables/common/dialog.js';
 import { closeOutline } from 'ionicons/icons';
-import http from '@/services/http';
 import useLoader from '@/composables/common/useLoader.js';
 import { ORDER_STATUSES } from '@/config/constants.js';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { useRouter } from 'vue-router';
 import { DateTime } from 'luxon';
+import useCancelOrder from '@/composables/product/useCancelOrder.js';
 import {
 	getProductsPickupDate,
 	getProductsPickupTime,
@@ -194,28 +197,66 @@ export default {
 	},
 	emits: ['close'],
 	setup(props) {
-		const { selectedOrder } = toRefs(props);
+		const { selectedOrder, isOpen } = toRefs(props);
 		const store = useStore();
 		const router = useRouter();
 		const items = ref([]);
+		const container = ref(null);
 		const { showMessage } = useAlert();
 		const { open } = useBrowser();
-		const { confirm } = useDialog();
 		const { showLoader, hideLoader } = useLoader();
+
+		const activeOrder = computed(() => {
+			if (selectedOrder.value && Object.keys(selectedOrder.value).length) {
+				return selectedOrder.value || {};
+			}
+
+			return store.getters['myOrders/activeOrders'][0] || {};
+		});
+
+		const { cancel } = useCancelOrder({
+			activeOrder,
+		});
+
+		const handleClose = () => {
+			modalController.dismiss();
+		};
+
+		const handleCancel = () => {
+			cancel(showLoader)
+				.then((res) => {
+					if (!res) {
+						return;
+					}
+
+					store.commit('myOrders/updateOrderStatus', {
+						order: activeOrder.value,
+						status: ORDER_STATUSES.CANCELLED,
+					});
+
+					showMessage({
+						color: 'success',
+						text: `Order is successfully cancelled`,
+						title: 'Success',
+					});
+
+					handleClose();
+				})
+				.catch(() => {
+					showMessage({
+						text: `Something went wrong. Please try again`,
+					});
+				})
+				.finally(() => {
+					hideLoader();
+				});
+		};
 
 		const openMaps = () => {
 			open(
 				`http://maps.google.com/?q=${activeOrder.value.Place.location.coordinates[1]},${activeOrder.value.Place.location.coordinates[0]}`
 			);
 		};
-
-		const activeOrder = computed(() => {
-			if (selectedOrder.value && Object.keys(selectedOrder.value).length) {
-				return selectedOrder.value;
-			}
-
-			return store.getters['myOrders/activeOrders'][0];
-		});
 
 		const products = computed(() => {
 			return activeOrder.value.OrderProducts.map((el) => {
@@ -227,12 +268,8 @@ export default {
 		});
 
 		const totalPrice = computed(() => {
-			return activeOrder.value.totalPrice.toFixed(2);
+			return (activeOrder.value.totalPrice || 0).toFixed(2);
 		});
-
-		const handleClose = () => {
-			modalController.dismiss();
-		};
 
 		const handlePresentModal = () => {
 			generateQr();
@@ -257,67 +294,10 @@ export default {
 			);
 		};
 
-		const cancel = async () => {
-			const result = await confirm({
-				message: 'Are you sure you want to cancel order?',
-			});
-
-			if (!result) {
-				return;
-			}
-
-			showLoader();
-
-			http
-				.delete(`/orders/${activeOrder.value.id}/cancel`)
-				.then(() => {
-					store.commit('myOrders/updateOrderStatus', {
-						order: activeOrder.value,
-						status: ORDER_STATUSES.CANCELLED,
-					});
-
-					showMessage({
-						color: 'success',
-						text: `Order is successfully cancelled`,
-						title: 'Success',
-					});
-
-					handleClose();
-				})
-				.catch(() => {
-					showMessage({
-						text: `Something went wrong. Please try again`,
-					});
-				})
-				.finally(() => {
-					hideLoader();
-				});
-		};
-
 		const finishPayment = (order) => {
 			router.push(`/payment?orderId=${order.id}`);
 			handleClose();
 		};
-
-		// const scan = () => {
-		// 	BarcodeScanner.scan()
-		// 		.then((res) => {
-		// 			console.log(res.text);
-		// 			showMessage({
-		// 				color: 'success',
-		// 				text: `Order is successfully completed`,
-		// 				title: 'Success',
-		// 			});
-
-		// 			emit('complete-order');
-		// 			handleClose();
-		// 		})
-		// 		.catch(() => {
-		// 			showMessage({
-		// 				text: `Something went wrong. Please try again`,
-		// 			});
-		// 		});
-		// };
 
 		const checkIfDiffLessThenOneHour = (a, b) => {
 			const aDate = DateTime.fromJSDate(a);
@@ -383,7 +363,6 @@ export default {
 			activeOrder,
 			locationOutline,
 			openMaps,
-			cancel,
 			closeOutline,
 			ORDER_STATUSES,
 			finishPayment,
@@ -391,6 +370,8 @@ export default {
 			showCancelButton,
 			productsPickupTime,
 			productsPickupTimeFrom,
+			handleCancel,
+			container,
 		};
 	},
 };

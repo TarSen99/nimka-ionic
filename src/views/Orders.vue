@@ -50,7 +50,15 @@
 						class="mb-3"
 						:data="item"
 						@click="openModal(item)"
-					/>
+					>
+						<template #top>
+							<div>
+								<p class="fw-400 color-dark fz-14">
+									Order <span class="fw-500">#{{ item.orderNumber }}</span>
+								</p>
+							</div>
+						</template>
+					</OrderItem>
 				</template>
 				<p v-else class="ion-text-center fw-500 color-dark">List is empty</p>
 			</div>

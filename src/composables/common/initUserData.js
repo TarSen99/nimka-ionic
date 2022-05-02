@@ -1,20 +1,21 @@
 import { useStore } from 'vuex';
-import { GEO_IS_HARDCODED, CURRENT_GEOLOCATION } from '@/config/constants.js';
+import { CURRENT_GEOLOCATION } from '@/config/constants.js';
 import useNativeStore from '@/composables/common/nativeStore.js';
 import http from '@/services/http/index.js';
 import useGeolocation from '@/composables/common/geoLocation.js';
-import useDaveLocation from '@/composables/auth/saveLocation.js';
+import useSaveLocation from '@/composables/auth/saveLocation.js';
 
 const oneKmInDegrees = 0.01;
 
 export default function () {
 	const store = useStore();
 	const { getItem } = useNativeStore();
-	const { getCurrentLocation, getDeniedValue } = useGeolocation();
-	const { updateAddress } = useDaveLocation();
+	const { getCurrentLocation, getDeniedValue, hasHardcodedAddress } =
+		useGeolocation();
+	const { updateAddress } = useSaveLocation();
 
 	const fetchDetails = () => {
-		http.get('/users/mine').then((res) => {
+		return http.get('/users/mine').then((res) => {
 			const data = res.data.data;
 
 			store.dispatch('user/updateDetails', data);
@@ -22,7 +23,7 @@ export default function () {
 	};
 
 	const initUserData = async () => {
-		fetchDetails();
+		return fetchDetails();
 	};
 
 	const calculateDifference = (oldGeo, newGeo) => {
@@ -47,9 +48,7 @@ export default function () {
 	};
 
 	const getCurrentLocationIfNeeded = async () => {
-		const addressIsHardcoded = await getItem(GEO_IS_HARDCODED);
-
-		if (addressIsHardcoded) {
+		if (hasHardcodedAddress.value) {
 			return;
 		}
 
