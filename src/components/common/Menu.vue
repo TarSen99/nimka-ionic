@@ -80,6 +80,9 @@ import {
 	bagOutline,
 	addOutline,
 	logOutOutline,
+	lockOpenOutline,
+	basketOutline,
+	fastFoodOutline,
 } from 'ionicons/icons';
 import { signOut } from '@/services/firebase/auth.js';
 import { clearLs } from '@/helpers/index.js';
@@ -99,7 +102,7 @@ const MENU_ITEMS = [
 	{
 		title: 'My products',
 		roles: [ROLES.OWNER, ROLES.EMPLOYEE, ROLES.MANAGER],
-		icon: bagOutline,
+		icon: fastFoodOutline,
 		handler: (router) => {
 			router.push('/my-products');
 		},
@@ -110,6 +113,14 @@ const MENU_ITEMS = [
 		roles: ['customer'],
 		handler: (router) => {
 			router.push('/account');
+		},
+	},
+	{
+		title: 'Change password',
+		icon: lockOpenOutline,
+		roles: [ROLES.OWNER, ROLES.EMPLOYEE, ROLES.MANAGER],
+		handler: (router) => {
+			router.push('/password/change');
 		},
 	},
 	{
@@ -131,7 +142,7 @@ const MENU_ITEMS = [
 	{
 		title: 'Incoming orders',
 		roles: [ROLES.OWNER, ROLES.EMPLOYEE, ROLES.MANAGER],
-		icon: bagOutline,
+		icon: basketOutline,
 		handler: (router) => {
 			router.push('/incoming-orders');
 		},

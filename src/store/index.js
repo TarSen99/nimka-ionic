@@ -7,6 +7,7 @@ import products from './modules/products.js';
 import myOrders from './modules/myOrders.js';
 import placeOrders from './modules/placeOrders.js';
 import lastProducts from './modules/lastProducts.js';
+import nearest from './modules/nearest';
 
 export const store = createStore({
 	modules: {
@@ -18,5 +19,6 @@ export const store = createStore({
 		myOrders,
 		placeOrders,
 		lastProducts,
+		nearest,
 	},
 });

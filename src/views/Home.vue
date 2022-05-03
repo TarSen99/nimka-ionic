@@ -79,16 +79,10 @@
 							/>
 						</transition>
 						<list-placeholder v-if="loading && !itemsList.length" />
-						<!-- <transition name="fade-slide">
-							<active-incoming-orders
-								v-if="hasActiveIncomingOrder && isPartner"
-								key="order-2"
-								class="mb-5"
-								@complete-order="hasActiveIncomingOrder = false"
-							/>
-						</transition> -->
 						<div v-if="!itemsList.length && !loading">
-							<p class="fz-14 ion-text-center fw-500 color-dark">No results</p>
+							<p class="fz-14 ion-text-center fw-500 color-dark">
+								No results found
+							</p>
 						</div>
 						<FoodItem
 							v-for="product in itemsList"
@@ -97,11 +91,32 @@
 							class="mb-3"
 							@click="$router.push(`/product/${product.id}`)"
 						/>
+
+						<nearest-products v-if="!itemsList.length && showNearest" />
+
 						<more-results
 							v-if="search"
 							class="pt-2 pb-2"
 							@clear="handleClearSearch"
 						/>
+
+						<div v-if="showIncreaseMessage">
+							<p class="ion-text-center color-grey italic fw-400 fz-14 mt-3">
+								Try to increase search radius
+								<br />
+								to see more results
+							</p>
+
+							<div class="ion-text-center fw-600">
+								<Button
+									class="radius-btn fz-14"
+									@click="settingsModalOpen = true"
+								>
+									Increase
+								</Button>
+							</div>
+						</div>
+
 						<div class="is-flex ion-justify-content-center pt-2 pb-2">
 							<ion-spinner
 								v-if="loading && itemsList.length"
@@ -145,6 +160,7 @@ import LocationAccess from '@/components/home/LocationAccess.vue';
 import Checkout from '@/components/product/Checkout.vue';
 import MoreResults from '@/components/home/MoreResults.vue';
 import SettingsModal from '@/components/home/SettingsModal.vue';
+import NearestProducts from '@/components/home/NearestProducts.vue';
 
 import {
 	IonContent,
@@ -203,6 +219,7 @@ export default {
 		Checkout,
 		MoreResults,
 		SettingsModal,
+		NearestProducts,
 	},
 	setup() {
 		const store = useStore();
@@ -217,7 +234,8 @@ export default {
 			topContent,
 		} = useHeaderAnimation();
 		// const { getSavedLocation } = useGeolocation();
-		const { getSavedLocation } = useGeolocation();
+		const { getSavedLocation, cachedGeolocation, hasHardcodedAddress } =
+			useGeolocation();
 		const { totalBoughtCount, totalPrice } = useStoreProducts();
 		const { getCurrentLocationIfNeeded } = useUserData();
 		const { addListeners, registerNotifications } = usePushNotifications();
@@ -239,6 +257,7 @@ export default {
 		const hasActiveIncomingOrder = ref(false);
 		const showCheckout = ref(false);
 		const settingsModalOpen = ref(false);
+		const showNearest = ref(false);
 
 		const menuisOpen = computed(() => store.state.menu.isOpen);
 		const appRendered = computed(() => store.state.user.appRendered);
@@ -269,6 +288,7 @@ export default {
 		}
 
 		const updateList = async (page = 1, ev, doNotClearList) => {
+			showNearest.value = false;
 			loading.value = true;
 
 			if (!appRendered.value) {
@@ -282,6 +302,7 @@ export default {
 				)
 				.then((res) => {
 					handleResponse(res, page, ev, doNotClearList);
+					showNearest.value = true;
 				});
 		};
 
@@ -354,6 +375,42 @@ export default {
 			}, 100);
 		};
 
+		const searchRadius = computed(() => {
+			return store.state.user.profileSettings.searchRadius;
+		});
+
+		const showIncreaseMessage = computed(() => {
+			// if (itemsList.value && itemsList.value.length) {
+			// 	return false;
+			// }
+
+			if (loading.value) {
+				return false;
+			}
+
+			if (search.value) {
+				return false;
+			}
+
+			if (!searchRadius.value) {
+				return false;
+			}
+
+			if (+searchRadius.value === 60) {
+				return false;
+			}
+
+			if (
+				(!cachedGeolocation.value ||
+					!Object.keys(cachedGeolocation.value).length) &&
+				!hasHardcodedAddress.value
+			) {
+				return false;
+			}
+
+			return true;
+		});
+
 		return {
 			personOutline,
 			doRefresh,
@@ -387,6 +444,8 @@ export default {
 			settingsButton,
 			settingsModalOpen,
 			handleCloseSettingns,
+			showNearest,
+			showIncreaseMessage,
 		};
 	},
 };
@@ -452,5 +511,9 @@ ion-content {
 
 .food-items {
 	padding-bottom: 35px;
+}
+
+.radius-btn {
+	height: 30px;
 }
 </style>

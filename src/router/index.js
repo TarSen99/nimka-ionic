@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
 import Home from '../views/Home.vue';
 import HomeEmployee from '../views/HomeEmployee.vue';
+import ChangePassword from '../views/ChangePassword.vue';
 // import Login from '@/views/Login.vue';
 // import SignUp from '@/views/SignUp.vue';
 import Product from '@/views/Product.vue';
@@ -26,6 +27,14 @@ import { FIRST_TIME_OPEN } from '@/config/constants.js';
 import { ROLES } from '../config/constants';
 
 const routes = [
+	{
+		path: '/password/change',
+		name: 'ChangePassword',
+		component: ChangePassword,
+		meta: {
+			roles: [ROLES.EMPLOYEE, ROLES.OWNER, ROLES.MANAGER],
+		},
+	},
 	{
 		path: '/places/select',
 		name: 'SelectPlace',

@@ -17,6 +17,7 @@ import { store } from '@/store';
 const { removeItem } = useNativeStore();
 
 export const clearUserStore = () => {
+	store.commit('nearest/clear');
 	store.commit('user/clear');
 	store.commit('company/clear');
 	store.commit('myOrders/clear');

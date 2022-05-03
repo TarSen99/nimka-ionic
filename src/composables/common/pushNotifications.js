@@ -52,12 +52,7 @@ export default function () {
 		}
 
 		await PushNotifications.addListener('registration', async (token) => {
-			console.log('REG COMPLETED');
-
 			if (!isAuthed.value) {
-				store.commit('user/changePushListenersAdded', false);
-				console.log('NOT AUTHED');
-
 				return;
 			}
 
@@ -102,7 +97,6 @@ export default function () {
 			return;
 		}
 
-		console.log('ASK notifications');
 		store.commit('user/changeNotificationsAsked', true);
 
 		if (platform === 'web') {

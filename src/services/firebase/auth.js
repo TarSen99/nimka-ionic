@@ -18,6 +18,12 @@ export const signOut = async () => {
 	return auth.signOut();
 };
 
+export const changePassword = async (password) => {
+	const auth = firebase.auth();
+	const user = auth.currentUser;
+	return user.updatePassword(password);
+};
+
 // export const subscribeForAuthStateChange = function() {
 // 	return new Promise((resolve) => {
 // 		onAuthStateChanged(auth, (user) => {

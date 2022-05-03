@@ -230,6 +230,7 @@ export default {
 				})
 				.then(async (res) => {
 					store.dispatch('user/updateDetails', res.data.data);
+					store.commit('nearest/clear');
 
 					await saveLocation({
 						latitude,

@@ -89,9 +89,6 @@ export default {
 			},
 			(newV, oldV) => {
 				if (oldV) {
-					console.log('----');
-					console.log(oldV);
-
 					realtime.unsubscribe(
 						'new',
 						handleMessage,

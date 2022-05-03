@@ -469,7 +469,7 @@ export default {
 
 		const getPlaceProducts = () => {
 			return http
-				.get(`/places/${details.value.Place.id}/products`)
+				.get(`/places/${details.value.Place.id}/products?status=active`)
 				.then((res) => {
 					placeProducts.value = res.data.data.filter(
 						(p) => p.id !== +route.params.id

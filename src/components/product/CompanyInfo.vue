@@ -17,10 +17,13 @@
 
 		<div class="mt-2 pl-3">
 			<div
-				class="social-item is-flex ion-align-items-center ion-justify-content-between"
-				@click="handleSocialClick"
+				v-if="details && details.instagram"
+				class="social-item is-flex ion-align-items-center ion-justify-content-between mb-2"
+				@click="handleSocialClick(details.instagram)"
 			>
-				<span class="fz-14 color-grey social-link"> google.com </span>
+				<span class="fz-14 color-grey social-link">
+					{{ details && details.instagram }}
+				</span>
 
 				<div class="social-logo inst mr-2">
 					<img src="@/assets/icons/instagram.svg" alt="" />
@@ -28,10 +31,13 @@
 			</div>
 
 			<div
-				class="social-item is-flex ion-align-items-center mt-2 ion-justify-content-between"
-				@click="handleSocialClick"
+				v-if="details && details.facebook"
+				class="social-item is-flex ion-align-items-center ion-justify-content-between"
+				@click="handleSocialClick(details.facebook)"
 			>
-				<span class="fz-14 color-grey social-link">google.com </span>
+				<span class="fz-14 color-grey social-link"
+					>{{ details && details.facebook }}
+				</span>
 
 				<div class="social-logo mr-2">
 					<img src="@/assets/icons/facebook.svg" alt="" />
@@ -55,8 +61,20 @@ export default {
 	setup() {
 		const { open } = useBrowser();
 
-		const handleSocialClick = () => {
-			open('https://google.com');
+		const handleSocialClick = (link) => {
+			if (!link) {
+				return;
+			}
+
+			let build = '';
+
+			if (!link.includes('http')) {
+				build = 'https://' + link;
+			} else {
+				build = link;
+			}
+
+			open(build);
 		};
 
 		return {
