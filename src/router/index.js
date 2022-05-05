@@ -22,11 +22,20 @@ import AllowLocation from '@/views/AllowLocation.vue';
 import AllowPush from '@/views/AllowPush.vue';
 import PaymentPage from '@/views/PaymentPage.vue';
 import SelectPlace from '@/views/SelectPlace.vue';
+import CompanyDescription from '@/views/CompanyDescription.vue';
 import { store } from '@/store';
 import { FIRST_TIME_OPEN } from '@/config/constants.js';
 import { ROLES } from '../config/constants';
 
 const routes = [
+	{
+		path: '/companies/:id',
+		name: 'Company',
+		component: CompanyDescription,
+		meta: {
+			roles: [ROLES.EMPLOYEE, ROLES.OWNER, ROLES.MANAGER, ROLES.CUSTOMER],
+		},
+	},
 	{
 		path: '/password/change',
 		name: 'ChangePassword',

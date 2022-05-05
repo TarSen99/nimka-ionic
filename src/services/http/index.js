@@ -7,6 +7,8 @@ import {
 	CURRENT_RADIUS,
 	DEFAULT_RADIUS,
 	CURRENT_USER_ROLE,
+	CURRENT_REFRESH_TOKEN,
+	ENCRYPTED_KEY,
 } from '@/config/constants.js';
 import useNativeStore from '@/composables/common/nativeStore.js';
 const { getItem } = useNativeStore();
@@ -20,9 +22,12 @@ const http = axios.create({
 http.interceptors.request.use(async (config) => {
 	const location = await getItem(CURRENT_GEOLOCATION);
 	const radius = await getItem(CURRENT_RADIUS);
+	const encrypted = await getItem(ENCRYPTED_KEY);
 
 	const additionalHeaders = {
+		encrypted,
 		token: localStorage.getItem(CURRENT_TOKEN),
+		refresh_token: localStorage.getItem(CURRENT_REFRESH_TOKEN),
 		userId: localStorage.getItem(CURRENT_USER_KEY),
 		role: localStorage.getItem(CURRENT_USER_ROLE),
 		location: location,

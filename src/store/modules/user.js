@@ -19,7 +19,7 @@ export default {
 		role: localStorage.getItem(CURRENT_USER_ROLE),
 		details: JSON.parse(localStorage.getItem(USER_DETAILS) || '{}'),
 		profileSettings: {},
-		appRendered: false,
+		shouldUpdateList: false,
 		pushListenersAdded: false,
 		notificationsAsked: false,
 		listLocationSettings: null,
@@ -44,8 +44,8 @@ export default {
 		changePushListenersAdded(state, value) {
 			state.pushListenersAdded = value;
 		},
-		changeAppRendered(state, value) {
-			state.appRendered = value;
+		changeShouldUpdateList(state, value) {
+			state.shouldUpdateList = value;
 		},
 		handleAuth(state, value) {
 			state.isAuthorizated = value;

@@ -149,7 +149,6 @@ export default {
 	},
 	setup() {
 		const store = useStore();
-		const { setItem, removeItem } = useNativeStore();
 
 		const userData = ref(null);
 		const address = ref(null);
@@ -231,6 +230,7 @@ export default {
 				.then(async (res) => {
 					store.dispatch('user/updateDetails', res.data.data);
 					store.commit('nearest/clear');
+					store.commit('user/changeShouldUpdateList', true);
 
 					await saveLocation({
 						latitude,

@@ -72,13 +72,18 @@ import http from '@/services/http';
 import * as yup from 'yup';
 import { useForm, useField } from 'vee-validate';
 import { authUserWithEmail } from '@/services/firebase/auth.js';
-import { FIREBASE_ERROR_CODES, FIRST_TIME_OPEN } from '@/config/constants.js';
+import {
+	FIREBASE_ERROR_CODES,
+	FIRST_TIME_OPEN,
+	ENCRYPTED_KEY,
+} from '@/config/constants.js';
 import useLoader from '@/composables/common/useLoader.js';
 import { getErrors } from '@/helpers';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 import realtime from '@/services/firebase/db.js';
 import useCurrentPlace from '@/composables/common/currentPlace.js';
+import useNativeStore from '@/composables/common/nativeStore.js';
 
 const validationSchema = yup.object().shape({
 	loginValue: yup
@@ -104,6 +109,7 @@ export default {
 		const store = useStore();
 		const router = useRouter();
 		const { activePlace, places } = useCurrentPlace();
+		const { setItem } = useNativeStore();
 
 		const { setErrors, setFieldError, validate } = useForm({
 			validationSchema,
@@ -123,6 +129,9 @@ export default {
 				})
 				.then(async (res) => {
 					const data = res.data.data;
+					const encypted = res.data.encypted;
+					await setItem(ENCRYPTED_KEY, JSON.stringify(encypted));
+
 					localStorage.setItem(FIRST_TIME_OPEN, true);
 
 					const company = (data.Companies && data.Companies[0]) || {};

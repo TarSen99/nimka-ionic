@@ -73,17 +73,30 @@
 						<location-access @update-list="updateList(1)" />
 						<transition name="fade-slide">
 							<active-order
-								v-if="hasActiveOrderAsCustomer && !isPartner"
+								v-if="hasActiveOrderAsCustomer"
 								key="order"
 								class="mb-5"
 							/>
 						</transition>
+						<product-categories
+							:update="updateCategories"
+							@has="hasCategories = $event"
+							@updated="updateCategories = false"
+						/>
+
 						<list-placeholder v-if="loading && !itemsList.length" />
 						<div v-if="!itemsList.length && !loading">
 							<p class="fz-14 ion-text-center fw-500 color-dark">
 								No results found
 							</p>
 						</div>
+
+						<h3
+							v-if="itemsList && itemsList.length && hasCategories"
+							class="fz-16 color-dark fw-500 section-title mb-2 pt-2"
+						>
+							All proposals
+						</h3>
 						<FoodItem
 							v-for="product in itemsList"
 							:data="product"
@@ -91,8 +104,6 @@
 							class="mb-3"
 							@click="$router.push(`/product/${product.id}`)"
 						/>
-
-						<nearest-products v-if="!itemsList.length && showNearest" />
 
 						<more-results
 							v-if="search"
@@ -116,6 +127,11 @@
 								</Button>
 							</div>
 						</div>
+
+						<nearest-products
+							v-if="!itemsList.length && showNearest"
+							class="mt-2"
+						/>
 
 						<div class="is-flex ion-justify-content-center pt-2 pb-2">
 							<ion-spinner
@@ -161,6 +177,7 @@ import Checkout from '@/components/product/Checkout.vue';
 import MoreResults from '@/components/home/MoreResults.vue';
 import SettingsModal from '@/components/home/SettingsModal.vue';
 import NearestProducts from '@/components/home/NearestProducts.vue';
+import ProductCategories from '@/components/home/ProductCategories.vue';
 
 import {
 	IonContent,
@@ -183,15 +200,13 @@ import { personOutline, settingsOutline } from 'ionicons/icons';
 import { useStore } from 'vuex';
 import http from '@/services/http';
 import { onMounted } from '@vue/runtime-core';
-import { ROLES, CURRENT_SESSION_LOCATION } from '@/config/constants.js';
 import ListPlaceholder from '@/components/common/ListPlaceholder.vue';
 import useInfiniteList from '@/composables/common/infiniteList.js';
 import usePushNotifications from '@/composables/common/pushNotifications.js';
 import debounce from '@/helpers/debounce.js';
 import useStoreProducts from '@/composables/product/useStoreProducts.js';
-import useUserData from '@/composables/common/initUserData.js';
+// import useUserData from '@/composables/common/initUserData.js';
 import useGeolocation from '@/composables/common/geoLocation.js';
-import { getApproxCoords } from '@/helpers/index.js';
 
 export default {
 	name: 'Home',
@@ -220,6 +235,7 @@ export default {
 		MoreResults,
 		SettingsModal,
 		NearestProducts,
+		ProductCategories,
 	},
 	setup() {
 		const store = useStore();
@@ -233,11 +249,9 @@ export default {
 			searchInput,
 			topContent,
 		} = useHeaderAnimation();
-		// const { getSavedLocation } = useGeolocation();
-		const { getSavedLocation, cachedGeolocation, hasHardcodedAddress } =
-			useGeolocation();
+		const { cachedGeolocation, hasHardcodedAddress } = useGeolocation();
 		const { totalBoughtCount, totalPrice } = useStoreProducts();
-		const { getCurrentLocationIfNeeded } = useUserData();
+		// const { getCurrentLocationIfNeeded } = useUserData();
 		const { addListeners, registerNotifications } = usePushNotifications();
 		addListeners();
 
@@ -254,47 +268,28 @@ export default {
 		} = useInfiniteList();
 
 		const mainContent = ref(null);
-		const hasActiveIncomingOrder = ref(false);
 		const showCheckout = ref(false);
 		const settingsModalOpen = ref(false);
 		const showNearest = ref(false);
+		const hasCategories = ref(false);
+		const updateCategories = ref(false);
+
+		const shouldUpdateList = computed(() => {
+			return store.state.user.shouldUpdateList;
+		});
 
 		const menuisOpen = computed(() => store.state.menu.isOpen);
-		const appRendered = computed(() => store.state.user.appRendered);
 		const hasActiveOrderAsCustomer = computed(() => {
 			return store.getters['myOrders/activeOrders'].length;
-		});
-		const isPartner = computed(() => {
-			const role = store.state.user.role;
-
-			return (
-				role === ROLES.EMPLOYEE ||
-				role === ROLES.MANAGER ||
-				role === ROLES.OWNER
-			);
-		});
-
-		const listLocationSettings = computed(() => {
-			return store.state.user.listLocationSettings;
 		});
 
 		const handleMenuClick = () => {
 			store.commit('menu/handleMenu', !menuisOpen.value);
 		};
 
-		// clear location data on init
-		if (appRendered.value) {
-			localStorage.removeItem(CURRENT_SESSION_LOCATION);
-		}
-
 		const updateList = async (page = 1, ev, doNotClearList) => {
 			showNearest.value = false;
 			loading.value = true;
-
-			if (!appRendered.value) {
-				await getCurrentLocationIfNeeded();
-				store.commit('user/changeAppRendered', true);
-			}
 
 			return http
 				.get(
@@ -307,6 +302,7 @@ export default {
 		};
 
 		const doRefresh = (e) => {
+			updateCategories.value = true;
 			updateList(1, null, true).finally(() => {
 				e.target.complete();
 			});
@@ -338,23 +334,20 @@ export default {
 
 		onMounted(() => {
 			registerNotifications();
+			updateCategories.value = true;
 		});
 
 		onIonViewDidEnter(async () => {
 			showCheckout.value = true;
 			store.dispatch('myOrders/getMyOrders');
 
-			const newLocationData = await getSavedLocation();
-			const newApprox = getApproxCoords(newLocationData);
-
-			if (listLocationSettings.value !== newApprox) {
-				itemsList.value = [];
+			if (shouldUpdateList.value) {
 				updateList(1);
+				updateCategories.value = true;
+				store.commit('user/changeShouldUpdateList', false);
 			} else {
 				updateList(1, null, true);
 			}
-
-			store.commit('user/changeListLocationSettings', newApprox);
 		});
 
 		onIonViewWillLeave(() => {
@@ -424,8 +417,6 @@ export default {
 			topContent,
 			mainContent,
 			hasActiveOrderAsCustomer,
-			hasActiveIncomingOrder,
-			isPartner,
 			itemsList,
 			isDisabled,
 			updateList,
@@ -446,6 +437,8 @@ export default {
 			handleCloseSettingns,
 			showNearest,
 			showIncreaseMessage,
+			hasCategories,
+			updateCategories,
 		};
 	},
 };
@@ -515,5 +508,9 @@ ion-content {
 
 .radius-btn {
 	height: 30px;
+}
+
+.section-title {
+	padding-left: 10px;
 }
 </style>

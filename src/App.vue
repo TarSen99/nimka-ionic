@@ -22,7 +22,12 @@ import paymentService from '@/services/payment';
 import realtime from '@/services/firebase/db.js';
 import { signOut } from '@/services/firebase/auth.js';
 import { useRouter, useRoute } from 'vue-router';
-import { CURRENT_TOKEN, USER_DETAILS, ROLES } from '@/config/constants.js';
+import {
+	CURRENT_TOKEN,
+	USER_DETAILS,
+	ROLES,
+	CURRENT_REFRESH_TOKEN,
+} from '@/config/constants.js';
 import useUserData from '@/composables/common/initUserData.js';
 import usePushNotifications from '@/composables/common/pushNotifications.js';
 import useAppFocus from '@/composables/common/appFocus.js';
@@ -92,6 +97,7 @@ export default {
 
 				const token = await user.getIdToken();
 				localStorage.setItem(CURRENT_TOKEN, token);
+				localStorage.setItem(CURRENT_REFRESH_TOKEN, user.refreshToken);
 
 				const userDetails = await getItem(USER_DETAILS);
 				const userData = JSON.parse(userDetails || '{}');

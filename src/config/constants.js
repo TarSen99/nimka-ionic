@@ -2,6 +2,7 @@ export const CURRENT_COMPANY_KEY = 'company_id';
 export const CURRENT_USER_KEY = 'user_id';
 export const CURRENT_USER_ROLE = 'role';
 export const CURRENT_TOKEN = 'fb_token';
+export const CURRENT_REFRESH_TOKEN = 'fb_refresh_token';
 export const CURRENT_GEOLOCATION = 'geolocation';
 export const USER_DETAILS = 'user_details';
 export const LOCATION_NOT_ALLOWED = 'location_not_allowed';
@@ -16,6 +17,7 @@ export const CURRENT_RADIUS = 'current-radius';
 export const COMPANY_PLACES = 'places';
 export const COMPANY_DETAILS = 'company-details';
 export const CURRENT_PLACE = 'current-place';
+export const ENCRYPTED_KEY = 'encrypted_key';
 
 export const ORDER_STATUSES_LIST = [
 	{

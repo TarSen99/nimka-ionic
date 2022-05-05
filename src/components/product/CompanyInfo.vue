@@ -1,6 +1,9 @@
 <template>
 	<div>
-		<div class="company-info p-3 is-flex ion-align-items-center">
+		<div
+			class="company-info p-3 is-flex ion-align-items-center"
+			@click="$router.push(`/companies/${details.id}`)"
+		>
 			<div class="img mr-5">
 				<img :src="details && details.logo" alt="" class="logo" />
 			</div>
@@ -96,19 +99,14 @@ export default {
 }
 
 .social-logo {
-	width: 25px;
-	height: 25px;
+	width: 20px;
+	height: 20px;
 	border-radius: 50%;
 	overflow: hidden;
 
 	img {
 		width: 100%;
 	}
-}
-
-.inst {
-	width: 27px;
-	height: 27px;
 }
 
 .company-info {

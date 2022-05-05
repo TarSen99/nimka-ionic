@@ -241,6 +241,14 @@ p {
 	text-decoration: underline;
 }
 
+.pre-line {
+	white-space: pre-line;
+}
+
+.break-spaces {
+	white-space: break-spaces;
+}
+
 ::-webkit-scrollbar,
 *::-webkit-scrollbar {
 	display: none;

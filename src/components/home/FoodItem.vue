@@ -2,6 +2,7 @@
 	<div
 		class="food-item relative is-flex"
 		:class="{
+			optimized,
 			outOfStock:
 				data.status === PRODUCT_STATUSES.OUT_OF_STOCK ||
 				data.status === PRODUCT_STATUSES.EXPIRED,
@@ -57,7 +58,10 @@
 					</h1>
 				</div>
 
-				<div v-if="data.Company" class="is-flex ion-align-items-center mt-2">
+				<div
+					v-if="data.Company"
+					class="is-flex ion-align-items-center mt-2 company-info"
+				>
 					<div class="company-logo mr-2">
 						<img :src="data.Company.logo" alt="" />
 					</div>
@@ -86,11 +90,11 @@
 				</div>
 
 				<div class="is-flex is-flex-direction-column ion-align-items-end">
-					<span class="fz-12 line-through">
+					<span class="fz-12 line-through old-price">
 						{{ data.fullPrice.toFixed(2) }} UAH
 					</span>
 
-					<span class="fw-600 fz-16">
+					<span class="fw-600 fz-16 price">
 						{{ data.priceWithDiscount.toFixed(2) }} UAH
 					</span>
 				</div>
@@ -149,6 +153,10 @@ export default {
 			type: Boolean,
 			default: false,
 		},
+		optimized: {
+			type: Boolean,
+			default: false,
+		},
 	},
 	setup(props) {
 		const { data } = toRefs(props);
@@ -163,6 +171,12 @@ export default {
 		});
 
 		const distance = computed(() => {
+			const value = distanceToKm(data.value.distance);
+
+			if (value > 20) {
+				return '20+';
+			}
+
 			return distanceToKm(data.value.distance);
 		});
 
@@ -299,6 +313,47 @@ export default {
 
 .take {
 	padding: 0px 7px !important;
+}
+
+.optimized {
+	.title {
+		font-size: 14px !important;
+	}
+
+	.company-info {
+		position: absolute;
+		left: 10px;
+		bottom: 10px;
+		background: var(--white);
+		padding: 5px;
+		border-radius: 20px;
+
+		.subtitle {
+			max-width: 55px;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+	}
+
+	.price,
+	.old-price {
+		font-size: 12px;
+	}
+
+	.left {
+		height: 120px;
+		width: 120px;
+		min-width: 120px;
+	}
+
+	.right {
+		width: calc(100% - 120px);
+	}
+}
+
+.pickup-time {
+	font-size: 12px;
 }
 
 // .pickup-time {
