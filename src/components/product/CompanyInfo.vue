@@ -12,78 +12,31 @@
 				<h2 class="fz-18 title">
 					{{ details && details.name }}
 				</h2>
-				<!-- <p class="fz-12">
-				5 stars
-			</p> -->
+				<p class="fz-12 color-light">Click to see more details</p>
 			</div>
 		</div>
 
 		<div class="mt-2 pl-3">
-			<div
-				v-if="details && details.instagram"
-				class="social-item is-flex ion-align-items-center ion-justify-content-between mb-2"
-				@click="handleSocialClick(details.instagram)"
-			>
-				<span class="fz-14 color-grey social-link">
-					{{ details && details.instagram }}
-				</span>
-
-				<div class="social-logo inst mr-2">
-					<img src="@/assets/icons/instagram.svg" alt="" />
-				</div>
-			</div>
-
-			<div
-				v-if="details && details.facebook"
-				class="social-item is-flex ion-align-items-center ion-justify-content-between"
-				@click="handleSocialClick(details.facebook)"
-			>
-				<span class="fz-14 color-grey social-link"
-					>{{ details && details.facebook }}
-				</span>
-
-				<div class="social-logo mr-2">
-					<img src="@/assets/icons/facebook.svg" alt="" />
-				</div>
-			</div>
+			<company-social :details="details" />
 		</div>
 	</div>
 </template>
 
 <script>
-import useBrowser from '@/composables/common/browser.js';
+import CompanySocial from '@/components/product/CompanySocial.vue';
 
 export default {
 	name: 'CompanyInfo',
+	components: {
+		CompanySocial,
+	},
 	props: {
 		details: {
 			type: Object,
 			default: () => {},
 		},
 	},
-	setup() {
-		const { open } = useBrowser();
-
-		const handleSocialClick = (link) => {
-			if (!link) {
-				return;
-			}
-
-			let build = '';
-
-			if (!link.includes('http')) {
-				build = 'https://' + link;
-			} else {
-				build = link;
-			}
-
-			open(build);
-		};
-
-		return {
-			handleSocialClick,
-		};
-	},
+	setup() {},
 };
 </script>
 

@@ -355,7 +355,7 @@ export default {
 			PRODUCT_STATUSES,
 			checkmarkOutline,
 			handlePresent,
-			currentPlaceDetails
+			currentPlaceDetails,
 		};
 	},
 };

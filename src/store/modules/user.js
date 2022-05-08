@@ -7,10 +7,19 @@ import {
 	ROLES,
 	CURRENT_RADIUS,
 	CURRENT_PLACE,
+	SAVED_FILTERS,
 } from '@/config/constants.js';
 import useNativeStore from '@/composables/common/nativeStore.js';
 const { setItem } = useNativeStore();
 import http from '@/services/http';
+
+const defaultFilters = () => {
+	return {
+		type: ['restaurant', 'store'],
+		product_type: ['regular', 'niambox'],
+		status: ['all'],
+	};
+};
 
 export default {
 	namespaced: true,
@@ -24,6 +33,9 @@ export default {
 		notificationsAsked: false,
 		listLocationSettings: null,
 		activePlace: localStorage.getItem(CURRENT_PLACE) || '',
+		filters: localStorage.getItem(SAVED_FILTERS)
+			? JSON.parse(localStorage.getItem(SAVED_FILTERS))
+			: defaultFilters(),
 	}),
 	mutations: {
 		clear(state) {
@@ -55,6 +67,9 @@ export default {
 		},
 		updateDetails(state, value) {
 			state.details = value;
+		},
+		updateFilters(state, value) {
+			state.filters = value;
 		},
 		updateSettings(state, value) {
 			state.profileSettings = value;

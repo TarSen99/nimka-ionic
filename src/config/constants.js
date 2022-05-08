@@ -18,6 +18,7 @@ export const COMPANY_PLACES = 'places';
 export const COMPANY_DETAILS = 'company-details';
 export const CURRENT_PLACE = 'current-place';
 export const ENCRYPTED_KEY = 'encrypted_key';
+export const SAVED_FILTERS = 'saved-filters';
 
 export const ORDER_STATUSES_LIST = [
 	{
@@ -88,3 +89,6 @@ export const REALTIME_CHANNELS = {
 
 export const PLACEHOLDER =
 	'https://niamka.s3.eu-central-1.amazonaws.com/images/default/placeholder_.jpg';
+
+export const NIAMBOX_PLACEHOLDER =
+	'https://niamka.s3.eu-central-1.amazonaws.com/images/system/niam_3.jpg';

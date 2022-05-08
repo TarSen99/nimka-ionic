@@ -1,20 +1,28 @@
-import { PLACEHOLDER } from '@/config/constants.js';
+import { PLACEHOLDER, NIAMBOX_PLACEHOLDER } from '@/config/constants.js';
 
 export default function () {
-	const getImage = (images) => {
+	const getImage = (images, type = 'regular') => {
 		if (images && images.length) {
 			return images[0].url;
 		}
 
-		return PLACEHOLDER;
+		if (type === 'regular') {
+			return PLACEHOLDER;
+		}
+
+		return NIAMBOX_PLACEHOLDER;
 	};
 
-	const getImages = (images) => {
+	const getImages = (images, type = 'regular') => {
 		if (images && images.length) {
 			return images;
 		}
 
-		return [{ url: PLACEHOLDER }];
+		if (type === 'regular') {
+			return [{ url: PLACEHOLDER }];
+		}
+
+		return [{ url: NIAMBOX_PLACEHOLDER }];
 	};
 
 	return {

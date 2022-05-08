@@ -35,7 +35,36 @@
 				/>
 
 				<div class="form">
+					<div>
+						<p class="pr-title mt-3">Product type</p>
+
+						<div class="filters-list is-flex mt-2">
+							<div
+								class="product-type mr-2"
+								:class="{
+									active: productType === 'regular',
+									disabled: productTypeIsDisabled,
+								}"
+								@click="changeProductType('regular')"
+							>
+								Regular
+							</div>
+
+							<div
+								class="product-type mr-2"
+								:class="{
+									active: productType === 'niambox',
+									disabled: productTypeIsDisabled,
+								}"
+								@click="changeProductType('niambox')"
+							>
+								Niambox
+							</div>
+						</div>
+					</div>
+
 					<Input
+						v-show="productType === 'regular'"
 						v-model="title"
 						class="input"
 						placeholder="Title"
@@ -46,8 +75,16 @@
 					<Input
 						v-model="description"
 						class="input"
-						placeholder="Description"
-						label="Description"
+						:placeholder="
+							productType === 'regular'
+								? 'Description'
+								: 'What customers can get?'
+						"
+						:label="
+							productType === 'regular'
+								? 'Description'
+								: 'What customers can get?'
+						"
 						textarea
 						:error="descriptionError"
 					/>
@@ -78,7 +115,11 @@
 							v-model="fullPrice"
 							class="input w-100"
 							placeholder="1"
-							label="Full price, UAH"
+							:label="
+								productType === 'regular'
+									? 'Full price, UAH'
+									: 'Approximate full price, UAH'
+							"
 							type="tel"
 							@update:modelValue="handleFullPriceChange"
 							:error="fullPriceError"
@@ -285,6 +326,7 @@ export default {
 			endTime,
 			tomorrowDayValue,
 			savedProductData,
+			productType,
 
 			titleError,
 			descriptionError,
@@ -460,6 +502,7 @@ export default {
 			fullPrice.value = data.fullPrice;
 			discountPercent.value = data.discountPercent;
 			priceWithDiscount.value = data.priceWithDiscount;
+			productType.value = data.productType;
 
 			const { start, end } = withTime(data.takeTimeFrom, data.takeTimeTo);
 
@@ -495,6 +538,18 @@ export default {
 				});
 		};
 
+		const productTypeIsDisabled = computed(() => {
+			return !!route.params.id;
+		});
+
+		const changeProductType = (type) => {
+			if (productTypeIsDisabled.value) {
+				return;
+			}
+
+			productType.value = type;
+		};
+
 		onIonViewWillEnter(() => {
 			getPlaceProducts();
 			fetchProductDetails();
@@ -523,9 +578,12 @@ export default {
 			lastProducts,
 			tomorrowDayValue,
 			loadingProducts,
+			productType,
+			productTypeIsDisabled,
 
 			PRODUCT_COUNT_OPTIONS,
 			handleUpdateTime,
+			changeProductType,
 
 			titleError,
 			descriptionError,
@@ -612,6 +670,40 @@ export default {
 		align-items: center;
 		justify-content: center;
 		border-radius: 50%;
+	}
+}
+
+.pr-title {
+	color: var(--dark-grey);
+	font-size: 14px !important;
+	font-weight: 400;
+}
+
+.product-type {
+	border-radius: 30px;
+	padding: 10px 15px;
+	text-align: center;
+	font-weight: 500;
+	color: var(--ion-color-dark);
+	border: 2px solid var(--ion-color-dark);
+	// background: var(--white);
+	font-size: 14px;
+	transition: all 0.2s ease;
+	width: 50%;
+
+	&.disabled {
+		color: var(--ion-color-medium);
+		border-color: var(--ion-color-medium);
+	}
+
+	&.active {
+		background: var(--ion-color-dark);
+		color: var(--white);
+	}
+
+	&.disabled.active {
+		background: var(--ion-color-medium);
+		color: var(--white);
 	}
 }
 

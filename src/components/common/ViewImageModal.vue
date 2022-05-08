@@ -165,6 +165,10 @@ export default {
 	}
 }
 
+.top-img {
+	width: 100%;
+}
+
 .close {
 	position: absolute;
 	top: calc(var(--ion-safe-area-top) + 20px);

@@ -48,7 +48,7 @@
 						<div class="is-flex product-card">
 							<div class="img-container">
 								<div class="img is-flex">
-									<img :src="getImage(slide.Images)" alt="" />
+									<img :src="getImage(slide.Images, slide.productType)" alt="" />
 								</div>
 							</div>
 

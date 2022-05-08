@@ -16,7 +16,7 @@
 					:key="product.id"
 					class="img mr-1 mb-1"
 				>
-					<img :src="getImage(product.Images)" alt="" />
+					<img :src="getImage(product.Images, product.productType)" alt="" />
 				</div>
 			</div>
 		</div>

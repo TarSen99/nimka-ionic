@@ -31,7 +31,7 @@
 						<img v-if="details.logo" alt="" :src="details.logo" />
 					</div>
 
-					<p class="fz-16 fw-500 color-dark mt-2">
+					<p class="fz-16 mb-5 fw-500 color-dark mt-2">
 						{{ details.name }}
 					</p>
 
@@ -81,6 +81,7 @@
 					<products-section
 						:loading="loadingProducts"
 						:products="products"
+						hide-company
 						title="Latest products"
 						class="w-100 mt-5"
 					/>

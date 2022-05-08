@@ -6,7 +6,16 @@ import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 const validationSchema = yup.object().shape({
-	title: yup.string().required('Field is required'),
+	title: yup
+		.string()
+		.when('productType', (productType, schema) => {
+			if (productType === 'regular') {
+				return schema.required('Field is required');
+			}
+
+			return schema;
+		})
+		.nullable(true),
 	description: yup.string().required('Field is required'),
 	availableCount: yup
 		.number()
@@ -88,6 +97,12 @@ export const getTomorrowDate = () => {
 	return now.toFormat('DD');
 };
 
+export const getTimeTo = () => {
+	const now = DateTime.now().plus({ hours: 1 });
+
+	return now.toJSDate();
+};
+
 export default function () {
 	const route = useRoute();
 	const savedProductData = ref(null);
@@ -99,6 +114,9 @@ export default function () {
 	const tomorrowDayValue = ref(null);
 
 	const { value: title, errorMessage: titleError } = useField('title');
+	const { value: productType } = useField('productType', null, {
+		initialValue: 'regular',
+	});
 	const { value: description, errorMessage: descriptionError } =
 		useField('description');
 	const { value: availableCount, errorMessage: availableCountError } =
@@ -124,7 +142,7 @@ export default function () {
 		'endTime',
 		null,
 		{
-			initialValue: new Date(),
+			initialValue: getTimeTo(),
 		}
 	);
 
@@ -149,7 +167,7 @@ export default function () {
 	const getEditData = (images) => {
 		const formData = new FormData();
 
-		formData.append('title', title.value);
+		formData.append('title', title.value || '');
 		formData.append('description', description.value);
 		formData.append('availableCount', availableCount.value);
 		formData.append('availableCountPerPerson', availableCountPerPerson.value);
@@ -159,6 +177,7 @@ export default function () {
 		formData.append('takeTimeFrom', savedProductData.value.takeTimeFrom);
 		formData.append('takeTimeTo', savedProductData.value.takeTimeTo);
 		formData.append('placeId', savedProductData.value.PlaceId);
+		formData.append('productType', savedProductData.value.productType);
 
 		images
 			.filter((i) => i.blob)
@@ -201,6 +220,7 @@ export default function () {
 			formData.append('takeTimeFrom', timeFromEdited.toISO());
 			formData.append('takeTimeTo', timeToEdited.toISO());
 			formData.append('placeId', activePlaceId);
+			formData.append('productType', productType.value);
 
 			images
 				.filter((i) => i.blob)
@@ -239,6 +259,7 @@ export default function () {
 		endTime,
 		tomorrowDayValue,
 		savedProductData,
+		productType,
 
 		titleError,
 		descriptionError,

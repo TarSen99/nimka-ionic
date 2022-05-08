@@ -10,7 +10,7 @@
 					:key="index"
 					class="filter-item is-flex is-flex-direction-column ion-align-items-center"
 					:class="{ active: activeFilter === filter.id }"
-					@click="$emit('update-order', filter.id)"
+					@click="handleClick(filter)"
 				>
 					<div
 						class="filter-icon is-flex ion-align-items-center ion-justify-content-center"
@@ -30,6 +30,7 @@
 <script>
 import { mapOutline, walletOutline, calendarOutline } from 'ionicons/icons';
 import { IonIcon } from '@ionic/vue';
+import useHaptics from '@/composables/common/haptics.js';
 import { ref } from '@vue/reactivity';
 
 const FILTERS_LIST = [
@@ -61,13 +62,20 @@ export default {
 			default: null,
 		},
 	},
-	setup() {
+	setup(_, { emit }) {
 		const filters = FILTERS_LIST;
 		const filtersList = ref(null);
+		const { hapticsImpactLight } = useHaptics();
+
+		const handleClick = (filter) => {
+			emit('update-order', filter.id);
+			hapticsImpactLight();
+		};
 
 		return {
 			filters,
 			filtersList,
+			handleClick,
 		};
 	},
 };

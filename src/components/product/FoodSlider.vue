@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<swiper :slides-per-view="2.5" :space-between="5" ref="slider" :width="375">
+		<swiper :slides-per-view="2.5" :space-between="5" ref="slider">
 			<swiper-slide
 				v-for="product in products"
 				:key="product.id"
@@ -9,15 +9,26 @@
 			>
 				<div class="slide-element relative overflow-hidden">
 					<Badge color="danger" class="p-1 price absolute">
-						<span class="fz-12"> {{ product.priceWithDiscount }} UAH </span>
+						<span class="fz-12">
+							{{
+								product.priceWithDiscount &&
+								product.priceWithDiscount.toFixed(2)
+							}}
+							UAH
+						</span>
 					</Badge>
 
 					<div class="img is-flex ion-justify-content-center">
-						<img :src="getImage(product.Images)" alt="" />
+						<img :src="getImage(product.Images, product.productType)" alt="" />
 					</div>
 
 					<div class="descr p-2">
-						<h2 class="fz-14">{{ product.title }}</h2>
+						<h2
+							class="fz-14"
+							:class="{ niamboxTitle: product.productType === 'niambox' }"
+						>
+							{{ product.title }}
+						</h2>
 						<div class="view-description view-description-2">
 							<p class="fz-14">{{ product.description }}</p>
 						</div>
@@ -81,8 +92,8 @@ export default {
 }
 
 .price {
-	top: 5px;
-	left: 5px;
+	top: 10px;
+	left: 10px;
 }
 
 .descr {

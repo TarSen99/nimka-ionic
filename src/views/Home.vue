@@ -30,7 +30,7 @@
 							class="user-btn default-icon-btn"
 							ref="settingsButton"
 						>
-							<ion-icon slot="icon-only" :icon="settingsOutline"></ion-icon>
+							<ion-icon slot="icon-only" :icon="filterOutline"></ion-icon>
 						</ion-button>
 					</ion-buttons>
 				</div>
@@ -79,6 +79,7 @@
 							/>
 						</transition>
 						<product-categories
+							v-show="!search"
 							:update="updateCategories"
 							@has="hasCategories = $event"
 							@updated="updateCategories = false"
@@ -92,7 +93,7 @@
 						</div>
 
 						<h3
-							v-if="itemsList && itemsList.length && hasCategories"
+							v-if="itemsList && itemsList.length && hasCategories && !search"
 							class="fz-16 color-dark fw-500 section-title mb-2 pt-2"
 						>
 							All proposals
@@ -196,7 +197,7 @@ import {
 	onIonViewWillLeave,
 } from '@ionic/vue';
 import { computed, ref } from '@vue/reactivity';
-import { personOutline, settingsOutline } from 'ionicons/icons';
+import { personOutline, settingsOutline, filterOutline } from 'ionicons/icons';
 import { useStore } from 'vuex';
 import http from '@/services/http';
 import { onMounted } from '@vue/runtime-core';
@@ -207,6 +208,14 @@ import debounce from '@/helpers/debounce.js';
 import useStoreProducts from '@/composables/product/useStoreProducts.js';
 // import useUserData from '@/composables/common/initUserData.js';
 import useGeolocation from '@/composables/common/geoLocation.js';
+
+const getFilters = (filters) => {
+	return `type=${filters.type.join(
+		','
+	)}&product_type=${filters.product_type.join(',')}&status=${filters.status
+		.filter((v) => !!v)
+		.join(',')}`;
+};
 
 export default {
 	name: 'Home',
@@ -283,6 +292,10 @@ export default {
 			return store.getters['myOrders/activeOrders'].length;
 		});
 
+		const filters = computed(() => {
+			return store.state.user.filters;
+		});
+
 		const handleMenuClick = () => {
 			store.commit('menu/handleMenu', !menuisOpen.value);
 		};
@@ -293,7 +306,9 @@ export default {
 
 			return http
 				.get(
-					`/products?page=${page}&orderBy=${orderBy.value}&search=${search.value}`
+					`/products?page=${page}&orderBy=${orderBy.value}&search=${
+						search.value
+					}&${getFilters(filters.value)}`
 				)
 				.then((res) => {
 					handleResponse(res, page, ev, doNotClearList);
@@ -303,7 +318,7 @@ export default {
 
 		const doRefresh = (e) => {
 			updateCategories.value = true;
-			updateList(1, null, true).finally(() => {
+			updateList(1).finally(() => {
 				e.target.complete();
 			});
 		};
@@ -357,12 +372,16 @@ export default {
 		const handleCloseSettingns = (data) => {
 			settingsModalOpen.value = data.value;
 
-			if (!data.changed) {
+			if (!data.changed && !data.filtersChanged) {
 				return;
 			}
 
 			// Some delay to make sure radius is saved
 			setTimeout(() => {
+				if (data.changed) {
+					updateCategories.value = true;
+				}
+
 				itemsList.value = [];
 				updateList(1);
 			}, 100);
@@ -439,6 +458,7 @@ export default {
 			showIncreaseMessage,
 			hasCategories,
 			updateCategories,
+			filterOutline,
 		};
 	},
 };

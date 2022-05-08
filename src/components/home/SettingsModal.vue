@@ -6,8 +6,8 @@
 		mode="ios"
 		@willDismiss="handleClose"
 		@willPresent="handlePresent"
-		:breakpoints="[0, 0.6, 0.9]"
-		:initialBreakpoint="0.6"
+		:breakpoints="[0, 0.8, 0.9]"
+		:initialBreakpoint="0.8"
 	>
 		<div class="ion-padding">
 			<div class="pt-4">
@@ -44,6 +44,78 @@
 				</ion-item>
 			</div>
 
+			<div class="mt-5 filters">
+				<div>
+					<p class="fw-500 color-dark fz-14">Establishment type</p>
+
+					<div class="filters-list is-flex mt-2">
+						<div
+							class="filter-item mr-2"
+							:class="{ active: filters.type.includes('restaurant') }"
+							@click="toggleFilter(filters.type, 'restaurant', 'type')"
+						>
+							Restaurant
+						</div>
+
+						<div
+							class="filter-item mr-2"
+							:class="{ active: filters.type.includes('store') }"
+							@click="toggleFilter(filters.type, 'store', 'type')"
+						>
+							Store
+						</div>
+					</div>
+				</div>
+
+				<div>
+					<p class="fw-500 color-dark fz-14 mt-5">Product type</p>
+
+					<div class="filters-list is-flex mt-2">
+						<div
+							class="filter-item mr-2"
+							:class="{ active: filters.product_type.includes('regular') }"
+							@click="
+								toggleFilter(filters.product_type, 'regular', 'product_type')
+							"
+						>
+							Regular
+						</div>
+
+						<div
+							class="filter-item mr-2"
+							:class="{ active: filters.product_type.includes('niambox') }"
+							@click="
+								toggleFilter(filters.product_type, 'niambox', 'product_type')
+							"
+						>
+							Niambox
+						</div>
+					</div>
+				</div>
+
+				<div>
+					<p class="fw-500 color-dark fz-14 mt-5">Availability</p>
+
+					<div class="filters-list is-flex mt-2">
+						<div
+							class="filter-item mr-2"
+							:class="{ active: filters.status.includes('active') }"
+							@click="toggleFilter(filters.status, 'active', 'status')"
+						>
+							Relevant
+						</div>
+
+						<div
+							class="filter-item mr-2"
+							:class="{ active: filters.status.includes('all') }"
+							@click="toggleFilter(filters.status, 'all', 'status')"
+						>
+							All
+						</div>
+					</div>
+				</div>
+			</div>
+
 			<div class="toggle-container">
 				<ion-item lines="none" class="item">
 					<ion-label color="label">
@@ -65,9 +137,10 @@
 </template>
 
 <script>
-import { ref, toRefs } from '@vue/reactivity';
+import { ref } from '@vue/reactivity';
 import { useStore } from 'vuex';
-import { Haptics } from '@capacitor/haptics';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { SAVED_FILTERS } from '@/config/constants.js';
 
 import { IonModal, IonRange, IonItem, IonLabel, IonToggle } from '@ionic/vue';
 import { computed } from '@vue/runtime-core';
@@ -103,6 +176,17 @@ export default {
 	setup(props, { emit }) {
 		const store = useStore();
 		const saved = ref({});
+		const filtersChanged = ref(false);
+
+		const filters = computed(() => {
+			return store.state.user.filters;
+		});
+
+		// const filters = reactive({
+		// 	type: ['restaurant', 'store'],
+		// 	product_type: ['regular', 'niambox'],
+		// 	status: [''],
+		// });
 
 		const hapticsSelectionStart = async () => {
 			await Haptics.selectionStart();
@@ -159,18 +243,54 @@ export default {
 				saved.value.searchRadius;
 
 			if (equalRadius) {
-				emit('update:modelValue', { value: false, changed: false });
+				emit('update:modelValue', {
+					value: false,
+					changed: false,
+					filtersChanged: filtersChanged.value,
+				});
 
 				return;
 			}
 
-			emit('update:modelValue', { value: false, changed: true });
+			emit('update:modelValue', {
+				value: false,
+				changed: true,
+				filtersChanged: filtersChanged.value,
+			});
 		};
 
 		const handlePresent = () => {
 			saved.value = {
 				...store.state.user.profileSettings,
 			};
+		};
+
+		const toggleFilter = (filterItem, value, filterName) => {
+			filtersChanged.value = true;
+			Haptics.impact({ style: ImpactStyle.Light });
+
+			const filterItemValue = [...filterItem];
+
+			if (filterItemValue.includes(value)) {
+				const index = filterItemValue.indexOf(value);
+				filterItemValue.splice(index, 1);
+				store.commit('user/updateFilters', {
+					...filters.value,
+					[filterName]: filterItemValue,
+				});
+
+				localStorage.setItem(SAVED_FILTERS, JSON.stringify(filters.value));
+				return;
+			}
+
+			filterItemValue.push(value);
+
+			store.commit('user/updateFilters', {
+				...filters.value,
+				[filterName]: filterItemValue,
+			});
+
+			localStorage.setItem(SAVED_FILTERS, JSON.stringify(filters.value));
 		};
 
 		return {
@@ -182,6 +302,8 @@ export default {
 			handlePresent,
 			handleStartRange,
 			handleEndRange,
+			filters,
+			toggleFilter,
 		};
 	},
 };
@@ -210,6 +332,27 @@ export default {
 	--background: var(--ion-color-color-light) !important;
 	&::part(native) {
 		--background: var(--ion-color-color-light);
+	}
+}
+
+.filters {
+	padding: 0 20px;
+}
+
+.filter-item {
+	border-radius: 30px;
+	padding: 5px 15px;
+	text-align: center;
+	font-weight: 500;
+	color: var(--ion-color-dark);
+	border: 2px solid var(--ion-color-dark);
+	background: var(--white);
+	font-size: 14px;
+	transition: all 0.2s ease;
+
+	&.active {
+		background: var(--ion-color-dark);
+		color: var(--white);
 	}
 }
 </style>

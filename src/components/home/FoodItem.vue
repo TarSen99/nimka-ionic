@@ -2,7 +2,9 @@
 	<div
 		class="food-item relative is-flex"
 		:class="{
+			hideCompany,
 			optimized,
+			niambox: data.productType === 'niambox',
 			outOfStock:
 				data.status === PRODUCT_STATUSES.OUT_OF_STOCK ||
 				data.status === PRODUCT_STATUSES.EXPIRED,
@@ -53,8 +55,14 @@
 							{{ fromTime }} - {{ toTime }}
 						</span>
 					</div>
-					<h1 class="title fz-16 mt-1 color-dark-grey">
+					<h1
+						v-if="data.productType === 'regular'"
+						class="title fz-16 mt-1 color-dark-grey"
+					>
 						{{ data.title }}
+					</h1>
+					<h1 v-else class="title niambox-title fz-16 mt-1 color-dark-grey">
+						Niambox
 					</h1>
 				</div>
 
@@ -157,6 +165,10 @@ export default {
 			type: Boolean,
 			default: false,
 		},
+		hideCompany: {
+			type: Boolean,
+			default: false,
+		},
 	},
 	setup(props) {
 		const { data } = toRefs(props);
@@ -181,7 +193,7 @@ export default {
 		});
 
 		const images = computed(() => {
-			return getImages(data.value.Images);
+			return getImages(data.value.Images, data.value.productType);
 		});
 
 		return {
@@ -318,6 +330,7 @@ export default {
 .optimized {
 	.title {
 		font-size: 14px !important;
+		-webkit-line-clamp: 1 !important;
 	}
 
 	.company-info {
@@ -352,8 +365,26 @@ export default {
 	}
 }
 
+.optimized.outOfStock {
+	.company-info {
+		display: none !important;
+	}
+}
+
 .pickup-time {
 	font-size: 12px;
+}
+
+.hideCompany {
+	.company-info {
+		display: none !important;
+	}
+}
+
+.niambox {
+	.title {
+		color: var(--ion-color-primary);
+	}
 }
 
 // .pickup-time {

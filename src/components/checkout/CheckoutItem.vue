@@ -1,14 +1,19 @@
 <template>
 	<div class="p-2 bg-white is-flex">
 		<div class="img mr-4">
-			<img :src="getImage(product.Images)" alt="" />
+			<img :src="getImage(product.Images, product.productType)" alt="" />
 		</div>
 
 		<div
 			class="w-100 content pt-2 is-flex is-flex-direction-column ion-justify-content-between ion-align-items-start"
 		>
 			<div>
-				<h2 class="color-dark fz-18">{{ product.title }}</h2>
+				<h2
+					class="color-dark fz-18"
+					:class="{ niamboxTitle: product.productType === 'niambox' }"
+				>
+					{{ product.title }}
+				</h2>
 
 				<Badge color="dark" class="px-3 mt-2">
 					<span class="fz-14">

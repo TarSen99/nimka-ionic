@@ -84,7 +84,11 @@ export default {
 }
 
 .social-link {
-	color: var(--ion-color-grey);
+	color: var(--ion-color-medium-shade);
+	width: 85%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 	font-weight: 400;
 }
 

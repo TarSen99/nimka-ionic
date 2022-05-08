@@ -9,7 +9,12 @@
 
 		<raw-placeholder v-if="loading" />
 
-		<swiper v-else :slides-per-view="1.05" :space-between="5" class="mt-1">
+		<swiper
+			v-else
+			:slides-per-view="nearest.length > 1 ? 1.05 : 1"
+			:space-between="nearest.length > 1 ? 5 : 0"
+			class="mt-1"
+		>
 			<swiper-slide v-for="product in nearest" :key="product.id">
 				<FoodItem
 					:data="product"

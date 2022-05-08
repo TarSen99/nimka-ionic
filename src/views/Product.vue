@@ -141,7 +141,13 @@
 						</div>
 					</div>
 
-					<h1 class="fz-22 color-dark">{{ details.title }}</h1>
+					<h1
+						v-if="details.product_type === 'regular'"
+						class="fz-22 color-dark"
+					>
+						{{ details.title }}
+					</h1>
+					<h1 v-else class="fz-22 color-primary">Niambox</h1>
 
 					<p
 						ref="descriptionEl"
@@ -197,7 +203,7 @@
 							<Button
 								expand="full"
 								shape="round"
-								class="order-btn w-100"
+								class="order-btn w-100 m-0"
 								:disabled="
 									details.status !== PRODUCT_STATUSES.ACTIVE ||
 									addButtonDisabled
@@ -206,6 +212,27 @@
 							>
 								Add to cart
 							</Button>
+
+							<div v-if="details.productType === 'niambox'" class="mt-2">
+								<div class="niambox">
+									<p class="fz-14 color-dark is-flex ion-align-items-center">
+										<span class="mr-2 niambox-icon-container">
+											<ion-icon
+												slot="icon-only"
+												:icon="helpCircleOutline"
+												class="niambox-icon"
+											></ion-icon
+										></span>
+
+										<span class="fw-500"> What is niambox? </span>
+									</p>
+
+									<p class="mt-2 fz-14 color-dark niamkbox-descr">
+										You don't know what you'll get... Just be sure, it will be
+										something yummy!
+									</p>
+								</div>
+							</div>
 						</div>
 					</div>
 
@@ -213,7 +240,7 @@
 						<Button
 							expand="full"
 							shape="round"
-							class="order-btn w-100"
+							class="order-btn w-100 m-0"
 							@click="$router.push(`/new-product/${details.id}`)"
 						>
 							Edit
@@ -234,13 +261,26 @@
 								<p class="overlay-text fw-500">Tap here to move the map</p>
 							</div>
 						</div>
+
+						<div class="place mt-2" @click="openMaps(details.Place)">
+							<span>
+								<ion-icon :icon="locationOutline" class="mr-1" />
+							</span>
+							<span class="fz-14">
+								{{ details.Place && details.Place.address }}
+							</span>
+						</div>
 					</div>
-					<div class="ion-padding bottom-section">
+
+					<div class="ion-padding bottom-section mt-2">
 						<CompanyInfo :details="details.Company" />
 					</div>
 
-					<div v-if="placeProducts.length">
-						<h2 class="ion-padding-start mt-5 pt-5 fz-18">
+					<div
+						v-if="placeProducts.length"
+						class="ion-padding-start ion-padding-end"
+					>
+						<h2 class="mt-5 pt-5 fz-18">
 							Other products from {{ details.Company && details.Company.name }}
 						</h2>
 						<FoodSlider class="mt-2" :products="placeProducts" />
@@ -295,6 +335,8 @@ import useDialog from '@/composables/common/dialog.js';
 import useLoader from '@/composables/common/useLoader.js';
 import usePlaceholder from '@/composables/common/usePlaceholder.js';
 import useStoreProducts from '@/composables/product/useStoreProducts.js';
+import { locationOutline, helpCircleOutline } from 'ionicons/icons';
+import useBrowser from '@/composables/common/browser.js';
 
 const MAX_MINUTES_DIFFERENCE = 5;
 
@@ -357,6 +399,7 @@ export default {
 		const { header, backButton, container, tag, handleScroll } =
 			useProductHeaderAnimation();
 		const swiper = ref(null);
+		const { open } = useBrowser();
 
 		const { confirm } = useDialog();
 		const route = useRoute();
@@ -384,7 +427,7 @@ export default {
 		});
 
 		const images = computed(() => {
-			return getImages(details.value.Images);
+			return getImages(details.value.Images, details.value.productType);
 		});
 
 		const fromTime = computed(() => {
@@ -522,7 +565,14 @@ export default {
 			allowScroll.value = true;
 		};
 
+		const openMaps = () => {
+			open(
+				`http://maps.google.com/?q=${details.value.Place.location.coordinates[1]},${details.value.Place.location.coordinates[0]}`
+			);
+		};
+
 		return {
+			openMaps,
 			distance,
 			header,
 			backButton,
@@ -559,6 +609,8 @@ export default {
 			swiper,
 			ROLES,
 			userRole,
+			locationOutline,
+			helpCircleOutline,
 		};
 	},
 };
@@ -666,5 +718,33 @@ export default {
 
 .view-description {
 	white-space: pre-line;
+}
+
+.place {
+	background: var(--white);
+	border-radius: 15px;
+	padding: 10px;
+}
+
+.hr {
+	border-bottom: 0.5px solid var(--ion-color-medium);
+}
+
+.niambox {
+	background: var(--white);
+	border-radius: 15px;
+	padding: 10px;
+}
+
+.niambox-icon-container {
+	height: 20px;
+}
+
+.niambox-icon {
+	font-size: 20px;
+}
+
+.niamkbox-descr {
+	padding-left: 25px;
 }
 </style>
