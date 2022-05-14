@@ -36,7 +36,7 @@
 				<div class="mt-5">
 					<div class="w-100">
 						<div class="item">
-							<div class="field-title">Created at:</div>
+							<div class="field-title">{{ t('view_product.created') }}:</div>
 
 							<div>
 								<span class="field-value">{{ createdAt }}</span>
@@ -44,7 +44,7 @@
 						</div>
 
 						<div class="item">
-							<div class="field-title">Title:</div>
+							<div class="field-title">{{ t('view_product.title') }}:</div>
 
 							<div>
 								<span class="field-value">
@@ -54,7 +54,9 @@
 						</div>
 
 						<div class="item">
-							<div class="field-title">Description:</div>
+							<div class="field-title">
+								{{ t('view_product.description') }}:
+							</div>
 
 							<div class="d-flex">
 								<span
@@ -72,13 +74,13 @@
 									@click.prevent="handleViewAll"
 									class="fz-14"
 								>
-									{{ viewAll ? 'Hide' : 'View all' }}
+									{{ viewAll ? t('common.hide') : t('common.view_all') }}
 								</a>
 							</div>
 						</div>
 
 						<div class="item">
-							<div class="field-title">Take time:</div>
+							<div class="field-title">{{ t('view_product.take') }}:</div>
 
 							<div>
 								<span class="field-value">{{ fromTime }} - {{ toTime }}</span>
@@ -94,7 +96,7 @@
 						</div> -->
 
 						<div class="item">
-							<div class="field-title">Available quantity:</div>
+							<div class="field-title">{{ t('view_product.available') }}:</div>
 
 							<div>
 								<span class="field-value">
@@ -104,7 +106,7 @@
 						</div>
 
 						<div class="item">
-							<div class="field-title">Full price:</div>
+							<div class="field-title">{{ t('view_product.full') }}:</div>
 
 							<div>
 								<span class="field-value"
@@ -112,13 +114,13 @@
 										currentProductDetails.fullPrice &&
 										currentProductDetails.fullPrice.toFixed(2)
 									}}
-									UAH</span
+									{{ t('common.uah') }}</span
 								>
 							</div>
 						</div>
 
 						<div class="item">
-							<div class="field-title">Price with discount:</div>
+							<div class="field-title">{{ t('view_product.disc') }}:</div>
 
 							<div>
 								<span class="field-value"
@@ -126,13 +128,13 @@
 										currentProductDetails.priceWithDiscount &&
 										currentProductDetails.priceWithDiscount.toFixed(2)
 									}}
-									UAH</span
+									{{ t('common.uah') }}</span
 								>
 							</div>
 						</div>
 
 						<div class="item">
-							<div class="field-title">Discount percent:</div>
+							<div class="field-title">{{ t('view_product.perc') }}:</div>
 
 							<div>
 								<span class="field-value"
@@ -160,7 +162,7 @@
 									<ion-icon :icon="closeOutline" class="color-danger" />
 								</Button>
 								<span class="ion-text-center mt-1 fz-12 color-dark">
-									Unpublish
+									{{ t('view_product.unpublish') }}
 								</span>
 							</div>
 
@@ -174,7 +176,7 @@
 									<ion-icon :icon="checkmarkOutline" class="color-success" />
 								</Button>
 								<span class="ion-text-center mt-1 fz-12 color-dark">
-									Publish
+									{{ t('view_product.publish') }}
 								</span>
 							</div>
 
@@ -184,13 +186,24 @@
 										PRODUCT_STATUSES.UNPUBLISHED ||
 									currentProductDetails.status === PRODUCT_STATUSES.ACTIVE
 								"
-								class="is-flex is-flex-direction-column ion-align-items-center"
+								class="is-flex is-flex-direction-column ion-align-items-center mr-5 pr-5"
 							>
 								<Button @click="editProduct" class="action">
 									<ion-icon :icon="pencilOutline" class="color-secondary" />
 								</Button>
 								<span class="ion-text-center mt-1 fz-12 color-dark">
-									Edit
+									{{ t('view_product.edit') }}
+								</span>
+							</div>
+
+							<div
+								class="is-flex is-flex-direction-column ion-align-items-center"
+							>
+								<Button @click="view" class="action">
+									<ion-icon :icon="eyeOutline" class="color-secondary" />
+								</Button>
+								<span class="ion-text-center mt-1 fz-12 color-dark">
+									{{ t('view_product.view') }}
 								</span>
 							</div>
 						</div>
@@ -205,7 +218,12 @@
 import { IonModal, IonContent, modalController, IonIcon } from '@ionic/vue';
 import ModalHeader from '@/components/common/ModalHeader.vue';
 import Button from '@/components/common/Button.vue';
-import { closeOutline, pencilOutline, checkmarkOutline } from 'ionicons/icons';
+import {
+	closeOutline,
+	pencilOutline,
+	checkmarkOutline,
+	eyeOutline,
+} from 'ionicons/icons';
 import Badge from '@/components/common/Badge.vue';
 import ProductStatusBadge from '@/components/admin/ProductStatusBadge.vue';
 import { useRouter } from 'vue-router';
@@ -218,6 +236,7 @@ import useLoader from '@/composables/common/useLoader.js';
 import useAlert from '@/composables/common/alert.js';
 import { PRODUCT_STATUSES } from '@/config/constants.js';
 import useCurrentPlace from '@/composables/common/currentPlace.js';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'ViewProductModal',
@@ -251,6 +270,7 @@ export default {
 		const { showLoader, hideLoader } = useLoader();
 		const { showMessage } = useAlert();
 		const { currentPlaceDetails } = useCurrentPlace();
+		const { t } = useI18n();
 
 		const companyDetails = computed(() => {
 			return store.state.company.details || {};
@@ -313,10 +333,10 @@ export default {
 			let newStatus;
 
 			if (currStatus === PRODUCT_STATUSES.ACTIVE) {
-				message = 'Product was successfully unpublished';
+				message = t('view_product.success_unp');
 				newStatus = PRODUCT_STATUSES.UNPUBLISHED;
 			} else {
-				message = 'Product was successfully published';
+				message = t('view_product.success_pub');
 				newStatus = PRODUCT_STATUSES.ACTIVE;
 			}
 
@@ -326,7 +346,7 @@ export default {
 					showMessage({
 						color: 'success',
 						text: message,
-						title: 'Success',
+						title: t('common.success'),
 					});
 
 					hideLoader();
@@ -336,6 +356,11 @@ export default {
 				.catch(() => {
 					hideLoader();
 				});
+		};
+
+		const view = () => {
+			handleClose();
+			router.push(`/product/${currentProductDetails.value.id}`);
 		};
 
 		return {
@@ -356,6 +381,9 @@ export default {
 			checkmarkOutline,
 			handlePresent,
 			currentPlaceDetails,
+			t,
+			eyeOutline,
+			view,
 		};
 	},
 };

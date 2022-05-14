@@ -14,7 +14,7 @@
 								product.priceWithDiscount &&
 								product.priceWithDiscount.toFixed(2)
 							}}
-							UAH
+							{{ t('common.uah') }}
 						</span>
 					</Badge>
 
@@ -43,6 +43,7 @@
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import Badge from '@/components/common/Badge.vue';
 import usePlaceholder from '@/composables/common/usePlaceholder.js';
+import { useI18n } from 'vue-i18n/index';
 
 import { ref } from '@vue/reactivity';
 export default {
@@ -58,11 +59,13 @@ export default {
 		const items = ref([]);
 		const slider = ref(null);
 		const { getImage } = usePlaceholder();
+		const { t } = useI18n();
 
 		return {
 			items,
 			slider,
 			getImage,
+			t,
 		};
 	},
 };

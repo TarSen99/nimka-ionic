@@ -12,7 +12,7 @@
 							<span class="fz-50"> 🔔 </span>
 							<br />
 							<br />
-							Always be up to date
+							{{ t('allow_push.be_up_to_date') }}
 						</h2>
 					</div>
 				</div>
@@ -23,12 +23,12 @@
 			<ion-fab vertical="bottom" horizontal="left" slot="fixed" class="w-100">
 				<div class="ion-padding w-100">
 					<Button color="light" expand="block" @click="submit">
-						Continue
+						{{ t('common.continue') }}
 					</Button>
 
 					<div class="ion-text-center">
-						<span class="fw-600 color-light fz-14 mt-2" @click="skip"
-							>Skip</span
+						<span class="fw-600 color-light fz-14 mt-2" @click="skip">
+							{{ t('common.skip') }}</span
 						>
 					</div>
 				</div>
@@ -44,6 +44,7 @@ import Button from '@/components/common/Button.vue';
 import useLoader from '@/composables/common/useLoader.js';
 import { useRouter } from 'vue-router';
 import usePushNotifications from '@/composables/common/pushNotifications.js';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'PhoneRegister',
@@ -59,6 +60,7 @@ export default {
 		const { registerNotifications, addListeners, setShowedScreen } =
 			usePushNotifications();
 		const router = useRouter();
+		const { t } = useI18n();
 
 		addListeners();
 
@@ -77,6 +79,7 @@ export default {
 		return {
 			submit,
 			skip,
+			t,
 		};
 	},
 };

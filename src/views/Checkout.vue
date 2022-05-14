@@ -16,7 +16,9 @@
 						</ion-button>
 					</ion-buttons>
 
-					<ion-title class="ion-text-center"> Checkout </ion-title>
+					<ion-title class="ion-text-center">
+						{{ t('checkout.title') }}
+					</ion-title>
 
 					<span class="right-notch"></span>
 				</div>
@@ -33,7 +35,7 @@
 							<img :src="company.logo" alt="" />
 						</div>
 						<h2 class="mt-2 mb-2 color-dark fz-18">
-							Order from {{ company.name }}
+							{{ t('checkout.order_from') }} {{ company.name }}
 						</h2>
 					</div>
 					<CheckoutItem
@@ -46,7 +48,10 @@
 						@change-count="handleChangeCount($event, item)"
 					></CheckoutItem>
 
-					<h2 class="ion-text-end fz-20 mt-3">Total: {{ totalPrice }} UAH</h2>
+					<h2 class="ion-text-end fz-20 mt-3">
+						{{ t('active_order.total') }} : {{ totalPrice }}
+						{{ t('common.uah') }}
+					</h2>
 
 					<Payment
 						class="mt-5 pt-5"
@@ -65,7 +70,7 @@
 						@click="handleOrderClick"
 						:disabled="orderBtnIsDisabled || isLoading"
 					>
-						Order {{ totalPrice }} UAH
+						{{ t('checkout.approve') }} {{ totalPrice }} {{ t('common.uah') }}
 					</Button>
 				</div>
 			</div>
@@ -112,6 +117,7 @@ import useAlert from '@/composables/common/alert.js';
 import useOrderData from '@/composables/checkout/useOrderData.js';
 import { PAYMENT_TYPES } from '@/config/constants.js';
 import { Haptics, NotificationType } from '@capacitor/haptics';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'Checkout',
@@ -135,6 +141,8 @@ export default {
 		const { isOpen, onClose, errorData } = useErrorModal();
 		const { showLoader, hideLoader, isLoading } = useLoader();
 		const { showMessage } = useAlert();
+		const { t } = useI18n();
+
 		const {
 			products,
 			placeId,
@@ -173,8 +181,8 @@ export default {
 					Haptics.impact(NotificationType.Success);
 					showMessage({
 						color: 'success',
-						text: `Payment was successfull`,
-						title: 'Success',
+						text: t('checkout.payment_success'),
+						title: t('common.success'),
 					});
 
 					router.replace(`/success?type=card&time=${pickupTime.value}`);
@@ -183,8 +191,7 @@ export default {
 					Haptics.impact(NotificationType.Error);
 					showMessage({
 						color: 'danger',
-						text: `Something went wrong`,
-						title: 'Error',
+						text: t('common.something_wrong'),
 					});
 				});
 		};
@@ -327,6 +334,7 @@ export default {
 			handlePaymentCardChange,
 			editProductsAvailable,
 			addNewCard,
+			t,
 		};
 	},
 };

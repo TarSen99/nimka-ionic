@@ -88,7 +88,7 @@
 						<list-placeholder v-if="loading && !itemsList.length" />
 						<div v-if="!itemsList.length && !loading">
 							<p class="fz-14 ion-text-center fw-500 color-dark">
-								No results found
+								{{ t('home.no_results') }}
 							</p>
 						</div>
 
@@ -96,7 +96,7 @@
 							v-if="itemsList && itemsList.length && hasCategories && !search"
 							class="fz-16 color-dark fw-500 section-title mb-2 pt-2"
 						>
-							All proposals
+							{{ t('home.all_proposals') }}
 						</h3>
 						<FoodItem
 							v-for="product in itemsList"
@@ -114,9 +114,9 @@
 
 						<div v-if="showIncreaseMessage">
 							<p class="ion-text-center color-grey italic fw-400 fz-14 mt-3">
-								Try to increase search radius
+								{{ t('home.try_to_increase') }}
 								<br />
-								to see more results
+								{{ t('home.to_see') }}
 							</p>
 
 							<div class="ion-text-center fw-600">
@@ -124,7 +124,7 @@
 									class="radius-btn fz-14"
 									@click="settingsModalOpen = true"
 								>
-									Increase
+									{{ t('home.increase') }}
 								</Button>
 							</div>
 						</div>
@@ -208,6 +208,7 @@ import debounce from '@/helpers/debounce.js';
 import useStoreProducts from '@/composables/product/useStoreProducts.js';
 // import useUserData from '@/composables/common/initUserData.js';
 import useGeolocation from '@/composables/common/geoLocation.js';
+import { useI18n } from 'vue-i18n/index';
 
 const getFilters = (filters) => {
 	return `type=${filters.type.join(
@@ -248,6 +249,7 @@ export default {
 	},
 	setup() {
 		const store = useStore();
+		const { t } = useI18n();
 
 		const {
 			pageContent,
@@ -459,6 +461,7 @@ export default {
 			hasCategories,
 			updateCategories,
 			filterOutline,
+			t,
 		};
 	},
 };

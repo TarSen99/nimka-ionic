@@ -15,7 +15,9 @@
 						</ion-button>
 					</ion-buttons>
 
-					<ion-title class="ion-text-center"> Incoming orders </ion-title>
+					<ion-title class="ion-text-center">
+						{{ t('incoming_orders.title') }}
+					</ion-title>
 
 					<span class="placeholder"></span>
 				</div>
@@ -48,12 +50,15 @@
 					:model-value="orderStatus"
 					:options="ORDER_STATUSES"
 					class="mt-2 mb-5"
+					translationKey="order_status"
 					@update:modelValue="updateOrderStatus"
 				/>
 
 				<list-placeholder v-if="loading && !itemsList.length" />
 				<div v-if="!itemsList.length && !loading">
-					<p class="fz-14 ion-text-center fw-500 color-dark">No results</p>
+					<p class="fz-14 ion-text-center fw-500 color-dark">
+						{{ t('dashboard.no_orders') }}
+					</p>
 				</div>
 
 				<template v-if="itemsList.length">
@@ -68,7 +73,8 @@
 						<template #top>
 							<div>
 								<p class="fw-400 color-dark fz-14">
-									Order <span class="fw-500">#{{ item.orderNumber }}</span>
+									{{ t('common.order') }}
+									<span class="fw-500">#{{ item.orderNumber }}</span>
 								</p>
 							</div>
 						</template>
@@ -124,6 +130,7 @@ import OrderItem from '@/components/orders/OrderItem.vue';
 import { ORDER_STATUSES } from '@/config/constants.js';
 import StatusFilter from '@/components/common/StatusFilter.vue';
 import useCurrentPlace from '@/composables/common/currentPlace.js';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'Incoming Orders',
@@ -152,6 +159,7 @@ export default {
 		const showOrderDetails = ref(false);
 		const activeOrder = ref({});
 		const { activePlace } = useCurrentPlace();
+		const { t } = useI18n();
 
 		const {
 			meta,
@@ -233,6 +241,7 @@ export default {
 			orderStatus,
 			updateOrderStatus,
 			ORDER_STATUSES,
+			t,
 		};
 	},
 };

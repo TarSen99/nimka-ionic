@@ -1,13 +1,12 @@
 <template>
 	<div class="color-danger fz-14 ion-text-center p-3 fw-500 bg-white rounded">
 		<p>
-			We can not match the best results for you. Please Enable your geolocation
-			permission
+			{{ t('home.location.denied') }}
 		</p>
 
 		<div class="ion-text-center mt-3">
 			<Button class="px-5 enable-btn" color="danger" @click="openSettings">
-				Enable
+				{{ t('home.location.enable') }}
 			</Button>
 		</div>
 	</div>
@@ -16,6 +15,7 @@
 <script>
 import Button from '@/components/common/Button.vue';
 import { OpenNativeSettings } from '@awesome-cordova-plugins/open-native-settings';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'LocationAccessError',
@@ -23,12 +23,15 @@ export default {
 		Button,
 	},
 	setup() {
+		const { t } = useI18n();
+
 		const openSettings = () => {
 			OpenNativeSettings.open('location');
 		};
 
 		return {
 			openSettings,
+			t,
 		};
 	},
 };

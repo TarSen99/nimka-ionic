@@ -1,7 +1,7 @@
 <template>
 	<div>
-		<h2 class="fz-16 color-dark fw-500">Last products</h2>
-		<p class="fz-12 color-grey">Click on product to prefill form</p>
+		<h2 class="fz-16 color-dark fw-500">{{ t('new_product.last') }}</h2>
+		<p class="fz-12 color-grey">{{ t('new_product.click') }}</p>
 
 		<div class="mt-2">
 			<div v-if="loading" class="is-flex">
@@ -48,7 +48,10 @@
 						<div class="is-flex product-card">
 							<div class="img-container">
 								<div class="img is-flex">
-									<img :src="getImage(slide.Images, slide.productType)" alt="" />
+									<img
+										:src="getImage(slide.Images, slide.productType)"
+										alt=""
+									/>
 								</div>
 							</div>
 
@@ -58,14 +61,14 @@
 								<span class="fz-12 fw-400 is-flex color-dark-grey">
 									<span class="decoration-line-through">
 										{{ slide.fullPrice && slide.fullPrice.toFixed(2) }}
-										UAH</span
+										{{ t('common.uah') }}</span
 									>
 									<span class="ml-2 fw-500">
 										{{
 											slide.priceWithDiscount &&
 											slide.priceWithDiscount.toFixed(2)
 										}}
-										UAH</span
+										{{ t('common.uah') }}</span
 									>
 								</span>
 								<span class="fz-14 fw-500 mt-2"> {{ slide.title }} </span>
@@ -96,6 +99,7 @@ import {
 	IonSkeletonText,
 	IonThumbnail,
 } from '@ionic/vue';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'ProductsHistory',
@@ -124,6 +128,7 @@ export default {
 		const swiper = ref(null);
 		const { screenWidthPadding } = useScreen();
 		const { getImage } = usePlaceholder();
+		const { t } = useI18n();
 
 		const prefillData = (data) => {
 			emit('prefill', data);
@@ -134,6 +139,7 @@ export default {
 			screenWidthPadding,
 			prefillData,
 			getImage,
+			t,
 		};
 	},
 };

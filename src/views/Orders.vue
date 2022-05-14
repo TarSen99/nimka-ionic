@@ -21,7 +21,9 @@
 							</ion-button>
 						</ion-buttons>
 
-						<ion-title class="ion-text-center"> My orders </ion-title>
+						<ion-title class="ion-text-center">
+							{{ t('orders.title') }}
+						</ion-title>
 
 						<span class="placeholder"></span>
 					</div>
@@ -31,10 +33,14 @@
 						@ionChange="filter = $event.target.value"
 					>
 						<ion-segment-button value="active">
-							<ion-label>Active</ion-label>
+							<ion-label>
+								{{ t('orders.active') }}
+							</ion-label>
 						</ion-segment-button>
 						<ion-segment-button value="all">
-							<ion-label>All</ion-label>
+							<ion-label>
+								{{ t('orders.all') }}
+							</ion-label>
 						</ion-segment-button>
 					</ion-segment>
 				</div>
@@ -52,15 +58,18 @@
 						@click="openModal(item)"
 					>
 						<template #top>
-							<div>
+							<div class="pb-2">
 								<p class="fw-400 color-dark fz-14">
-									Order <span class="fw-500">#{{ item.orderNumber }}</span>
+									{{ t('common.order') }}
+									<span class="fw-500">#{{ item.orderNumber }}</span>
 								</p>
 							</div>
 						</template>
 					</OrderItem>
 				</template>
-				<p v-else class="ion-text-center fw-500 color-dark">List is empty</p>
+				<p v-else class="ion-text-center fw-500 color-dark">
+					{{ t('orders.empty') }}
+				</p>
 			</div>
 		</ion-content>
 		<active-order-modal
@@ -93,6 +102,7 @@ import { computed, ref } from '@vue/runtime-core';
 import ActiveOrderModal from '@/components/common/ActiveOrderModal.vue';
 import useLoader from '@/composables/common/useLoader.js';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'Orders',
@@ -118,6 +128,7 @@ export default {
 		const selectedOrder = ref(null);
 		const filter = ref('active');
 		const { showLoader, hideLoader } = useLoader();
+		const { t } = useI18n();
 
 		onIonViewWillEnter(() => {
 			showLoader();
@@ -171,6 +182,7 @@ export default {
 			goBack,
 			filter,
 			currentOrders,
+			t,
 		};
 	},
 };

@@ -2,7 +2,7 @@
 	<div>
 		<div class="w-100">
 			<div class="item">
-				<div class="field-title">Order created at:</div>
+				<div class="field-title">{{ t('order_details.created_at') }}:</div>
 
 				<div>
 					<span class="field-value">{{ createdAt }}</span>
@@ -10,20 +10,23 @@
 			</div>
 
 			<div class="item">
-				<div class="field-title">Payment method:</div>
+				<div class="field-title">{{ t('order_details.payment_method') }}:</div>
 
 				<div>
 					<span class="field-value capitalized">{{
-						details.paymentMethod
+						t(`order_details.${details.paymentMethod}`)
 					}}</span>
 				</div>
 			</div>
 
 			<div class="item">
-				<div class="field-title">Status:</div>
+				<div class="field-title">{{ t('order_details.status') }}:</div>
 
 				<div>
-					<product-status-badge :status="details.status" />
+					<product-status-badge
+						:status="details.status"
+						translation-key="order_status"
+					/>
 				</div>
 			</div>
 
@@ -44,7 +47,7 @@
 				<hr class="hr" />
 
 				<div v-if="details.Customer.name" class="item">
-					<div class="field-title">Customer name:</div>
+					<div class="field-title">{{ t('order_details.customer_name') }}:</div>
 
 					<div>
 						<span class="field-value">{{ details.Customer.name }}</span>
@@ -52,7 +55,9 @@
 				</div>
 
 				<div class="item">
-					<div class="field-title">Customer mobile:</div>
+					<div class="field-title">
+						{{ t('order_details.customer_mobile') }}:
+					</div>
 
 					<div>
 						<span class="field-value">{{ customerPhoneNumber }}</span>
@@ -64,28 +69,34 @@
 		<div>
 			<hr class="hr" />
 			<div class="is-flex ion-justify-content-between item">
-				<div class="field-title bottom">Total price:</div>
+				<div class="field-title bottom">{{ t('order_details.total') }}:</div>
 
 				<div>
 					<span class="field-value">
-						{{ details.totalPrice.toFixed(2) }} UAH
+						{{ details.totalPrice.toFixed(2) }} {{ t('common.uah') }}
 					</span>
 				</div>
 			</div>
 
 			<div class="is-flex ion-justify-content-between item">
-				<div class="field-title bottom">Comission:</div>
+				<div class="field-title bottom">
+					{{ t('order_details.comission') }}:
+				</div>
 
 				<div>
-					<span class="field-value">-{{ comissionPrice }} UAH</span>
+					<span class="field-value"
+						>-{{ comissionPrice }} {{ t('common.uah') }}</span
+					>
 				</div>
 			</div>
 
 			<div class="is-flex ion-justify-content-between item">
-				<div class="field-title bottom">Total income:</div>
+				<div class="field-title bottom">{{ t('order_details.income') }}:</div>
 
 				<div>
-					<span class="field-value total-income fw-500">+{{ income }} UAH</span>
+					<span class="field-value total-income fw-500"
+						>+{{ income }} {{ t('common.uah') }}</span
+					>
 				</div>
 			</div>
 		</div>
@@ -102,9 +113,10 @@
 					<Button @click="showActionSheet" class="action">
 						<ion-icon :icon="checkmarkOutline" class="color-success" />
 					</Button>
-					<span class="ion-text-center mt-1 fz-12 color-dark">
-						Complete <br />
-						order
+					<span
+						v-html="t('order_details.complete')"
+						class="ion-text-center mt-1 fz-12 color-dark"
+					>
 					</span>
 				</div>
 
@@ -118,9 +130,10 @@
 					<Button class="action" @click="callCustomer">
 						<ion-icon :icon="callOutline" class="color-secondary" />
 					</Button>
-					<span class="ion-text-center mt-1 fz-12 color-dark">
-						Call <br />
-						customer
+					<span
+						v-html="t('order_details.call')"
+						class="ion-text-center mt-1 fz-12 color-dark"
+					>
 					</span>
 				</div>
 				<div
@@ -138,18 +151,15 @@
 							details.status === ORDER_STATUSES.PAYED ||
 							details.status === ORDER_STATUSES.TO_TAKE
 						"
+						v-html="t('order_details.cancel')"
 						class="ion-text-center mt-1 fz-12 color-dark"
 					>
-						Cancel <br />
-						order
 					</span>
 					<span
 						v-else-if="details.status === ORDER_STATUSES.COMPLETED"
+						v-html="t('order_details.cancel_refund')"
 						class="ion-text-center mt-1 fz-12 color-dark"
 					>
-						Cancel <br />
-						& Refund <br />
-						order
 					</span>
 				</div>
 			</div>
@@ -161,14 +171,12 @@
 				"
 				class="ion-text-center field-value color-dark mt-5 pt-5"
 			>
-				Please ask customer to show QR code and scan it by clicking on "Complete
-				order" button. <br />
+				{{ t('order_details.ask') }} <br />
 
-				Customer needs to pickup order till
+				{{ t('order_details.pick') }}
 				<Badge color="dark" class="px-3 mt-2">
 					<span class="fz-14"> {{ productsPickupTime }} </span>
 				</Badge>
-				or it will be automatically cancelled.
 			</p>
 		</div>
 	</div>
@@ -191,6 +199,7 @@ import useLoader from '@/composables/common/useLoader.js';
 import { ORDER_STATUSES } from '@/config/constants.js';
 import useCompleteOrder from '@/composables/product/completeOrder.js';
 import { getProductsPickupTime } from '@/helpers/index.js';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'OrderDetails',
@@ -211,6 +220,7 @@ export default {
 	},
 	emits: ['change-status'],
 	setup(props, { emit }) {
+		const { t } = useI18n();
 		const { details } = toRefs(props);
 		const { showMessage } = useAlert();
 		const { open } = useBrowser();
@@ -267,15 +277,15 @@ export default {
 
 					showMessage({
 						color: 'success',
-						text: `Order is successfully cancelled`,
-						title: 'Success',
+						text: t('order_details.canc'),
+						title: t('common.success'),
 					});
 
 					handleClose();
 				})
 				.catch(() => {
 					showMessage({
-						text: `Something went wrong. Please try again`,
+						text: t('common.something_wrong'),
 					});
 				})
 				.finally(() => {
@@ -308,6 +318,7 @@ export default {
 			ORDER_STATUSES,
 			showActionSheet,
 			productsPickupTime,
+			t,
 		};
 	},
 };

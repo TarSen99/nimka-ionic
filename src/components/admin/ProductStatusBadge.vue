@@ -1,7 +1,8 @@
 <template>
 	<Badge :class="statusClass" class="px-3">
 		<span class="fz-14 capitalized">
-			{{ status && status.replaceAll('_', ' ') }}
+			{{ t(`${translationKey}.${status}`) }}
+			<!-- {{ status && status.replaceAll('_', ' ') }} -->
 		</span>
 	</Badge>
 </template>
@@ -10,6 +11,7 @@
 import Badge from '@/components/common/Badge.vue';
 import { toRefs } from '@vue/reactivity';
 import { computed } from '@vue/runtime-core';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'ProductStatusBadge',
@@ -21,9 +23,14 @@ export default {
 			type: String,
 			default: null,
 		},
+		translationKey: {
+			type: String,
+			default: 'product_status',
+		},
 	},
 	setup(props) {
 		const { status } = toRefs(props);
+		const { t } = useI18n();
 
 		const statusClass = computed(() => {
 			const v = status.value || '';
@@ -32,6 +39,7 @@ export default {
 
 		return {
 			statusClass,
+			t,
 		};
 	},
 };
@@ -45,7 +53,8 @@ export default {
 	background-color: var(--ion-color-success) !important;
 }
 
-.unpublished {
+.unpublished,
+.pending {
 	background-color: var(--ion-color-primary) !important;
 }
 

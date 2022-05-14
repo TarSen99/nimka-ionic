@@ -5,6 +5,7 @@ import '@/validate/index.js';
 import { initFirebase } from '@/services/firebase/init.js';
 
 import { IonicVue } from '@ionic/vue';
+import i18n from '@/i18n.js';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
@@ -42,7 +43,7 @@ import { defineCustomElements } from '@ionic/pwa-elements/loader';
 
 initFirebase();
 
-const app = createApp(App).use(IonicVue).use(router).use(store);
+const app = createApp(App).use(i18n).use(IonicVue).use(router).use(store);
 
 router.isReady().then(() => {
 	app.mount('#app');

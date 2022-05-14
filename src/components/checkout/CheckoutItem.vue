@@ -17,7 +17,7 @@
 
 				<Badge color="dark" class="px-3 mt-2">
 					<span class="fz-14">
-						{{ product.priceWithDiscount.toFixed(2) }} UAH
+						{{ product.priceWithDiscount.toFixed(2) }} {{ t('common.uah') }}
 					</span>
 				</Badge>
 			</div>
@@ -60,6 +60,7 @@ import { toRefs } from '@vue/reactivity';
 import { checkIfProductBuyAvailable } from '@/helpers';
 import { computed } from '@vue/runtime-core';
 import usePlaceholder from '@/composables/common/usePlaceholder.js';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'CheckoutItem',
@@ -88,6 +89,7 @@ export default {
 	setup(props, { emit }) {
 		const { product, totalProductsCount, disabled } = toRefs(props);
 		const { getImage } = usePlaceholder();
+		const { t } = useI18n();
 
 		const handleRemoveProduct = () => {
 			if (disabled.value) {
@@ -122,6 +124,7 @@ export default {
 			addButtonDisabled,
 			handleAdd,
 			getImage,
+			t,
 		};
 	},
 };

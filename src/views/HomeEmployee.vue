@@ -52,20 +52,25 @@
 			/>
 
 			<div class="ion-padding">
-				<h1 class="fz-22 color-dark m-0 fw-600">Dashboard</h1>
+				<h1 class="fz-22 color-dark m-0 fw-600">
+					{{ t('dashboard.title') }}
+				</h1>
 
 				<div class="mt-5 pt-3">
 					<div class="is-flex ion-justify-content-between">
-						<h2 class="fz-18 color-dark m-0 fw-500">Last orders</h2>
+						<h2 class="fz-18 color-dark m-0 fw-500">
+							{{ t('dashboard.latest_orders') }}
+						</h2>
 
 						<span class="view-all" @click="$router.push('/incoming-orders')">
-							View all
+							{{ t('dashboard.view_all') }}
 						</span>
 					</div>
 					<status-filter
 						:model-value="orderStatus"
 						:options="ORDER_STATUSES"
 						class="mt-2"
+						translationKey="order_status"
 						@update:modelValue="updateOrderStatus"
 					/>
 
@@ -88,7 +93,8 @@
 								<template #top>
 									<div>
 										<p class="fw-400 color-dark fz-14">
-											Order <span class="fw-500">#{{ order.orderNumber }}</span>
+											{{ t('common.order') }}
+											<span class="fw-500">#{{ order.orderNumber }}</span>
 										</p>
 									</div>
 								</template>
@@ -97,21 +103,26 @@
 					</swiper>
 
 					<div v-if="!lastOrders.length && !loadingOrders" class="mt-2">
-						<p class="fw-500 color-dark fz-14 ion-text-center">List is empty</p>
+						<p class="fw-500 color-dark fz-14 ion-text-center">
+							{{ t('dashboard.no_orders') }}
+						</p>
 					</div>
 				</div>
 
 				<div class="mt-5 pt-3">
 					<div class="is-flex ion-justify-content-between">
-						<h2 class="fz-18 color-dark m-0 fw-500">Last products</h2>
+						<h2 class="fz-18 color-dark m-0 fw-500">
+							{{ t('dashboard.latest_pr') }}
+						</h2>
 
 						<span class="view-all" @click="$router.push('/my-products')">
-							View all
+							{{ t('dashboard.view_all') }}
 						</span>
 					</div>
 					<status-filter
 						:model-value="productStatus"
 						:options="PRODUCT_STATUSES"
+						translationKey="product_status"
 						class="mt-2"
 						@update:modelValue="updateProductStatus"
 					/>
@@ -144,7 +155,9 @@
 					</swiper>
 
 					<div v-if="!lastProducts.length && !loadingProducts" class="mt-2">
-						<p class="fw-500 color-dark fz-14 ion-text-center">List is empty</p>
+						<p class="fw-500 color-dark fz-14 ion-text-center">
+							{{ t('dashboard.no_pr') }}
+						</p>
 					</div>
 				</div>
 
@@ -155,7 +168,7 @@
 						class="new-product-btn w-100"
 						@click="$router.push(`/new-product`)"
 					>
-						Add new product
+						{{ t('dashboard.add_new') }}
 					</Button>
 				</div>
 			</div>
@@ -198,6 +211,7 @@ import http from '@/services/http';
 import { ORDER_STATUSES, PRODUCT_STATUSES } from '@/config/constants.js';
 import usePushNotifications from '@/composables/common/pushNotifications.js';
 import useCurrentPlace from '@/composables/common/currentPlace.js';
+import { useI18n } from 'vue-i18n/index';
 
 const getOrderStatuses = () => {
 	const CURR_ORDER_STATUSES = {
@@ -245,6 +259,7 @@ export default {
 		const productsEl = ref(null);
 		const ordersEl = ref(null);
 		const { activePlace } = useCurrentPlace();
+		const { t } = useI18n();
 
 		addListeners();
 
@@ -389,6 +404,7 @@ export default {
 			getPlaceOrders,
 			update,
 			updateProductStatus,
+			t,
 
 			personOutline,
 		};

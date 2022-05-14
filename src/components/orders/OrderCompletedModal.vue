@@ -25,18 +25,21 @@
 
 					<div class="mt-2">
 						<p class="ion-text-center fw-400 fz-18 color-success fw-500">
-							Success
+							{{ t('common.success') }}
 						</p>
 						<p class="ion-text-center fw-400 fz-16 color-dark-grey mt-5">
-							Order #{{ details.orderNumber }} was completed. <br />
-							<span class="fw-500"> Bon appetit! </span>
+							{{ t('order_completed.completed', { msg: details.orderNumber }) }}
+							<br />
+							<span class="fw-500">
+								{{ t('order_completed.bon_apetit') }}
+							</span>
 						</p>
 					</div>
 				</div>
 
 				<div class="is-flex ion-justify-content-center">
 					<Button color="primary" @click="handleClose">
-						<span class="px-5"> Thank you </span>
+						<span class="px-5"> {{ t('order_completed.thank_you') }} </span>
 					</Button>
 				</div>
 			</div>
@@ -48,6 +51,7 @@
 import { IonModal, IonContent, modalController, IonIcon } from '@ionic/vue';
 import { checkmarkOutline } from 'ionicons/icons';
 import Button from '@/components/common/Button.vue';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'OrderCompletedModal',
@@ -69,6 +73,8 @@ export default {
 		},
 	},
 	setup(_, { emit }) {
+		const { t } = useI18n();
+
 		const handleClose = () => {
 			emit('update:modelValue', false);
 		};
@@ -76,6 +82,7 @@ export default {
 		return {
 			checkmarkOutline,
 			handleClose,
+			t,
 		};
 	},
 };

@@ -10,12 +10,14 @@ import 'firebase/auth';
 import { Capacitor } from '@capacitor/core';
 import { onMounted, ref } from 'vue';
 import { useStore } from 'vuex';
+import { useI18n } from 'vue-i18n/index';
 
 export default function ({ getNumber, phone }) {
 	const router = useRouter();
 	const isSubmitting = ref(false);
 	const { showMessage } = alert();
 	const store = useStore();
+	const { t } = useI18n();
 
 	const platform = Capacitor.getPlatform();
 	let loading;
@@ -74,7 +76,7 @@ export default function ({ getNumber, phone }) {
 				isSubmitting.value = false;
 				loading.dismiss();
 
-				showMessage({ text: 'Phone number is invalid' });
+				showMessage({ text: t('login_page.phone_invalid') });
 			},
 		});
 	};

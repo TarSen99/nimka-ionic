@@ -12,7 +12,7 @@
 							<span class="fz-50"> 📍 </span>
 							<br />
 							<br />
-							Receive only best offers in your area
+							{{ t('allow_location.receive_best') }}
 						</h2>
 					</div>
 				</div>
@@ -23,12 +23,12 @@
 			<ion-fab vertical="bottom" horizontal="left" slot="fixed" class="w-100">
 				<div class="ion-padding w-100">
 					<Button color="light" expand="block" @click="submit">
-						Allow geolocation
+						{{ t('allow_location.allow_geo') }}
 					</Button>
 
 					<div class="ion-text-center">
-						<span class="fw-600 color-light fz-14 mt-2" @click="skip"
-							>Skip</span
+						<span class="fw-600 color-light fz-14 mt-2" @click="skip">
+							{{ t('common.skip') }}</span
 						>
 					</div>
 				</div>
@@ -48,6 +48,7 @@ import { OpenNativeSettings } from '@awesome-cordova-plugins/open-native-setting
 import useSaveLocation from '@/composables/auth/saveLocation.js';
 import { useStore } from 'vuex';
 import { computed } from '@vue/runtime-core';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'PhoneRegister',
@@ -60,6 +61,7 @@ export default {
 	},
 	setup() {
 		const store = useStore();
+		const { t } = useI18n();
 
 		const { getCurrentLocation, setLocationNotAllowed, getDeniedValue } =
 			useLocation();
@@ -116,6 +118,7 @@ export default {
 		return {
 			submit,
 			skip,
+			t,
 		};
 	},
 };

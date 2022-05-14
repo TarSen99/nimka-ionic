@@ -8,11 +8,13 @@
 				<ion-icon :icon="bicycleOutline" class="icon"></ion-icon>
 			</div>
 
-			<p v-if="activeOrders.length === 1">You have an active order</p>
-			<p v-else>You have active orders</p>
+			<p v-if="activeOrders.length === 1">{{ t('home.you_have_active') }}</p>
+			<p v-else>
+				{{ t('home.you_have_actives') }}
+			</p>
 
 			<div v-if="activeOrders.length === 1">
-				Please take it till
+				{{ t('home.take_it') }}
 				<br />
 
 				<Badge color="dark" class="px-3 mt-2">
@@ -20,7 +22,7 @@
 				</Badge>
 			</div>
 
-			<p class="mt-2 fz-12">Click here for more details</p>
+			<p class="mt-2 fz-12">{{ t('home.click_here') }}</p>
 		</div>
 
 		<active-order-modal :is-open="isModalOpen" @close="handleClose" />
@@ -37,6 +39,7 @@ import { useStore } from 'vuex';
 import { computed } from '@vue/runtime-core';
 import { getTimeFromIsoDate } from '@/helpers';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'ActiveOrder',
@@ -48,6 +51,7 @@ export default {
 	setup() {
 		const store = useStore();
 		const router = useRouter();
+		const { t } = useI18n();
 
 		const isModalOpen = ref(false);
 		const activeOrders = computed(() => {
@@ -87,6 +91,7 @@ export default {
 			toTime,
 			activeOrders,
 			handleCardClick,
+			t,
 		};
 	},
 };

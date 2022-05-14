@@ -11,7 +11,7 @@
 						color="success"
 					></ion-icon>
 				</div>
-				<h2 class="ion-text-center color-success">Success</h2>
+				<h2 class="ion-text-center color-success">{{ t('common.success') }}</h2>
 				<p class="ion-text-center fz-16 fw-500 mt-3">
 					<span> {{ text }}. <br /> </span>
 				</p>
@@ -23,7 +23,7 @@
 							expand="block"
 							@click="$router.replace(`/product/${$route.params.id}`)"
 						>
-							View product
+							{{ t('new_product.view') }}
 						</Button>
 
 						<Button
@@ -32,7 +32,7 @@
 							@click="$router.replace('/')"
 							color="light"
 						>
-							Home
+							{{ t('checkout.home') }}
 						</Button>
 					</div>
 				</ion-fab>
@@ -50,6 +50,7 @@ import Badge from '@/components/common/Badge.vue';
 import { ref } from '@vue/reactivity';
 import { useRoute } from 'vue-router';
 import { computed } from '@vue/runtime-core';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'CheckoutSuccess',
@@ -64,19 +65,21 @@ export default {
 	setup() {
 		const title = ref(null);
 		const route = useRoute();
+		const { t } = useI18n();
 
 		const text = computed(() => {
 			if (route.query.updated) {
-				return 'Product was successfully updated';
+				return t('new_product.updated');
 			}
 
-			return 'Product was successfully published';
+			return t('new_product.published');
 		});
 
 		return {
 			checkmarkOutline,
 			title,
 			text,
+			t,
 		};
 	},
 };

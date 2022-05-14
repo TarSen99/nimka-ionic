@@ -13,7 +13,7 @@
 							<span class="fz-50"> 📱 </span>
 							<br />
 							<br />
-							Please enter your phone number.
+							{{ t('login_page.enter_phone') }}
 						</h2>
 
 						<div class="is-flex">
@@ -44,17 +44,17 @@
 						@click="submit"
 						:disabled="submitDisabled || isSubmitting"
 					>
-						Continue
+						{{ t('common.continue') }}
 					</Button>
 					<div class="p-3 ion-text-center color-light fw-500 fz-14">
-						<span class="or"> OR </span>
+						<span class="or"> {{ t('login_page.or') }} </span>
 					</div>
 					<Button
 						color="primary"
 						expand="block"
 						@click="$router.replace('/login/email')"
 					>
-						Login for partners
+						{{ t('login_page.partners') }}
 					</Button>
 				</div>
 			</ion-fab>
@@ -68,6 +68,7 @@ import Input from '@/components/common/Input.vue';
 import Button from '@/components/common/Button.vue';
 import { computed, ref } from 'vue';
 import usePhoneAuth from '@/composables/auth/usePhoneAuth.js';
+import { useI18n } from 'vue-i18n/index';
 
 const PHONE_LENGTH = 9;
 
@@ -81,6 +82,8 @@ export default {
 		IonFab,
 	},
 	setup() {
+		const { t } = useI18n();
+
 		const phone = ref(null);
 
 		const getNumber = () => {
@@ -102,6 +105,7 @@ export default {
 		});
 
 		return {
+			t,
 			phone,
 			submit,
 			submitDisabled,

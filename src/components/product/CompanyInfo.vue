@@ -12,7 +12,7 @@
 				<h2 class="fz-18 title">
 					{{ details && details.name }}
 				</h2>
-				<p class="fz-12 color-light">Click to see more details</p>
+				<p class="fz-12 color-light">{{ t('product.click') }}</p>
 			</div>
 		</div>
 
@@ -24,6 +24,7 @@
 
 <script>
 import CompanySocial from '@/components/product/CompanySocial.vue';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'CompanyInfo',
@@ -36,7 +37,13 @@ export default {
 			default: () => {},
 		},
 	},
-	setup() {},
+	setup() {
+		const { t } = useI18n();
+
+		return {
+			t,
+		};
+	},
 };
 </script>
 

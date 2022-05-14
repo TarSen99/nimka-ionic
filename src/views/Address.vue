@@ -15,7 +15,9 @@
 						</ion-button>
 					</ion-buttons>
 
-					<ion-title class="ion-text-center"> Address </ion-title>
+					<ion-title class="ion-text-center">
+						{{ t('address.title') }}
+					</ion-title>
 
 					<span class="placeholder"></span>
 				</div>
@@ -33,17 +35,17 @@
 						"
 					>
 						<p class="fz-16 color-dark pb-2 ion-text-center fw-500 italic">
-							Your location is autodetected
+							{{ t('address.auto') }}
 						</p>
 
 						<p class="fz-14 color-grey mt-1 ion-text-center">
-							You can also enter your address below:
+							{{ t('address.can') }}:
 						</p>
 					</template>
 					<Input
 						@update:modelValue="handleAddressInput"
-						placeholder="Enter address here"
-						label="Address"
+						:placeholder="t('address.enter')"
+						:label="t('address.title')"
 						class="account-input"
 						:model-value="addressSearch"
 					/>
@@ -73,7 +75,7 @@
 							<ion-item key="auto" class="location-item" lines="none">
 								<ion-radio slot="start" value="auto"></ion-radio>
 
-								<div class="p-2">Autodetection</div>
+								<div class="p-2">{{ t('address.auto_det') }}</div>
 							</ion-item>
 						</ion-radio-group>
 					</div>
@@ -88,7 +90,7 @@
 						:disabled="!selectedLocation"
 						@click="save"
 					>
-						Save
+						{{ t('common.save') }}
 					</Button>
 				</div>
 			</div>
@@ -125,7 +127,7 @@ import useLoader from '@/composables/common/useLoader.js';
 import http from '@/services/http/index.js';
 import useAlert from '@/composables/common/alert.js';
 import useGeolocation from '@/composables/common/geoLocation.js';
-import useNativeStore from '@/composables/common/nativeStore.js';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'Address',
@@ -149,6 +151,7 @@ export default {
 	},
 	setup() {
 		const store = useStore();
+		const { t } = useI18n();
 
 		const userData = ref(null);
 		const address = ref(null);
@@ -249,13 +252,13 @@ export default {
 
 					showMessage({
 						color: 'success',
-						text: `Details were successfully updated`,
-						title: 'Success',
+						text: t('account.updated'),
+						title: t('common.success'),
 					});
 				})
 				.catch(() => {
 					showMessage({
-						text: `Something went wrong. Please try again`,
+						text: t('common.something_wrong'),
 					});
 				})
 				.finally(() => {
@@ -270,7 +273,7 @@ export default {
 
 				if (!location) {
 					showMessage({
-						text: `Geolocation is denied`,
+						text: t('common.geo_denied'),
 					});
 
 					hideLoader();
@@ -321,6 +324,7 @@ export default {
 			addressSearch,
 			isLocationAllowed,
 			pageLoading,
+			t,
 		};
 	},
 };

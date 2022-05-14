@@ -32,20 +32,23 @@ import { mapOutline, walletOutline, calendarOutline } from 'ionicons/icons';
 import { IonIcon } from '@ionic/vue';
 import useHaptics from '@/composables/common/haptics.js';
 import { ref } from '@vue/reactivity';
+import i18n from '@/i18n.js';
+
+const { t } = i18n.global;
 
 const FILTERS_LIST = [
 	{
-		title: 'By Date',
+		title: t('home.filters.by_date'),
 		icon: calendarOutline,
 		id: 'date',
 	},
 	{
-		title: 'By Distance',
+		title: t('home.filters.by_distance'),
 		icon: mapOutline,
 		id: 'distance',
 	},
 	{
-		title: 'By Price',
+		title: t('home.filters.by_price'),
 		icon: walletOutline,
 		id: 'price',
 	},

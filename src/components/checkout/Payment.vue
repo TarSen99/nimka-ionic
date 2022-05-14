@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<h2 class="fz-18">Payment method</h2>
+		<h2 class="fz-18">{{ t('checkout.method') }}</h2>
 
 		<div>
 			<ion-radio-group
@@ -11,7 +11,7 @@
 				<ion-item class="radio-item" lines="none">
 					<ion-label class="is-flex ion-align-items-center">
 						<ion-icon :icon="cardOutline" class="mr-2 icon"></ion-icon>
-						<span class="fw-500"> Credit Card </span>
+						<span class="fw-500">{{ t('checkout.credit') }} </span>
 					</ion-label>
 					<ion-radio slot="start" value="card"></ion-radio>
 				</ion-item>
@@ -59,7 +59,7 @@
 									<span class="vertical-align-middle fz-22 fw-500"> + </span>
 
 									<span class="fw-500 fz-18 color-dark vertical-align-middle">
-										Add new card
+										{{ t('checkout.add_new') }}
 									</span>
 								</div>
 							</div>
@@ -70,7 +70,7 @@
 				<ion-item class="radio-item" lines="none">
 					<ion-label class="is-flex ion-align-items-center">
 						<ion-icon :icon="cashOutline" class="mr-2 icon"></ion-icon>
-						<span class="fw-500"> Cash </span>
+						<span class="fw-500"> {{ t('checkout.cash') }} </span>
 					</ion-label>
 					<ion-radio slot="start" value="cash"></ion-radio>
 				</ion-item>
@@ -78,8 +78,7 @@
 				<transition name="fade-slide">
 					<div v-if="paymentType === 'cash'">
 						<p class="color-grey pt-2 fw-500 cash-text">
-							You'll pay with cash in restourant. No additional information is
-							needed.
+							{{ t('checkout.cash_descr') }}
 						</p>
 					</div>
 				</transition>
@@ -100,6 +99,7 @@ import {
 	IonCheckbox,
 } from '@ionic/vue';
 import { cardOutline, cashOutline } from 'ionicons/icons';
+import { useI18n } from 'vue-i18n/index';
 
 const PAYMENT_TYPES = ['card', 'cash'];
 
@@ -128,6 +128,7 @@ export default {
 		const paymentType = ref(null);
 		const saveCardDetails = ref(null);
 		const selectedCard = ref(null);
+		const { t } = useI18n();
 
 		const handlePaymentTypeChange = (e) => {
 			if (!PAYMENT_TYPES.includes(e.target.value)) {
@@ -162,6 +163,7 @@ export default {
 			saveCardDetails,
 			selectedCard,
 			itemClick,
+			t,
 		};
 	},
 };

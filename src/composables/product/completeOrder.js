@@ -5,10 +5,12 @@ import useAlert from '@/composables/common/alert.js';
 import useLoader from '@/composables/common/useLoader.js';
 import { Dialog } from '@capacitor/dialog';
 import { ORDER_STATUSES } from '@/config/constants.js';
+import { useI18n } from 'vue-i18n/index';
 
 export default function ({ handleClose, details, emit }) {
 	const { showMessage } = useAlert();
 	const { showLoader, hideLoader } = useLoader();
+	const { t } = useI18n();
 
 	const scan = () => {
 		BarcodeScanner.scan()
@@ -28,15 +30,15 @@ export default function ({ handleClose, details, emit }) {
 			})
 			.catch(() => {
 				showMessage({
-					text: `Scanning was not successful`,
+					text: t('order_details.scan_fail'),
 				});
 			});
 	};
 
 	const getValueFromPrompt = async () => {
 		const { value, cancelled } = await Dialog.prompt({
-			title: 'Unique customer order number',
-			message: `Please, ask customer for unique order number`,
+			title: t('order_details.secret'),
+			message: t('order_details.ask_secret'),
 		});
 
 		if (cancelled) {
@@ -59,8 +61,8 @@ export default function ({ handleClose, details, emit }) {
 				hideLoader();
 				showMessage({
 					color: 'success',
-					text: `Order was successfully completed`,
-					title: 'Success',
+					text: t('order_details.completed'),
+					title: t('common.success'),
 				});
 
 				emit('change-status', ORDER_STATUSES.COMPLETED);
@@ -71,9 +73,9 @@ export default function ({ handleClose, details, emit }) {
 				let message;
 
 				if (type === 'qr') {
-					message = 'QR code is not valid';
+					message = t('order_details.qr_invalid');
 				} else {
-					message = 'Customer number is not valid';
+					message = t('order_details.secret_invalid');
 				}
 
 				showMessage({
@@ -84,23 +86,23 @@ export default function ({ handleClose, details, emit }) {
 
 	const showActionSheet = async () => {
 		const actionSheet = await actionSheetController.create({
-			header: 'Complete order',
+			header: t('order_details.complete_order'),
 			cssClass: 'my-custom-class',
 			buttons: [
 				{
-					text: 'By QR code',
+					text: t('order_details.by_qr'),
 					handler: () => {
 						scan();
 					},
 				},
 				{
-					text: 'By customer unique number',
+					text: t('order_details.by_secret'),
 					handler: () => {
 						getValueFromPrompt();
 					},
 				},
 				{
-					text: 'Cancel',
+					text: t('common.cancel'),
 					role: 'cancel',
 					handler: () => {
 						console.log('Cancel clicked');

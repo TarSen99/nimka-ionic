@@ -5,7 +5,7 @@
 				class="page-content overflow-hidden is-flex is-flex-direction-column ion-justify-content-between"
 			>
 				<div ref="topText">
-					<TopIcons> Hello!</TopIcons>
+					<TopIcons> {{ t('login_page.hello') }}!</TopIcons>
 				</div>
 
 				<div class="bottom-screen relative w-100">
@@ -21,15 +21,15 @@
 					<form @submit.prevent class="w-100 ion-padding">
 						<Input
 							v-model="email"
-							placeholder="Email"
-							label="Email"
+							:placeholder="t('common.email')"
+							:label="t('common.email')"
 							class="w-100 login-input"
 							:error="emailError"
 						/>
 						<Input
 							v-model="password"
-							placeholder="Password"
-							label="Password"
+							:placeholder="t('common.password')"
+							:label="t('common.password')"
 							class="w-100 login-input"
 							type="password"
 							:error="passwordError"
@@ -37,7 +37,7 @@
 
 						<div class="w-100 mt-5 z-2 relative pt-5">
 							<Button color="light" class="mt-5" expand="block" @click="submit">
-								Log in
+								{{ t('login_page.login') }}
 							</Button>
 
 							<div
@@ -49,7 +49,7 @@
 									class="color-light fz-14 fw-600"
 									@click="$router.replace('/phone-register')"
 								>
-									Back
+									{{ t('login_page.back') }}
 								</span>
 							</div>
 						</div>
@@ -84,13 +84,17 @@ import { useRouter } from 'vue-router';
 import realtime from '@/services/firebase/db.js';
 import useCurrentPlace from '@/composables/common/currentPlace.js';
 import useNativeStore from '@/composables/common/nativeStore.js';
+import { useI18n } from 'vue-i18n/index';
+import i18n from '@/i18n.js';
+
+const { t } = i18n.global;
 
 const validationSchema = yup.object().shape({
 	loginValue: yup
 		.string()
-		.email('Email is not valid')
-		.required('Field is required'),
-	password: yup.string().required('Field is required'),
+		.email(t('common.email_not_valid'))
+		.required(t('common.required')),
+	password: yup.string().required(t('common.required')),
 });
 
 export default {
@@ -106,6 +110,8 @@ export default {
 		BorderedBackground,
 	},
 	setup() {
+		const { t } = useI18n();
+
 		const store = useStore();
 		const router = useRouter();
 		const { activePlace, places } = useCurrentPlace();
@@ -197,6 +203,7 @@ export default {
 			submit,
 			emailError,
 			passwordError,
+			t,
 		};
 	},
 };

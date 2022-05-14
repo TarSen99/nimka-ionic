@@ -17,7 +17,9 @@
 					</ion-buttons>
 
 					<ion-title class="ion-text-center">
-						{{ showHistory ? 'New Product' : 'Edit product' }}
+						{{
+							showHistory ? t('new_product.title') : t('new_product.edit_title')
+						}}
 					</ion-title>
 
 					<span class="right-notch"></span>
@@ -36,7 +38,7 @@
 
 				<div class="form">
 					<div>
-						<p class="pr-title mt-3">Product type</p>
+						<p class="pr-title mt-3">{{ t('new_product.pr_type') }}</p>
 
 						<div class="filters-list is-flex mt-2">
 							<div
@@ -47,7 +49,7 @@
 								}"
 								@click="changeProductType('regular')"
 							>
-								Regular
+								{{ t('new_product.regular') }}
 							</div>
 
 							<div
@@ -58,7 +60,7 @@
 								}"
 								@click="changeProductType('niambox')"
 							>
-								Niambox
+								{{ t('new_product.niambox') }}
 							</div>
 						</div>
 					</div>
@@ -67,8 +69,8 @@
 						v-show="productType === 'regular'"
 						v-model="title"
 						class="input"
-						placeholder="Title"
-						label="Title"
+						:placeholder="t('new_product.title_field')"
+						:label="t('new_product.title_field')"
 						:error="titleError"
 					/>
 
@@ -77,13 +79,13 @@
 						class="input"
 						:placeholder="
 							productType === 'regular'
-								? 'Description'
-								: 'What customers can get?'
+								? t('new_product.description')
+								: t('new_product.descr_niam')
 						"
 						:label="
 							productType === 'regular'
-								? 'Description'
-								: 'What customers can get?'
+								? t('new_product.description')
+								: t('new_product.descr_niam')
 						"
 						textarea
 						:error="descriptionError"
@@ -93,8 +95,8 @@
 						<Select
 							v-model="availableCount"
 							class="w-50 mr-3"
-							label="Available count"
-							placeholder="Available count"
+							:label="t('new_product.available')"
+							:placeholder="t('new_product.available')"
 							:options="PRODUCT_COUNT_OPTIONS"
 							:error="availableCountError"
 							@update:modelValue="onAvailableCount"
@@ -102,8 +104,8 @@
 
 						<Select
 							v-model="availableCountPerPerson"
-							label="Available count per person"
-							placeholder="Available count per person"
+							:label="t('new_product.per')"
+							:placeholder="t('new_product.per')"
 							class="w-50"
 							:options="PRODUCT_COUNT_OPTIONS"
 							:error="availableCountPerPersonError"
@@ -117,8 +119,8 @@
 							placeholder="1"
 							:label="
 								productType === 'regular'
-									? 'Full price, UAH'
-									: 'Approximate full price, UAH'
+									? t('new_product.full')
+									: t('new_product.approx')
 							"
 							type="tel"
 							@update:modelValue="handleFullPriceChange"
@@ -131,7 +133,7 @@
 							v-model="discountPercent"
 							class="input mr-3 w-100"
 							placeholder="50"
-							label="Discount percent, %"
+							:label="t('new_product.disc_perc')"
 							type="tel"
 							@update:modelValue="handleDiscountInput('percent')"
 							:error="discountPercentError"
@@ -141,7 +143,7 @@
 							v-model="priceWithDiscount"
 							class="input w-100"
 							placeholder="50"
-							label="Price with discount, UAH"
+							:label="t('new_product.disc_price')"
 							type="tel"
 							@update:modelValue="handleDiscountInput('price')"
 							:error="priceWithDiscountError"
@@ -150,12 +152,14 @@
 
 					<div v-if="!$route.params.id" class="mt-3">
 						<div>
-							<p class="fw-400 fz-14 color-dark-grey">Take time</p>
+							<p class="fw-400 fz-14 color-dark-grey">
+								{{ t('new_product.take') }}
+							</p>
 
 							<div class="is-flex ion-justify-content-end time-inputs">
 								<input
 									type="text"
-									placeholder="From"
+									:placeholder="t('new_product.from')"
 									id="start_time"
 									class="date-input mr-2 w-100"
 									:value="startTimeFormatted"
@@ -164,7 +168,7 @@
 								<div class="w-100">
 									<input
 										type="text"
-										placeholder="To"
+										:placeholder="t('new_product.to')"
 										id="end_time"
 										class="date-input w-100"
 										:value="endTimeFormatted"
@@ -176,7 +180,8 @@
 											v-if="tomorrowDayValue"
 											class="fz-14 fw-500 color-danger mt-2"
 										>
-											This time is for tomorrow - {{ tomorrowDayValue }}
+											{{ t('new_product.for_tomorrow') }} -
+											{{ tomorrowDayValue }}
 										</p>
 									</transition>
 								</div>
@@ -212,13 +217,17 @@
 
 					<div class="mt-3">
 						<div>
-							<p class="fw-400 fz-14 color-dark-grey">Images</p>
+							<p class="fw-400 fz-14 color-dark-grey">
+								{{ t('new_product.images') }}
+							</p>
 
 							<div v-if="!images.length" class="mt-2">
 								<div class="upload-images" @click="handlePhotoClick">
 									<span class="plus"> + </span>
 
-									<p class="fz-14 color-dark fw-500">Upload images</p>
+									<p class="fz-14 color-dark fw-500">
+										{{ t('new_product.upload') }}
+									</p>
 								</div>
 							</div>
 
@@ -228,7 +237,9 @@
 								<div class="upload-images mt-2" @click="handlePhotoClick">
 									<span class="plus"> + </span>
 
-									<p class="fz-14 color-dark fw-500">Upload images</p>
+									<p class="fz-14 color-dark fw-500">
+										{{ t('new_product.upload') }}
+									</p>
 								</div>
 							</div>
 						</div>
@@ -236,7 +247,11 @@
 
 					<div class="mt-5 pt-5">
 						<Button @click="handleSubmit" class="mt-5" expand="block">
-							{{ $route.params.id ? 'Update' : 'Create' }}
+							{{
+								$route.params.id
+									? t('new_product.update')
+									: t('new_product.create')
+							}}
 						</Button>
 					</div>
 				</div>
@@ -279,6 +294,7 @@ import useLoader from '@/composables/common/useLoader.js';
 import { useStore } from 'vuex';
 import { withTime } from '@/helpers/index.js';
 import useCurrentPlace from '@/composables/common/currentPlace.js';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'NewProduct',
@@ -344,6 +360,7 @@ export default {
 		const { showCameraOptions } = useCamera();
 		const { showLoader, hideLoader } = useLoader();
 		const lastProducts = ref([]);
+		const { t } = useI18n();
 
 		const getPlaceProducts = () => {
 			if (route.params.id) {
@@ -594,6 +611,7 @@ export default {
 			priceWithDiscountError,
 			startTimeError,
 			endTimeError,
+			t,
 		};
 	},
 };

@@ -27,7 +27,7 @@
 			:class="{ hide: !showPlaceHolder || isFocused }"
 		>
 			<ion-icon :icon="searchOutline" class="vertical-middle mr-2"></ion-icon>
-			<span class="vertical-middle"> Search </span>
+			<span class="vertical-middle"> {{ t('home.search') }} </span>
 		</div>
 	</div>
 </template>
@@ -39,6 +39,7 @@ import { ref, toRefs } from '@vue/reactivity';
 import { IonInput } from '@ionic/vue';
 import { closeOutline } from 'ionicons/icons';
 import { watch } from '@vue/runtime-core';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'SearchInput',
@@ -59,6 +60,7 @@ export default {
 		const placeholder = ref(null);
 		let showPlaceHolder = ref(true);
 		const isFocused = ref(false);
+		const { t } = useI18n();
 
 		watch(
 			() => modelValue.value,
@@ -107,6 +109,7 @@ export default {
 			isFocused,
 			closeOutline,
 			handleClearClick,
+			t,
 		};
 	},
 };

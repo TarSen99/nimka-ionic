@@ -13,14 +13,14 @@
 				</div>
 				<h2 class="ion-text-center color-success">{{ title }}</h2>
 				<p class="ion-text-center fz-16 fw-500 mt-3">
-					<span> Please, pick up your order till </span>
+					<span> {{ t('checkout.please_pickup') }} <br /> </span>
 					<Badge color="primary" class="fz-16">{{ time }}</Badge>
 				</p>
 
 				<ion-fab vertical="bottom" horizontal="left" slot="fixed" class="w-100">
 					<div class="w-100 ion-padding">
 						<Button class="mt-5" expand="block" @click="$router.replace('/')">
-							Home
+							{{ t('checkout.home') }}
 						</Button>
 					</div>
 				</ion-fab>
@@ -39,11 +39,11 @@ import {
 } from '@ionic/vue';
 import { checkmarkOutline } from 'ionicons/icons';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n/index';
 
 import Button from '@/components/common/Button.vue';
 import Badge from '@/components/common/Badge.vue';
 import { ref } from '@vue/reactivity';
-import { onMounted, watch } from '@vue/runtime-core';
 
 export default {
 	name: 'CheckoutSuccess',
@@ -59,14 +59,15 @@ export default {
 		const title = ref(null);
 		const route = useRoute();
 		const time = ref(null);
+		const { t } = useI18n();
 
 		onIonViewWillEnter(() => {
 			time.value = route.query.time;
 
 			if (route.query.type === 'cash') {
-				title.value = 'Order has been fulfilled';
+				title.value = t('checkout.fullfiled');
 			} else {
-				title.value = 'Payment was success';
+				title.value = t('checkout.payed');
 			}
 		});
 
@@ -74,6 +75,7 @@ export default {
 			checkmarkOutline,
 			title,
 			time,
+			t,
 		};
 	},
 };

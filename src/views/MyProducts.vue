@@ -15,7 +15,9 @@
 						</ion-button>
 					</ion-buttons>
 
-					<ion-title class="ion-text-center"> My products </ion-title>
+					<ion-title class="ion-text-center">
+						{{ t('my_products.title') }}
+					</ion-title>
 
 					<span class="placeholder"></span>
 				</div>
@@ -48,11 +50,14 @@
 					:options="PRODUCT_STATUSES"
 					class="mt-2 mb-5"
 					@update:modelValue="updateProductStatus"
+					translationKey="product_status"
 				/>
 
 				<list-placeholder v-if="loading && !itemsList.length" />
 				<div v-if="!itemsList.length && !loading">
-					<p class="fz-14 ion-text-center fw-500 color-dark">No results</p>
+					<p class="fz-14 ion-text-center fw-500 color-dark">
+						{{ t('dashboard.no_pr') }}
+					</p>
 				</div>
 				<FoodItem
 					v-for="product in itemsList"
@@ -118,6 +123,7 @@ import ProductStatusBadge from '@/components/admin/ProductStatusBadge.vue';
 import StatusFilter from '@/components/common/StatusFilter.vue';
 import { PRODUCT_STATUSES } from '@/config/constants.js';
 import useCurrentPlace from '@/composables/common/currentPlace.js';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'My products',
@@ -156,6 +162,7 @@ export default {
 			handleResponse,
 		} = useInfiniteList();
 		const { activePlace } = useCurrentPlace();
+		const { t } = useI18n();
 
 		const productStatus = computed(() => {
 			return store.state.lastProducts.status;
@@ -231,6 +238,7 @@ export default {
 			updateProductStatus,
 			productStatus,
 			PRODUCT_STATUSES,
+			t,
 		};
 	},
 };

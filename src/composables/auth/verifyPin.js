@@ -11,12 +11,14 @@ import { computed } from 'vue';
 import realtime from '@/services/firebase/db.js';
 import { ENCRYPTED_KEY } from '@/config/constants.js';
 import useNativeStore from '@/composables/common/nativeStore.js';
+import { useI18n } from 'vue-i18n/index';
 
 export default function () {
 	const platform = Capacitor.getPlatform();
 	const { showLoader, hideLoader } = useLoader();
 	const { showMessage } = alert();
 	const { setItem } = useNativeStore();
+	const { t } = useI18n();
 
 	const store = useStore();
 	const route = useRoute();
@@ -52,7 +54,7 @@ export default function () {
 				return true;
 			})
 			.catch(() => {
-				showMessage({ text: 'Something went wrong' });
+				showMessage({ text: t('common.something_wrong') });
 				clearCode();
 				hideLoader();
 			});
@@ -78,7 +80,7 @@ export default function () {
 			clearCode();
 
 			hideLoader();
-			showMessage({ text: 'SMS code is not valid' });
+			showMessage({ text: t('login_page.sms_not_valid') });
 			throw new Error('erroe');
 		}
 	};
@@ -99,7 +101,7 @@ export default function () {
 
 				clearCode();
 				hideLoader();
-				showMessage({ text: 'SMS code is not valid' });
+				showMessage({ text: t('login_page.sms_not_valid') });
 				throw new Error('erroe');
 			});
 	};

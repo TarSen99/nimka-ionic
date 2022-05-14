@@ -26,11 +26,12 @@
 					</div>
 
 					<p class="color-dark fz-14">
-						Order <span class="fw-600"> #{{ activeOrder.orderNumber }}</span>
+						{{ t('common.order') }}
+						<span class="fw-600"> #{{ activeOrder.orderNumber }}</span>
 					</p>
 
 					<div class="fz-14 color-dark">
-						Pick up time:
+						{{ t('active_order.pickup_time') }}:
 						<span class="fw-600">
 							{{ productsPickupTimeFrom }} - {{ productsPickupTime }}</span
 						>
@@ -55,7 +56,7 @@
 						>
 							<ion-icon :icon="locationOutline" class="mr-1" />
 
-							<span> Route </span>
+							<span> {{ t('active_order.route') }} </span>
 						</p>
 					</div>
 				</div>
@@ -67,7 +68,7 @@
 					"
 					class="ion-text-center mt-5 fz-14 color-dark"
 				>
-					Please show this QR during receiving of your order
+					{{ t('active_order.show_qr') }}
 				</p>
 
 				<div
@@ -79,7 +80,9 @@
 				>
 					<canvas id="canvas"></canvas>
 					<p class="fw-500 ion-text-center">
-						<span class="fw-400 fz-14"> Your private number: <br /> </span>
+						<span class="fw-400 fz-14">
+							{{ t('active_order.secret') }}: <br />
+						</span>
 						<span>
 							{{ activeOrder.customerNumber }}
 						</span>
@@ -106,13 +109,16 @@
 
 					<hr class="hr" />
 					<h3 class="ion-text-end fz-14 fw-400 color-grey mt-3">
-						Payment method:
+						{{ t('active_order.method') }}:
 						<span class="payment-method fz-16 fw-500">
-							{{ activeOrder.paymentMethod }}
+							{{ t(`common.${activeOrder.paymentMethod}`) }}
 						</span>
 					</h3>
 					<h2 class="ion-text-end mt-1 fz-18 color-dark">
-						Total: <span class="fz-20 fw-500"> {{ totalPrice }} UAH </span>
+						{{ t('active_order.total') }}:
+						<span class="fz-20 fw-500">
+							{{ totalPrice }} {{ t('common.uah') }}
+						</span>
 					</h2>
 					<div class="pt-5 is-flex ion-justify-content-center">
 						<div
@@ -122,9 +128,10 @@
 							<Button class="action" @click="handleCancel">
 								<ion-icon :icon="closeOutline" class="color-danger" />
 							</Button>
-							<span class="ion-text-center mt-1 fz-16 color-dark fw-500">
-								Cancel <br />
-								order
+							<span
+								v-html="t('active_order.cancel')"
+								class="ion-text-center mt-1 fz-16 color-dark fw-500"
+							>
 							</span>
 						</div>
 
@@ -135,9 +142,10 @@
 							<Button class="action" @click="finishPayment(activeOrder)">
 								<ion-icon :icon="cashOutline" class="color-success" />
 							</Button>
-							<span class="ion-text-center mt-1 fz-16 color-dark fw-500">
-								Finish <br />
-								Payment
+							<span
+								v-html="t('active_order.finish')"
+								class="ion-text-center mt-1 fz-16 color-dark fw-500"
+							>
 							</span>
 						</div>
 					</div>
@@ -172,6 +180,7 @@ import {
 	getProductsPickupTime,
 	getProductsPickupTimeFrom,
 } from '@/helpers';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'ActiveOrderModal',
@@ -205,6 +214,7 @@ export default {
 		const { showMessage } = useAlert();
 		const { open } = useBrowser();
 		const { showLoader, hideLoader } = useLoader();
+		const { t } = useI18n();
 
 		const activeOrder = computed(() => {
 			if (selectedOrder.value && Object.keys(selectedOrder.value).length) {
@@ -236,15 +246,15 @@ export default {
 
 					showMessage({
 						color: 'success',
-						text: `Order is successfully cancelled`,
-						title: 'Success',
+						text: t('active_order.cancelled'),
+						title: t('common.success'),
 					});
 
 					handleClose();
 				})
 				.catch(() => {
 					showMessage({
-						text: `Something went wrong. Please try again`,
+						text: t('common.something_wrong'),
 					});
 				})
 				.finally(() => {
@@ -372,6 +382,7 @@ export default {
 			productsPickupTimeFrom,
 			handleCancel,
 			container,
+			t,
 		};
 	},
 };

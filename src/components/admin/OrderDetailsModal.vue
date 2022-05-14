@@ -19,7 +19,7 @@
 					</div>
 					<modal-header
 						class="w-100"
-						:title="`Order #${currentDetails.orderNumber}`"
+						:title="`${t('common.order')} #${currentDetails.orderNumber}`"
 						@close="handleClose"
 					>
 					</modal-header>
@@ -46,6 +46,7 @@ import { ref, toRefs } from '@vue/reactivity';
 import { useStore } from 'vuex';
 import { computed, watch } from '@vue/runtime-core';
 import useLoader from '@/composables/common/useLoader.js';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'OrderDetailsModal',
@@ -79,6 +80,7 @@ export default {
 	setup(props, { emit }) {
 		const store = useStore();
 		const { showLoader, hideLoader } = useLoader();
+		const { t } = useI18n();
 
 		const { details, fetch, isOpen, data } = toRefs(props);
 		const savedDetails = ref({});
@@ -143,6 +145,7 @@ export default {
 			handleClose,
 			personCircleOutline,
 			currentDetails,
+			t,
 		};
 	},
 };

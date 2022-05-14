@@ -4,7 +4,7 @@
 			v-if="!loading && nearest.length"
 			class="is-flex ion-justify-content-between"
 		>
-			<h2 class="fz-16 color-dark m-0 fw-500">Nearest to you</h2>
+			<h2 class="fz-16 color-dark m-0 fw-500">{{ t('home.nearest') }}</h2>
 		</div>
 
 		<raw-placeholder v-if="loading" />
@@ -34,6 +34,7 @@ import { Swiper, SwiperSlide } from 'swiper/vue';
 import FoodItem from '@/components/home/FoodItem.vue';
 import RawPlaceholder from '@/components/common/RawPlaceholder.vue';
 import { computed, onMounted } from '@vue/runtime-core';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'NearestProducts',
@@ -46,6 +47,7 @@ export default {
 	setup() {
 		const store = useStore();
 		const loading = ref(false);
+		const { t } = useI18n();
 
 		const nearest = computed(() => {
 			return store.state.nearest.nearest;
@@ -75,6 +77,7 @@ export default {
 		return {
 			nearest,
 			loading,
+			t,
 		};
 	},
 };

@@ -7,7 +7,7 @@
 	>
 		<div class="checkout-section ion-padding w-100" :class="{ hideOverlay }">
 			<Button color="primary" expand="full" shape="round" @click="handleClick">
-				Checkout ({{ price }} UAH)
+				{{ t('product.checkout') }} ({{ price }} {{ t('common.uah') }})
 			</Button>
 		</div>
 	</ion-fab>
@@ -17,6 +17,7 @@
 import Button from '@/components/common/Button.vue';
 import { useRouter } from 'vue-router';
 import { IonFab } from '@ionic/vue';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'Checkout',
@@ -36,6 +37,7 @@ export default {
 	},
 	setup(props) {
 		const router = useRouter();
+		const { t } = useI18n();
 
 		const handleClick = () => {
 			router.push('/checkout');
@@ -44,6 +46,7 @@ export default {
 		// console.log(v)
 		return {
 			handleClick,
+			t,
 		};
 	},
 };

@@ -31,7 +31,7 @@
 							<br />
 							<br />
 
-							Please enter code from SMS here
+							{{ t('login_page.enter_otp') }}
 						</h2>
 
 						<div>
@@ -92,6 +92,7 @@ import useGeolocation from '@/composables/common/geoLocation.js';
 import useLoader from '@/composables/common/useLoader.js';
 import http from '@/services/http/index.js';
 import { FIRST_TIME_OPEN } from '@/config/constants.js';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'PhoneRegisterPin',
@@ -112,6 +113,7 @@ export default {
 		const store = useStore();
 		const { getCurrentLocation, getNotAllowedValue } = useGeolocation();
 		const { showLoader, hideLoader } = useLoader();
+		const { t } = useI18n();
 
 		const {
 			handlePaste,
@@ -183,6 +185,7 @@ export default {
 			codeEl,
 			currentPin,
 			focusMainElement,
+			t,
 		};
 	},
 };

@@ -15,6 +15,8 @@
 <script>
 import { toRefs } from '@vue/reactivity';
 import { computed } from '@vue/runtime-core';
+import { useI18n } from 'vue-i18n/index';
+
 export default {
 	name: 'StatusFilter',
 	props: {
@@ -26,10 +28,15 @@ export default {
 			type: [Array],
 			default: () => [],
 		},
+		translationKey: {
+			type: String,
+			default: () => {},
+		},
 	},
 	emits: ['update:modelValue'],
 	setup(props, { emit }) {
-		const { options, modelValue } = toRefs(props);
+		const { options, modelValue, translationKey } = toRefs(props);
+		const { t } = useI18n();
 
 		const items = computed(() => {
 			let res = [];
@@ -37,7 +44,7 @@ export default {
 			Object.keys(options.value).forEach((key) => {
 				res.push({
 					value: options.value[key],
-					text: options.value[key].replaceAll('_', ' '),
+					text: t(`${translationKey.value}.${options.value[key]}`),
 				});
 			});
 

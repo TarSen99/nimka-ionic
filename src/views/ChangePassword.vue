@@ -15,7 +15,9 @@
 						</ion-button>
 					</ion-buttons>
 
-					<ion-title class="ion-text-center"> Change password </ion-title>
+					<ion-title class="ion-text-center">
+						{{ t('change_pass.title') }}
+					</ion-title>
 
 					<span class="placeholder"></span>
 				</div>
@@ -26,8 +28,8 @@
 			<div class="ion-padding">
 				<Input
 					v-model="password"
-					placeholder="Current password"
-					label="Current password"
+					:placeholder="t('change_pass.curr')"
+					:label="t('change_pass.curr')"
 					class="account-input"
 					type="password"
 					:error="passwordError"
@@ -35,8 +37,8 @@
 
 				<Input
 					v-model="newPassword"
-					placeholder="New password"
-					label="New password"
+					:placeholder="t('change_pass.new')"
+					:label="t('change_pass.new')"
 					class="account-input"
 					type="password"
 					:error="newPasswordError"
@@ -50,7 +52,7 @@
 					:disabled="!password || !newPassword"
 					@click="submit"
 				>
-					Submit
+					{{ t('change_pass.submit') }}
 				</Button>
 			</div>
 		</ion-content>
@@ -78,6 +80,7 @@ import * as yup from 'yup';
 import { changePassword, authUserWithEmail } from '@/services/firebase/auth.js';
 import { computed } from '@vue/runtime-core';
 import { useStore } from 'vuex';
+import { useI18n } from 'vue-i18n/index';
 
 const validationSchema = yup.object().shape({
 	password: yup.string().required('Field is required').nullable(),
@@ -106,6 +109,7 @@ export default {
 		const store = useStore();
 		const { showLoader, hideLoader } = useLoader();
 		const { showMessage } = useAlert();
+		const { t } = useI18n();
 
 		const { setErrors, validate, resetForm } = useForm({
 			validationSchema,
@@ -128,7 +132,7 @@ export default {
 			}).catch((e) => {
 				if (e.code === 'auth/wrong-password') {
 					setErrors({
-						password: 'Password is not valid',
+						password: t('change_pass.invalid'),
 					});
 				}
 
@@ -156,8 +160,8 @@ export default {
 					resetForm();
 					showMessage({
 						color: 'success',
-						text: `Password was updated`,
-						title: 'Success',
+						text: t('change_pass.updated'),
+						title: t('common.success'),
 					});
 
 					hideLoader();
@@ -167,7 +171,7 @@ export default {
 
 					hideLoader();
 					showMessage({
-						text: `Something went wrong`,
+						text: t('common.something_wrong'),
 					});
 				});
 		};
@@ -179,6 +183,7 @@ export default {
 			password,
 			passwordError,
 			submit,
+			t,
 		};
 	},
 };

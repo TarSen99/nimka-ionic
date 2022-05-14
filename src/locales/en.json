@@ -1,0 +1,299 @@
+{
+	"common": {
+		"continue": "Continue",
+		"email": "Email",
+		"password": "Password",
+		"required": "Field is required",
+		"email_not_valid": "Email is not valid",
+		"error": "Error",
+		"something_wrong": "Something went wrong",
+		"skip": "Skip",
+		"order": "Order",
+		"uah": "UAH",
+		"cash": "Cash",
+		"card": "Card",
+		"left": "left",
+		"today": "Today",
+		"niambox": "Niambox",
+		"km": "km",
+		"confirm": "Confirm",
+		"success": "Success",
+		"yes": "Yes",
+		"no": "No",
+		"hide": "Hide",
+		"view_all": "View all",
+		"save": "Save",
+		"cancel": "Cancel"
+	},
+	"login_page": {
+		"enter_phone": "Enter your phone number",
+		"or": "Or",
+		"partners": "Login for partners",
+		"login": "Login",
+		"back": "Back",
+		"hello": "Hello",
+		"phone_invalid": "Phone number is invalid",
+		"enter_otp": "Please enter code from SMS here",
+		"sms_not_valid": "SMS code is not valid"
+	},
+	"allow_push": {
+		"be_up_to_date": "Always be up to date"
+	},
+	"allow_location": {
+		"receive_best": "Receive only best offers in your area",
+		"allow_geo": "Allow geolocation"
+	},
+	"home": {
+		"search": "Search",
+		"filters": {
+			"by_date": "By Date",
+			"by_distance": "By Distance",
+			"by_price": "By Price",
+			"look": "Look for products within",
+			"es_type": "Establishment type",
+			"restaurant": "Restaurant",
+			"store": "Store",
+			"pr_type": "Product type",
+			"regular": "Regular",
+			"niambox": "Niambox",
+			"availability": "Availability",
+			"relevant": "Relevant",
+			"all": "All",
+			"notify": "Notify me about new products <br />in my area"
+		},
+		"no_results": "No results found",
+		"all_proposals": "All proposals",
+		"try_to_increase": "Try to increase search radius",
+		"to_see": "to see more results",
+		"increase": "Increase",
+		"you_have_active": "You have an active order",
+		"you_have_actives": "You have active orders",
+		"take_it": "Please take it till",
+		"click_here": "Click here for more details",
+		"popular": "Popular",
+		"hot": "Hot",
+		"hurry": "Hurry to take",
+		"nearest": "Nearest to you",
+		"location": {
+			"denied": "We can not match the best results for you. Please Enable your geolocation permission",
+			"enable": "Enable",
+			"not_allowed": "Please allow your geolocation to match the best results for you",
+			"allow": "Allow"
+		},
+		"more_results": {
+			"to_see": "To see more results",
+			"clear": "Clear search"
+		},
+		"product": {
+			"a_lot": "Left a lot",
+			"pick": "Pick up ",
+			"out": "Out of stock",
+			"missed": "You missed it"
+		}
+	},
+	"active_order": {
+		"pickup_time": "Pick up time",
+		"route": "Route",
+		"show_qr": "Please show this QR during receiving of your order",
+		"secret": "Your secret number",
+		"method": "Payment method",
+		"total": "Total",
+		"cancel": "Cancel <br /> order",
+		"finish": "Finish <br /> payment",
+		"cancelled": "Order is successfully cancelled",
+		"sure_cancel": "Are you sure you want to cancel order?"
+	},
+	"product": {
+		"add": "Add to cart",
+		"what_is": "What is niambox?",
+		"niambox": "You don't know what you'll get... Just be sure, it will be something yummy!",
+		"edit": "Edit",
+		"tap": "Tap here to move the map",
+		"other": "Other products from ",
+		"click": "Click to see more details",
+		"checkout": "Checkout ",
+		"diff_store": "You already added products from different store. Do you want to clear cart and continue?",
+		"pick_time": "You can not add products with pick up time more then 5min. difference to one order. Do you want to clear cart and continue?",
+		"error": {
+			"title": "Sorry!",
+			"sub": "We got an error",
+			"error_not_av": "Unfortunately, some products from your order are out of stock.",
+			"got": "I got it"
+		}
+	},
+	"company": {
+		"details": "Company details",
+		"social": "Social networks",
+		"about": "about",
+		"establishments": "Establishments",
+		"latest": "Latest products"
+	},
+	"menu": {
+		"account": "Account",
+		"address": "Address",
+		"my_orders": "My orders",
+		"logout": "Logout",
+		"post": "Post new product",
+		"my_products": "My products",
+		"change_pass": "Change password",
+		"incoming": "Incoming orders"
+	},
+	"account": {
+		"account": "Account",
+		"updated": "Details were successfully updated",
+		"name": "Name",
+		"phone": "Phone",
+		"email": "Email"
+	},
+	"address": {
+		"title": "Address",
+		"auto": "Your location is autodetected",
+		"can": "You can also enter your address below",
+		"enter": "Enter address here",
+		"auto_det": "Autodetection",
+		"geo_denied": "Geolocation is denied"
+	},
+	"orders": {
+		"title": "My orders",
+		"active": "Active",
+		"all": "All",
+		"empty": "No orders at the moment"
+	},
+	"order_status": {
+		"pending": "Active",
+		"to_take": "To take",
+		"payed": "Payed",
+		"cancelled": "Cancelled",
+		"completed": "Completed",
+		"expired": "Expired"
+	},
+	"product_status": {
+		"active": "Active",
+		"unpublished": "Unpublished",
+		"out of stock": "Out of stock",
+		"expired": "Expired"
+	},
+	"checkout": {
+		"title": "Checkout",
+		"order_from": "Order from ",
+		"approve": "Approve",
+		"method": "Payment method",
+		"credit": "Credit Card",
+		"cash": "Cash",
+		"add_new": "Add new card",
+		"payment_success": "Payment was successfull",
+		"cash_descr": "You'll pay with cash in establishment. No additional information is needed.",
+		"please_pickup": "Please, pick up your order till",
+		"fullfiled": "Order has been fulfilled",
+		"payed": "Payment was success",
+		"home": "Home",
+		"payment": "Payment"
+	},
+	"order_completed": {
+		"completed": "Order #{msg} was completed.",
+		"bon_apetit": "Bon appetit!",
+		"thank_you": "Thank you"
+	},
+	"dashboard": {
+		"title": "Dashboard",
+		"latest_orders": "Latest orders",
+		"view_all": "View all",
+		"no_orders": "No orders at the moment",
+		"latest_pr": "Latest products",
+		"no_pr": "No products at the moment",
+		"add_new": "New product"
+	},
+	"order_details": {
+		"created_at": "Created at",
+		"payment_method": "Payment method",
+		"cash": "Cash",
+		"card": "Card",
+		"status": "Status",
+		"customer_name": "Customer name",
+		"customer_mobile": "Customer mobile",
+		"total": "Total price",
+		"comission": "Comission",
+		"income": "Total income",
+		"complete": "Complete <br /> order",
+		"call": "Call <br /> customer",
+		"cancel": "Cancel <br /> order",
+		"cancel_refund": "Cancel <br />& Refund <br /> order",
+		"ask": "Please ask customer to show QR code and scan it by clicking on \"Complete order\" button.",
+		"pick": "Customer needs to pickup order till",
+		"canc": "Order is successfully cancelled",
+		"completed": "Order is successfully completed",
+		"scan_fail": "Scanning was not successful",
+		"secret": "Secret number",
+		"ask_secret": "Please, ask customer for secret order number",
+		"qr_invalid": "QR code is not valid",
+		"secret_invalid": "Customer secret is not valid",
+		"complete_order": "Complete order",
+		"by_qr": "By QR code",
+		"by_secret": "By customer secret number"
+	},
+	"incoming_orders": {
+		"title": "Incoming orders"
+	},
+	"my_products": {
+		"title": "My products"
+	},
+	"view_product": {
+		"created": "Created at",
+		"title": "Title",
+		"description": "Description",
+		"take": "Take time",
+		"available": "Available quantity",
+		"full": "Full price",
+		"disc": "Price with discount",
+		"perc": "Discount percent",
+		"unpublish": "Unpublish",
+		"publish": "Publish",
+		"edit": "Edit",
+		"view": "View",
+		"success_unp": "Product was successfully unpublished",
+		"success_pub": "Product was successfully published"
+	},
+	"new_product": {
+		"title": "New product",
+		"edit_title": "Edit product",
+		"pr_type": "Product type",
+		"regular": "Regular",
+		"niambox": "Niambox",
+		"title_field": "Title",
+		"description": "Description",
+		"descr_niam": "What customers can get?",
+		"available": "Available count",
+		"per": "Available count per person",
+		"full": "Full price, UAH",
+		"approx": "Approximate full price, UAH",
+		"disc_perc": "Discount percent, %",
+		"disc_price": "Price with discount, UAH",
+		"take": "Take time",
+		"from": "From",
+		"to": "To",
+		"for_tomorrow": "This time is for tomorrow",
+		"images": "Images",
+		"upload": "Upload images",
+		"update": "Update",
+		"create": "Create",
+		"view": "View product",
+		"updated": "Product was successfully updated",
+		"published": "Product was successfully published",
+		"last": "Last products",
+		"click": "Click on product to prefill form"
+	},
+	"change_pass": {
+		"title": "Change password",
+		"curr": "Current password",
+		"new": "New password",
+		"submit": "Submit",
+		"invalid": "Password is not valid",
+		"updated": "Password was updated"
+	},
+	"notifications": {
+		"new_inc": "New incoming order",
+		"payment_method": "Payment method",
+		"canc": "Order cancellation",
+		"was_canc": "Order #{msg} was cancelled by customer"
+	}
+}

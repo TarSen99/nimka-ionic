@@ -9,12 +9,13 @@
 		<ion-content>
 			<div class="bg-white ion-padding h-100 position-relative">
 				<h3 class="color-danger fz-18 ion-text-center">
-					<span class="color-dark fw-500">Sorry!</span> <br />
-					<span class="fw-400 fz-14">We got an error</span>
+					<span class="color-dark fw-500">{{ t('product.error.title') }}</span>
+					<br />
+					<span class="fw-400 fz-14">{{ t('product.error.sub') }}</span>
 				</h3>
 
 				<p class="mt-3 fz-14 color-dark">
-					Unfortunately, some products from your order are out of stock.
+					{{ t('product.error.error_not_av') }}
 				</p>
 
 				<div class="is-flex mt-5 product">
@@ -41,7 +42,7 @@
 						class="px-5 w-100 ok-btn"
 						@click="handleClose"
 					>
-						I got it
+						{{ t('product.error.got') }}
 					</Button>
 				</div>
 			</div>
@@ -54,6 +55,8 @@ import { IonModal, IonContent, modalController } from '@ionic/vue';
 import { toRefs } from '@vue/reactivity';
 import { computed } from '@vue/runtime-core';
 import Button from '@/components/common/Button.vue';
+import { useI18n } from 'vue-i18n/index';
+import usePlaceholder from '@/composables/common/usePlaceholder.js';
 
 export default {
 	name: 'ErrorModal',
@@ -79,6 +82,8 @@ export default {
 	emits: ['close'],
 	setup(props) {
 		const { errorData, products } = toRefs(props);
+		const { t } = useI18n();
+		const { getImages } = usePlaceholder();
 
 		const errorProduct = computed(() => {
 			const errorText = errorData.value[0]?.error || ' ';
@@ -91,9 +96,10 @@ export default {
 		});
 
 		const productImages = computed(() => {
-			const images = errorProduct.value && errorProduct.value.Images;
-
-			return images || [];
+			return getImages(
+				errorProduct.value.Images,
+				errorProduct.value.productType
+			);
 		});
 
 		const handleClose = () => {
@@ -104,6 +110,7 @@ export default {
 			productImages,
 			errorProduct,
 			handleClose,
+			t,
 		};
 	},
 };

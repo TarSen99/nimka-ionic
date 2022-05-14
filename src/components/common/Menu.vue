@@ -88,10 +88,13 @@ import { signOut } from '@/services/firebase/auth.js';
 import { clearLs } from '@/helpers/index.js';
 import { ROLES } from '@/config/constants.js';
 import realtime from '@/services/firebase/db.js';
+import i18n from '@/i18n.js';
+
+const { t } = i18n.global;
 
 const MENU_ITEMS = [
 	{
-		title: 'Post new product',
+		title: t('menu.post'),
 		roles: [ROLES.OWNER, ROLES.EMPLOYEE, ROLES.MANAGER],
 		icon: addOutline,
 		danger: true,
@@ -100,7 +103,7 @@ const MENU_ITEMS = [
 		},
 	},
 	{
-		title: 'My products',
+		title: t('menu.my_products'),
 		roles: [ROLES.OWNER, ROLES.EMPLOYEE, ROLES.MANAGER],
 		icon: fastFoodOutline,
 		handler: (router) => {
@@ -108,7 +111,7 @@ const MENU_ITEMS = [
 		},
 	},
 	{
-		title: 'Account',
+		title: t('menu.account'),
 		icon: personOutline,
 		roles: ['customer'],
 		handler: (router) => {
@@ -116,15 +119,7 @@ const MENU_ITEMS = [
 		},
 	},
 	{
-		title: 'Change password',
-		icon: lockOpenOutline,
-		roles: [ROLES.OWNER, ROLES.EMPLOYEE, ROLES.MANAGER],
-		handler: (router) => {
-			router.push('/password/change');
-		},
-	},
-	{
-		title: 'Address',
+		title: t('menu.address'),
 		icon: locateOutline,
 		roles: ['customer'],
 		handler: (router) => {
@@ -132,7 +127,7 @@ const MENU_ITEMS = [
 		},
 	},
 	{
-		title: 'My orders',
+		title: t('menu.my_orders'),
 		icon: bagOutline,
 		roles: ['customer'],
 		handler: (router) => {
@@ -140,7 +135,7 @@ const MENU_ITEMS = [
 		},
 	},
 	{
-		title: 'Incoming orders',
+		title: t('menu.incoming'),
 		roles: [ROLES.OWNER, ROLES.EMPLOYEE, ROLES.MANAGER],
 		icon: basketOutline,
 		handler: (router) => {
@@ -148,7 +143,15 @@ const MENU_ITEMS = [
 		},
 	},
 	{
-		title: 'Logout',
+		title: t('menu.change_pass'),
+		icon: lockOpenOutline,
+		roles: [ROLES.OWNER, ROLES.EMPLOYEE, ROLES.MANAGER],
+		handler: (router) => {
+			router.push('/password/change');
+		},
+	},
+	{
+		title: t('menu.logout'),
 		roles: ['customer', 'employee', 'owner', 'manager'],
 		icon: logOutOutline,
 		color: 'danger',

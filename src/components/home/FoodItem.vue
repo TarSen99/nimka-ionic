@@ -19,12 +19,14 @@
 				<Badge color="white">
 					<span
 						v-if="data.availableCount < 100"
-						class="fz-14 color-dark fw-500"
+						class="fz-14 color-dark fw-500 left-items-count"
 					>
-						{{ data.availableCount }} left
+						{{ data.availableCount }} {{ t('common.left') }}
 					</span>
 
-					<span v-else class="fz-12 color-dark fw-600"> Left a lot </span>
+					<span v-else class="color-dark fw-500 left-items-count fz-14">
+						{{ t('home.product.a_lot') }}
+					</span>
 				</Badge>
 			</div>
 
@@ -44,11 +46,11 @@
 						class="pickup-time"
 					>
 						<span class="fz-12 fw-400 color-dark vertical-align-middle">
-							Pick up
+							{{ t('home.product.pick') }}
 						</span>
 
 						<span class="fz-12 color-dark fw-400 vertical-align-middle">
-							today
+							{{ t('common.today') }}
 						</span>
 
 						<span class="fz-12 color-dark fw-400 vertical-align-middle">
@@ -62,7 +64,7 @@
 						{{ data.title }}
 					</h1>
 					<h1 v-else class="title niambox-title fz-16 mt-1 color-dark-grey">
-						Niambox
+						{{ t('common.niambox') }}
 					</h1>
 				</div>
 
@@ -93,17 +95,19 @@
 							class="vertical-middle mr-1"
 						></ion-icon>
 
-						<span class="vertical-middle fz-12 fw-500"> {{ distance }}km </span>
+						<span class="vertical-middle fz-12 fw-500">
+							{{ distance }}{{ t('common.km') }}
+						</span>
 					</template>
 				</div>
 
 				<div class="is-flex is-flex-direction-column ion-align-items-end">
 					<span class="fz-12 line-through old-price">
-						{{ data.fullPrice.toFixed(2) }} UAH
+						{{ data.fullPrice.toFixed(2) }} {{ t('common.uah') }}
 					</span>
 
 					<span class="fw-600 fz-16 price">
-						{{ data.priceWithDiscount.toFixed(2) }} UAH
+						{{ data.priceWithDiscount.toFixed(2) }} {{ t('common.uah') }}
 					</span>
 				</div>
 			</div>
@@ -112,14 +116,14 @@
 		<EmodjiStatus
 			v-if="data.status === PRODUCT_STATUSES.OUT_OF_STOCK && !adminView"
 			emodji="😥"
-			text="Out of stock"
+			:text="t('home.product.out')"
 			color="danger"
 		/>
 
 		<EmodjiStatus
 			v-if="data.status === PRODUCT_STATUSES.EXPIRED && !adminView"
 			emodji="🙁"
-			text="You missed it"
+			:text="t('home.product.missed')"
 			color="primary"
 		/>
 	</div>
@@ -136,6 +140,7 @@ import { distanceToKm } from '@/helpers';
 import { PRODUCT_STATUSES } from '@/config/constants.js';
 import usePlaceholder from '@/composables/common/usePlaceholder.js';
 import EmodjiStatus from '@/components/home/EmodjiStatus.vue';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'FoodItem',
@@ -173,6 +178,7 @@ export default {
 	setup(props) {
 		const { data } = toRefs(props);
 		const { getImages } = usePlaceholder();
+		const { t } = useI18n();
 
 		const fromTime = computed(() => {
 			return DateTime.fromISO(data.value.takeTimeFrom).toFormat('HH:mm');
@@ -204,6 +210,7 @@ export default {
 			distance,
 			PRODUCT_STATUSES,
 			images,
+			t,
 		};
 	},
 };
@@ -333,6 +340,10 @@ export default {
 		-webkit-line-clamp: 1 !important;
 	}
 
+	.left-items-count {
+		font-size: 10px !important;
+	}
+
 	.company-info {
 		position: absolute;
 		left: 10px;
@@ -362,6 +373,12 @@ export default {
 
 	.right {
 		width: calc(100% - 120px);
+	}
+
+	.pickup-time {
+		span {
+			font-size: 10px !important;
+		}
 	}
 }
 

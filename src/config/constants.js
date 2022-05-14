@@ -66,6 +66,7 @@ export const ORDER_STATUSES = {
 	PAYED: 'payed',
 	CANCELLED: 'cancelled',
 	COMPLETED: 'completed',
+	EXPIRED: 'expired',
 };
 
 export const PRODUCT_STATUSES = {

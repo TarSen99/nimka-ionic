@@ -12,11 +12,12 @@
 		<div class="ion-padding">
 			<div class="pt-4">
 				<p class="ion-text-center color-dark fz-18 fw-500">
-					Look for products within:
+					{{ t('home.filters.look') }}:
 				</p>
 				<div class="mt-5">
 					<p class="ion-text-center fz-40 fw-600 color-primary">
-						{{ radius }}<span class="fz-16 color-dark">Km </span>
+						{{ radius
+						}}<span class="fz-16 color-dark">{{ t('common.km') }} </span>
 					</p>
 				</div>
 				<ion-item
@@ -35,10 +36,14 @@
 						@ionChange="handleChange"
 					>
 						<ion-label slot="start">
-							<span class="color-medium fw-500 fz-14"> 1km </span>
+							<span class="color-medium fw-500 fz-14">
+								1{{ t('common.km') }}
+							</span>
 						</ion-label>
 						<ion-label slot="end">
-							<span class="color-medium fw-500 fz-14"> 60km </span>
+							<span class="color-medium fw-500 fz-14">
+								60{{ t('common.km') }}
+							</span>
 						</ion-label>
 					</ion-range>
 				</ion-item>
@@ -46,7 +51,9 @@
 
 			<div class="mt-5 filters">
 				<div>
-					<p class="fw-500 color-dark fz-14">Establishment type</p>
+					<p class="fw-500 color-dark fz-14">
+						{{ t('home.filters.es_type') }}:
+					</p>
 
 					<div class="filters-list is-flex mt-2">
 						<div
@@ -54,7 +61,7 @@
 							:class="{ active: filters.type.includes('restaurant') }"
 							@click="toggleFilter(filters.type, 'restaurant', 'type')"
 						>
-							Restaurant
+							{{ t('home.filters.restaurant') }}
 						</div>
 
 						<div
@@ -62,13 +69,15 @@
 							:class="{ active: filters.type.includes('store') }"
 							@click="toggleFilter(filters.type, 'store', 'type')"
 						>
-							Store
+							{{ t('home.filters.store') }}
 						</div>
 					</div>
 				</div>
 
 				<div>
-					<p class="fw-500 color-dark fz-14 mt-5">Product type</p>
+					<p class="fw-500 color-dark fz-14 mt-5">
+						{{ t('home.filters.pr_type') }}
+					</p>
 
 					<div class="filters-list is-flex mt-2">
 						<div
@@ -78,7 +87,7 @@
 								toggleFilter(filters.product_type, 'regular', 'product_type')
 							"
 						>
-							Regular
+							{{ t('home.filters.regular') }}
 						</div>
 
 						<div
@@ -88,13 +97,15 @@
 								toggleFilter(filters.product_type, 'niambox', 'product_type')
 							"
 						>
-							Niambox
+							{{ t('home.filters.niambox') }}
 						</div>
 					</div>
 				</div>
 
 				<div>
-					<p class="fw-500 color-dark fz-14 mt-5">Availability</p>
+					<p class="fw-500 color-dark fz-14 mt-5">
+						{{ t('home.filters.availability') }}
+					</p>
 
 					<div class="filters-list is-flex mt-2">
 						<div
@@ -102,7 +113,7 @@
 							:class="{ active: filters.status.includes('active') }"
 							@click="toggleFilter(filters.status, 'active', 'status')"
 						>
-							Relevant
+							{{ t('home.filters.relevant') }}
 						</div>
 
 						<div
@@ -110,7 +121,7 @@
 							:class="{ active: filters.status.includes('all') }"
 							@click="toggleFilter(filters.status, 'all', 'status')"
 						>
-							All
+							{{ t('home.filters.all') }}
 						</div>
 					</div>
 				</div>
@@ -119,11 +130,12 @@
 			<div class="toggle-container">
 				<ion-item lines="none" class="item">
 					<ion-label color="label">
-						<span class="fz-14 fw-500 color-dark">
-							Notify me about new products <br />
-							in my area</span
-						></ion-label
-					>
+						<span
+							v-html="t('home.filters.notify')"
+							class="fz-14 fw-500 color-dark"
+						>
+						</span
+					></ion-label>
 					<ion-toggle
 						mode="ios"
 						:checked="receivePush === true"
@@ -144,6 +156,7 @@ import { SAVED_FILTERS } from '@/config/constants.js';
 
 import { IonModal, IonRange, IonItem, IonLabel, IonToggle } from '@ionic/vue';
 import { computed } from '@vue/runtime-core';
+import { useI18n } from 'vue-i18n/index';
 
 const equal = (a, b) => {
 	let equal = true;
@@ -177,6 +190,7 @@ export default {
 		const store = useStore();
 		const saved = ref({});
 		const filtersChanged = ref(false);
+		const { t } = useI18n();
 
 		const filters = computed(() => {
 			return store.state.user.filters;
@@ -304,6 +318,7 @@ export default {
 			handleEndRange,
 			filters,
 			toggleFilter,
+			t,
 		};
 	},
 };

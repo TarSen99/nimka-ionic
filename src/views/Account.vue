@@ -15,7 +15,9 @@
 						</ion-button>
 					</ion-buttons>
 
-					<ion-title class="ion-text-center"> Account </ion-title>
+					<ion-title class="ion-text-center">
+						{{ t('account.account') }}
+					</ion-title>
 
 					<span class="placeholder"></span>
 				</div>
@@ -26,24 +28,24 @@
 			<div class="ion-padding">
 				<Input
 					v-model="name"
-					placeholder="Name"
-					label="Name"
+					:placeholder="t('account.name')"
+					:label="t('account.name')"
 					class="account-input"
 					:error="nameError"
 					@input="allowSave"
 				/>
 				<Input
 					v-model="mobile"
-					placeholder="Mobile"
-					label="Mobile"
+					:placeholder="t('account.phone')"
+					:label="t('account.phone')"
 					class="account-input"
 					readonly
 				/>
 
 				<Input
 					v-model="email"
-					placeholder="Email"
-					label="Email"
+					:placeholder="t('account.email')"
+					:label="t('account.email')"
 					class="account-input"
 					:error="emailError"
 					@input="allowSave"
@@ -57,7 +59,7 @@
 					:disabled="!name || saveDisabled"
 					@click="save"
 				>
-					Save
+					{{ t('common.save') }}
 				</Button>
 			</div>
 		</ion-content>
@@ -87,9 +89,17 @@ import { useStore } from 'vuex';
 import { useForm, useField } from 'vee-validate';
 import * as yup from 'yup';
 import { getErrors } from '@/helpers';
+import { useI18n } from 'vue-i18n/index';
+import i18n from '@/i18n.js';
+
+const { t } = i18n.global;
 
 const validationSchema = yup.object().shape({
-	email: yup.string().email('Email is not valid').notRequired().nullable(),
+	email: yup
+		.string()
+		.email(t('common.email_not_valid'))
+		.notRequired()
+		.nullable(),
 	name: yup.string().notRequired().nullable(),
 });
 
@@ -109,6 +119,7 @@ export default {
 	},
 	setup() {
 		const store = useStore();
+		const { t } = useI18n();
 
 		const { setErrors, validate } = useForm({
 			validationSchema,
@@ -143,15 +154,15 @@ export default {
 
 					showMessage({
 						color: 'success',
-						text: `Details were successfully updated`,
-						title: 'Success',
+						text: t('account.updated'),
+						title: t('common.success'),
 					});
 				})
 				.catch((err) => {
 					hideLoader();
 
 					showMessage({
-						text: `Something went wrong. Please try again`,
+						text: t('common.something_wrong'),
 					});
 
 					setErrors(getErrors(err));
@@ -194,6 +205,7 @@ export default {
 			nameError,
 			saveDisabled,
 			allowSave,
+			t,
 		};
 	},
 };

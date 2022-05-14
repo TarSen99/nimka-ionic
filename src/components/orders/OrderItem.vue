@@ -3,7 +3,9 @@
 		<div class="left relative">
 			<div class="absolute time-take is-flex is-flex-direction-column">
 				<Badge class="status-badge" :class="data.status">
-					<span class="fw-500 fz-14"> {{ statusText }} </span>
+					<span class="fw-500 fz-14">
+						{{ t(`order_status.${data.status}`) }}</span
+					>
 				</Badge>
 			</div>
 
@@ -53,7 +55,7 @@
 			>
 				<div class="no-wrap">
 					<span class="fw-600 fz-16">
-						{{ data.totalPrice.toFixed(2) }} UAH
+						{{ data.totalPrice.toFixed(2) }} {{ t('common.uah') }}
 					</span>
 				</div>
 			</div>
@@ -67,6 +69,7 @@ import { IonIcon } from '@ionic/vue';
 import { toRefs } from '@vue/reactivity';
 import { computed } from '@vue/runtime-core';
 import usePlaceholder from '@/composables/common/usePlaceholder.js';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'FoodItem',
@@ -99,6 +102,7 @@ export default {
 	setup(props) {
 		const { data } = toRefs(props);
 		const { getImage } = usePlaceholder();
+		const { t } = useI18n();
 
 		const products = computed(() => {
 			return data.value.OrderProducts.map((p) => {
@@ -106,16 +110,16 @@ export default {
 			}).slice(0, 4);
 		});
 
-		const statusText = computed(() => {
-			const status = (data.value.status || ' ').replace('_', ' ');
+		// const statusText = computed(() => {
+		// 	const status = (data.value.status || ' ').replace('_', ' ');
 
-			return `${status[0].toUpperCase()}${status.slice(1, status.length)}`;
-		});
+		// 	return `${status[0].toUpperCase()}${status.slice(1, status.length)}`;
+		// });
 
 		return {
 			products,
-			statusText,
 			getImage,
+			t,
 		};
 	},
 };

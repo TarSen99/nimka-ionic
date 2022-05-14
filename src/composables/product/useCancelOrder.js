@@ -1,14 +1,14 @@
 import http from '@/services/http';
-import useLoader from '@/composables/common/useLoader.js';
 import useDialog from '@/composables/common/dialog.js';
-import useAlert from '@/composables/common/alert.js';
+import { useI18n } from 'vue-i18n/index';
 
 export default function ({ activeOrder }) {
+	const { t } = useI18n();
 	const { confirm } = useDialog();
 
 	const cancel = async (showLoader) => {
 		const result = await confirm({
-			message: 'Are you sure you want to cancel order?',
+			message: t('active_order.sure_cancel'),
 		});
 
 		if (!result) {

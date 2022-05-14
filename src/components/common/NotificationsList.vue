@@ -32,6 +32,7 @@ import { REALTIME_CHANNELS } from '@/config/constants.js';
 import { watch } from '@vue/runtime-core';
 import { ORDER_STATUSES } from '@/config/constants.js';
 import useCurrentPlace from '@/composables/common/currentPlace.js';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'NotificationsList',
@@ -44,6 +45,7 @@ export default {
 		const orders = ref([]);
 		const activeOrder = ref(null);
 		const { activePlace } = useCurrentPlace();
+		const { t } = useI18n();
 
 		const handleCloseNotification = (index) => {
 			orders.value.splice(index, 1);
@@ -52,8 +54,11 @@ export default {
 		const handleMessage = (data) => {
 			if (data.key === 'new') {
 				orders.value.unshift({
-					title: `New incoming order`,
-					subtitle: `#${data.data.orderNumber}. Payment method: ${data.data.paymentMethod}`,
+					title: t('notifications.new_inc'),
+					subtitle:
+						`#${data.data.orderNumber}. ${t(
+							'notifications.payment_method'
+						)}: ` + t(`common.${data.data.paymentMethod}`),
 					id: data.data.id,
 					status: [ORDER_STATUSES.TO_TAKE, ORDER_STATUSES.PAYED],
 					key: new Date(),
@@ -65,8 +70,8 @@ export default {
 
 			if (data.key === 'cancelled') {
 				orders.value.unshift({
-					title: `Order cancellation`,
-					subtitle: `Order #${data.data.orderNumber} was cancelled by customer`,
+					title: t('notifications.canc'),
+					subtitle: t('notifications.was_canc', { msg: data.data.orderNumber }),
 					id: data.data.id,
 					status: [ORDER_STATUSES.CANCELLED],
 					key: new Date(),

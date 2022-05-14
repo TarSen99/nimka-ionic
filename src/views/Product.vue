@@ -31,7 +31,7 @@
 							color="danger"
 							class="p-1 out-of-stock"
 						>
-							<span class="fz-16 px-5"> Out of stock</span>
+							<span class="fz-16 px-5"> {{ t('home.product.out') }}</span>
 						</Badge>
 
 						<Badge
@@ -39,7 +39,7 @@
 							color="primary"
 							class="p-1 out-of-stock"
 						>
-							<span class="fz-16 px-5"> You missed it</span>
+							<span class="fz-16 px-5"> {{ t('home.product.missed') }}</span>
 						</Badge>
 
 						<Badge
@@ -48,7 +48,9 @@
 							class="p-1 take-time"
 							ref="tag"
 						>
-							<span class="fz-14"> Take {{ fromTime }} - {{ toTime }} </span>
+							<span class="fz-14">
+								{{ t('home.product.pick') }} {{ fromTime }} - {{ toTime }}
+							</span>
 						</Badge>
 					</div>
 				</ion-toolbar>
@@ -104,7 +106,7 @@
 									></ion-icon>
 
 									<span class="vertical-middle fz-14 fw-600">
-										{{ distance }} km
+										{{ distance }} {{ t('common.km') }}
 									</span>
 								</template>
 							</div>
@@ -116,7 +118,7 @@
 									class="p-1"
 								>
 									<span class="fz-14 px-3 color-light">
-										{{ details.availableCount }} left
+										{{ details.availableCount }} {{ t('common.left') }}
 									</span>
 								</Badge>
 							</div>
@@ -126,17 +128,15 @@
 							class="is-flex ion-justify-content-end ion-align-items-end mt-1"
 						>
 							<span class="fz-14 line-through color-grey mr-2 mb-1"
-								>{{
-									details.fullPrice && details.fullPrice.toFixed(2)
-								}}
-								UAH</span
+								>{{ details.fullPrice && details.fullPrice.toFixed(2) }}
+								{{ t('common.uah') }}</span
 							>
 							<span class="fw-600 fz-22 color-dark">
 								{{
 									details.priceWithDiscount &&
 									details.priceWithDiscount.toFixed(2)
 								}}
-								UAH
+								{{ t('common.uah') }}
 							</span>
 						</div>
 					</div>
@@ -147,7 +147,7 @@
 					>
 						{{ details.title }}
 					</h1>
-					<h1 v-else class="fz-22 color-primary">Niambox</h1>
+					<h1 v-else class="fz-22 color-primary">{{ t('common.niambox') }}</h1>
 
 					<p
 						ref="descriptionEl"
@@ -162,7 +162,7 @@
 						@click.prevent="handleViewAll"
 						class="fz-14"
 					>
-						{{ viewAll ? 'Hide' : 'View all' }}
+						{{ viewAll ? t('common.hide') : t('common.view_all') }}
 					</a>
 
 					<div
@@ -210,7 +210,7 @@
 								"
 								@click="addProduct(details)"
 							>
-								Add to cart
+								{{ t('product.add') }}
 							</Button>
 
 							<div v-if="details.productType === 'niambox'" class="mt-2">
@@ -224,12 +224,11 @@
 											></ion-icon
 										></span>
 
-										<span class="fw-500"> What is niambox? </span>
+										<span class="fw-500"> {{ t('product.what_is') }} </span>
 									</p>
 
 									<p class="mt-2 fz-14 color-dark niamkbox-descr">
-										You don't know what you'll get... Just be sure, it will be
-										something yummy!
+										{{ t('product.niambox') }}
 									</p>
 								</div>
 							</div>
@@ -243,7 +242,7 @@
 							class="order-btn w-100 m-0"
 							@click="$router.push(`/new-product/${details.id}`)"
 						>
-							Edit
+							{{ t('product.edit') }}
 						</Button>
 					</div>
 				</div>
@@ -258,7 +257,9 @@
 								@click="showMapOverlay = false"
 								class="overlay absolute w-100 h-100 is-flex ion-justify-content-center ion-align-items-center"
 							>
-								<p class="overlay-text fw-500">Tap here to move the map</p>
+								<p class="overlay-text fw-500">
+									{{ t('product.tap') }}
+								</p>
 							</div>
 						</div>
 
@@ -281,7 +282,8 @@
 						class="ion-padding-start ion-padding-end"
 					>
 						<h2 class="mt-5 pt-5 fz-18">
-							Other products from {{ details.Company && details.Company.name }}
+							{{ t('product.other') }}
+							{{ details.Company && details.Company.name }}
 						</h2>
 						<FoodSlider class="mt-2" :products="placeProducts" />
 					</div>
@@ -337,6 +339,7 @@ import usePlaceholder from '@/composables/common/usePlaceholder.js';
 import useStoreProducts from '@/composables/product/useStoreProducts.js';
 import { locationOutline, helpCircleOutline } from 'ionicons/icons';
 import useBrowser from '@/composables/common/browser.js';
+import { useI18n } from 'vue-i18n/index';
 
 const MAX_MINUTES_DIFFERENCE = 5;
 
@@ -400,6 +403,7 @@ export default {
 			useProductHeaderAnimation();
 		const swiper = ref(null);
 		const { open } = useBrowser();
+		const { t } = useI18n();
 
 		const { confirm } = useDialog();
 		const route = useRoute();
@@ -453,8 +457,7 @@ export default {
 
 			if (place !== fromStorePlace) {
 				const confirmValue = await confirm({
-					message:
-						'You already added products from different store. Do you want to clear cart and continue?',
+					message: t('product.diff_store'),
 				});
 
 				if (!confirmValue) {
@@ -468,8 +471,7 @@ export default {
 
 			if (!timeCheck) {
 				const confirmValue = await confirm({
-					message:
-						'You can not add products with pick up time more then 5min. difference to one order. Do you want to clear cart and continue?',
+					message: t('product.pick_time'),
 				});
 
 				if (!confirmValue) {
@@ -611,6 +613,7 @@ export default {
 			userRole,
 			locationOutline,
 			helpCircleOutline,
+			t,
 		};
 	},
 };

@@ -15,7 +15,9 @@
 						</ion-button>
 					</ion-buttons>
 
-					<ion-title class="ion-text-center"> Company details </ion-title>
+					<ion-title class="ion-text-center">
+						{{ t('company.details') }}
+					</ion-title>
 
 					<span class="placeholder"></span>
 				</div>
@@ -39,7 +41,9 @@
 						v-if="details.description"
 						class="mt-5 fz-14 color-grey ion-text-justify bg-white p-3 br w-100 break-spaces"
 					>
-						<h3 class="title color-dark uppercase fz-14 fw-600 mb-2">About</h3>
+						<h3 class="title color-dark uppercase fz-14 fw-600 mb-2">
+							{{ t('company.about') }}
+						</h3>
 
 						{{ details.description }}
 					</div>
@@ -49,7 +53,7 @@
 						class="mt-2 bg-white w-100 p-3 br"
 					>
 						<h3 class="title color-dark uppercase fz-14 fw-600 mb-2">
-							Social networks
+							{{ t('company.social') }}
 						</h3>
 
 						<company-social :details="details" :lines="false" />
@@ -60,7 +64,7 @@
 						class="places mt-2 w-100 bg-white w-100 p-3 br"
 					>
 						<h3 class="title color-dark uppercase fz-14 fw-600 mb-2">
-							Establishments
+							{{ t('company.establishments') }}
 						</h3>
 
 						<div
@@ -82,7 +86,7 @@
 						:loading="loadingProducts"
 						:products="products"
 						hide-company
-						title="Latest products"
+						:title="t('company.latest')"
 						class="w-100 mt-5"
 					/>
 				</div>
@@ -113,6 +117,7 @@ import http from '@/services/http';
 import { useRoute } from 'vue-router';
 import { ref } from '@vue/reactivity';
 import { locationOutline } from 'ionicons/icons';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'Account',
@@ -136,6 +141,7 @@ export default {
 		const details = ref({});
 		const products = ref([]);
 		const loadingProducts = ref(false);
+		const { t } = useI18n();
 
 		const getDetails = async () => {
 			await showLoader();
@@ -184,6 +190,7 @@ export default {
 			openMaps,
 			products,
 			loadingProducts,
+			t,
 		};
 	},
 };

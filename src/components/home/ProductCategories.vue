@@ -2,7 +2,7 @@
 	<div class="mb-4 product-categories">
 		<products-section
 			v-if="popular && popular.length"
-			title="Popular"
+			:title="t('home.popular')"
 			:products="popular"
 			:class="{ 'pr-section': popular && popular.length }"
 			class="mb-4 product-categories-item"
@@ -11,14 +11,14 @@
 		</products-section>
 		<products-section
 			v-if="hot && hot.length"
-			title="🔥 Hot"
+			:title="`🔥 ${t('home.hot')}`"
 			:products="hot"
 			:class="{ 'pr-section': hot && hot.length }"
 			class="mb-4 product-categories-item"
 		/>
 		<products-section
 			v-if="hurry && hurry.length"
-			title="Hurry to take"
+			:title="`${t('home.hurry')}`"
 			:products="hurry"
 			:class="{ 'pr-section': hurry && hurry.length }"
 			class="mb-4 product-categories-item"
@@ -31,9 +31,9 @@
 <script>
 import ProductsSection from '@/components/common/ProductsSection.vue';
 import { ref, toRefs } from '@vue/reactivity';
-import { onMounted, watch } from '@vue/runtime-core';
+import { watch } from '@vue/runtime-core';
 import http from '@/services/http';
-import { onIonViewWillEnter } from '@ionic/vue';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'ProductCategories',
@@ -52,6 +52,7 @@ export default {
 		const hot = ref([]);
 		const hurry = ref([]);
 		const { update } = toRefs(props);
+		const { t } = useI18n();
 
 		const getCategoty = (category, list) => {
 			return http.get(`/products?filter=${category}`).then((res) => {
@@ -93,6 +94,7 @@ export default {
 			popular,
 			hot,
 			hurry,
+			t,
 		};
 	},
 };

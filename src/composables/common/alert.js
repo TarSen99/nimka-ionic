@@ -1,10 +1,13 @@
 import { toastController } from '@ionic/vue';
+import i18n from '@/i18n.js';
+
+const { t } = i18n.global;
 
 export default function () {
 	const showMessage = ({
 		text,
 		color = 'danger',
-		title = 'Error',
+		title = t('common.error'),
 		duration = 2000,
 	}) => {
 		let toast;

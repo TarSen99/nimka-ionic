@@ -16,7 +16,9 @@
 						</ion-button>
 					</ion-buttons>
 
-					<ion-title class="ion-text-center"> Payment </ion-title>
+					<ion-title class="ion-text-center">
+						{{ t('checkout.payment') }}
+					</ion-title>
 
 					<span class="right-notch"></span>
 				</div>
@@ -35,7 +37,7 @@
 					@click="$router.replace('/')"
 					class="w-100"
 				>
-					Home
+					{{ t('checkout.home') }}
 				</Button>
 			</transition>
 		</ion-content>
@@ -64,6 +66,7 @@ import paymentSercive from '@/services/payment';
 import Button from '@/components/common/Button.vue';
 import { ref } from '@vue/reactivity';
 import { Haptics, NotificationType } from '@capacitor/haptics';
+import { useI18n } from 'vue-i18n/index';
 
 export default {
 	name: 'Checkout',
@@ -84,6 +87,7 @@ export default {
 		const { showLoader, hideLoader } = useLoader();
 		const paymentSuccess = ref(null);
 		const app = ref(null);
+		const { t } = useI18n();
 
 		const getPaymentToken = () => {
 			const orderId = route.query.orderId;
@@ -160,6 +164,7 @@ export default {
 		return {
 			chevronBackOutline,
 			paymentSuccess,
+			t,
 		};
 	},
 };
